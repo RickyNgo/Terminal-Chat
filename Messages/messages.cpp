@@ -29,6 +29,16 @@ Messages::~Messages()
 {
 }
 
+std::string Messages::sender()
+{
+	return this->sender_id;
+}
+
+std::string Messages::recipient()
+{
+	return this->recipient_id;
+}
+
 int Messages::length()
 {
 	return this->msg_length;

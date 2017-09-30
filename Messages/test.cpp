@@ -11,8 +11,10 @@ int main()
 		
 	for (int i = 0; i < 3; i++)
 	{
-		std::cout << tests[i].length() << std::endl;
-		std::cout << tests[i].body() << std::endl;
+		std::cout << "SENDER: " << tests[i].sender() << std::endl;
+		std::cout << "RECIPIENT: " << tests[i].recipient() << std::endl;
+		std::cout << "MSG LENGTH: " << tests[i].length() << std::endl;
+		std::cout << "MSG BODY: " << tests[i].body() << std::endl;
 	}
 
 	return 0;

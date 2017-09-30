@@ -28,10 +28,13 @@ class Messages
 		
 		// Returns the recipeint_id
 		std::string recipient();
-
+		
 		// Returns the body length
 		int length();
-
+		
+		// Returns the msg body
+		std::string msg();
+	
 		// Converts the C++ string to a C string for socket transfer
 		const char* body();
 	private:
