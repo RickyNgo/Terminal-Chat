@@ -1,14 +1,26 @@
+#ifndef CHATLOG_HPP
+#define CHATLOG_HPP
+
 #include "messages.hpp"
 #include <vector>
 
 class ChatLog
 {
 	public:
-		add(Messages msg);
-		read();
-		clear();
-		
+		ChatLog();
+		ChatLog(std::vector<Messages> archive);
+		~ChatLog();
+		void add(Messages msg);
+		std::vector<Messages> read();
+		int get_length();
+		void clear();
+		Messages iter();
+		void iter_clear();
+
 	private:
 		std::vector<Messages> log;
 		int length;
+		int iter_pos;
 };
+
+#endif
