@@ -42,6 +42,7 @@ class Messages
 		std::string recipient_id;
 		int msg_length;
 		std::string msg_body;
+		time_t time;
 };
 
 #endif

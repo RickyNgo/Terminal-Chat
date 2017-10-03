@@ -16,6 +16,7 @@ class ChatLog
 		void clear();
 		Messages iter();
 		void iter_clear();
+		void delete_msg(int pos, std::string msg, std::string sender_id);
 
 	private:
 		std::vector<Messages> log;
