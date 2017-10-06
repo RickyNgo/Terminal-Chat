@@ -22,7 +22,7 @@ void Server::accept( void ) {
 				if ( ec ) {
 					throw std::exception();
 				} else {
-					std::move( _socket ), 
+					boost::make_shared<std::move( _socket )>; /* Incomplete - move socket and read server command --- Connection class? */
 				}
 			});
 		} catch ( std::exception &e ) {
