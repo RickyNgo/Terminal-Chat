@@ -1,38 +1,32 @@
-#include "../hdr/server.hpp"
+#include "server.hpp"
 
+/* Server Constructor */
+Server::Server( boost::asio::io_service &ios, const tcp::endpoint &endpoint ) {
+	acceptor_ = tcp::acceptor( ios, endpoint );
+	acceptor_.bind( endpoint, [ this ]boost::system::error_code ec {
+		if ( ec ) {
+			throw std::exception();
+		}
+	});
+};
+
+
+/* Server Destructor */
+Server::Server( void ) { };
+
+/* Acceptor - Transfers new connection to 'socket_' */
 void Server::accept( void ) {
-	while ( 1 ) {
-		acceptor_.async_accept( socket_, [this] boost::system::error_code ec {
-			if ( ec )
-				std::cerr << "Error accepting socket. EC: " << ec << std::endl;
-			else {
-
-				/* Server - Client Integration Note:
-
-				Read message for sender, add sender to pool
-				
-				socket_.async_receive();
-				Channels.emplace_back( socket_, ** initiating particant ** );
-
-
-				*/
-			}
-		});
+	while( 1 ) {
+		try {
+			acceptor_.async_accept( socket_, [ this ]boost::system::error_code ec {
+				if ( ec ) {
+					throw std::exception();
+				} else {
+					std::move( _socket ), 
+				}
+			});
+		} catch ( std::exception &e ) {
+			std::cerr << e.what() << std::endl;
+		}
 	}
-}
-
-int main( int argc, char ** argv ) {
-	if ( argc != 2 ) {
-		std::cout << "Usage: " << argv[ 0 ] << " <port>" << std::endl;
-		return 0;
-	}
-	try {
-		boost::asio::io_service ios;
-		boost::asio::endpoint endpoint( tcp::v4(), std::atoi( argv[ 1 ] ));
-		Server server( ios, endpoint );
-		ios.run();
-	} catch( std::exception &e ) {
-		std::cerr << e.what() << std::endl;
-	}
-	return 0;
 }
