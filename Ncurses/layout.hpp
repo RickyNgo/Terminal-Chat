@@ -2,23 +2,39 @@
 #define LAYOUT_HPP
 
 #include <ncurses.h>
+#include <vector>
+#include <string>
+//#include "messages.hpp"
+class UI
+{
+    public:
+		void draw_borders(WINDOW *screen);
+		int windows_init();
+		void resize();
+		void delete_windows();
+		void side_display(WINDOW *screen, std::vector<std::string> list);
+        void chat_display(std::vector<std::string> list);
+        void splash_display();
+		void content_update();
 
-void draw_borders(WINDOW *screen) {
-  int x, y, i;
+    private:
+		int parent_x;
+		int parent_y;
+		int new_x;
+		int new_y;
 
-  getmaxyx(screen, y, x);
+		int channel_width = 30;
+		int contact_width = 30;
+		int chat_box_height = 5;
 
-  // sides
-  for (i = 1; i < (y - 1); i++) {
-    mvwprintw(screen, i, 0, "|");
-    mvwprintw(screen, i, x - 1, "|");
-  }
+		int channel_list_yindex = 2;
+		int dialog_list_yindex = 2;
+		int contact_list_yindex = 2;
 
-  for (i = 1; i < (x-1); i++)
-  {
-      mvwprintw(screen, y-1, i, "-");
-  }
-
-}
+		WINDOW *channels;
+		WINDOW *dialog;
+		WINDOW *contacts;
+		WINDOW *chat_box;
+};
 
 #endif

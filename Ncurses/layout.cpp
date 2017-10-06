@@ -1,98 +1,165 @@
-#include <unistd.h>
-#include <string>
-#include <sstream>
-#include <panel.h>
-#include <ctime>
-#include <cstring>
+//#include <unistd.h>
 #include "layout.hpp"
+#include <ctime>
+#include <stdlib.h>
 
+//#include "content_display.hpp"
 
-int main()
+void UI::draw_borders(WINDOW *screen) 
 {
-    int parent_x;
-    int parent_y;
-    int new_x;
-	int new_y;
+    int x, y, i;
 
-    int channel_width = 30;
-    int contact_width = 30;
-    int chat_box_height = 5;
+    getmaxyx(screen, y, x);
 
+    // sides
+    for (i = 1; i < (y - 1); i++) {
+        mvwprintw(screen, i, 0, "|");
+        mvwprintw(screen, i, x - 1, "|");
+    }
+
+    for (i = 1; i < (x-1); i++)
+    {
+        mvwprintw(screen, y-1, i, "-");
+    }
+}
+
+int UI::windows_init()
+{
     initscr();
     start_color();
     cbreak();
-    getmaxyx(stdscr, parent_y, parent_x);
+    getmaxyx(stdscr, this->parent_y, this->parent_x);
 
-    WINDOW *channels = newwin(parent_y, channel_width, 0, 0);
-    WINDOW *dialog = newwin(parent_y-chat_box_height, parent_x - channel_width - contact_width, 0, contact_width);
-    WINDOW *contacts = newwin(parent_y, contact_width, 0, parent_x - contact_width);
-    WINDOW *chat_box = newwin(chat_box_height, parent_x - channel_width - contact_width, parent_y - chat_box_height, channel_width);
+    this->channels = newwin(parent_y, channel_width, 0, 0);
+    this->dialog = newwin(parent_y-chat_box_height, parent_x - channel_width - contact_width, 0, contact_width);
+    this->contacts = newwin(parent_y, contact_width, 0, parent_x - contact_width);
+    this->chat_box = newwin(chat_box_height, parent_x - channel_width - contact_width, parent_y - chat_box_height, channel_width);
     
-    /*
-    init_color(COLOR_RED, 245, 0, 0);
-    init_pair(1, COLOR_BLACK, COLOR_RED);
-    init_pair(2, COLOR_BLACK, COLOR_GREEN);
-    init_pair(3, COLOR_BLACK, COLOR_BLUE);
+    box(this->dialog, 124, 45);
+    box(this->chat_box, 124, 45);
+    box(this->channels, 124, 45);
+    box(this->contacts, 124, 45);
+}
 
-
-    wbkgd(channels, COLOR_PAIR(1) );
-    wbkgd(contacts, COLOR_PAIR(2));
-    wbkgd(chat_box, COLOR_PAIR(3));
-    */
-
-    box(dialog, 124, 45);
-    box(chat_box, 124, 45);
-    box(channels, 124, 45);
-    box(contacts, 124, 45);
-
-    while(1)
-    {
-        getmaxyx(stdscr, new_y, new_x);
+void UI::resize()
+{
+    getmaxyx(stdscr, this->new_y, this->new_x);
 		
 		if (new_y != parent_y || new_x != parent_x)
 		{
 			parent_x = new_x;
 			parent_y = new_y;
 
-			wresize(dialog, parent_y-chat_box_height, parent_x - channel_width - contact_width);
-			wresize(chat_box, chat_box_height, parent_x - channel_width - contact_width);
+			wresize(this->dialog, parent_y-chat_box_height, parent_x - channel_width - contact_width);
+			wresize(this->chat_box, chat_box_height, parent_x - channel_width - contact_width);
 			
-            mvwin(contacts, 0, parent_x - contact_width);
-            mvwin(chat_box, parent_y - chat_box_height, channel_width);
+            mvwin(this->contacts, 0, parent_x - contact_width);
+            mvwin(this->chat_box, parent_y - chat_box_height, channel_width);
 
-			wclear(dialog);
-			wclear(chat_box);
-            wclear(contacts);
-            wclear(channels);
+			wclear(this->dialog);
+			wclear(this->chat_box);
+            wclear(this->contacts);
+            wclear(this->channels);
 
-            box(chat_box, 124, 45);
-			box(dialog, 124, 45);
-            box(channels, 124, 45);
-            box(contacts, 124, 45);
+            box(this->chat_box, 124, 45);
+			box(this->dialog, 124, 45);
+            box(this->channels, 124, 45);
+            box(this->contacts, 124, 45);
             
 
 		}
 
-        mvwprintw(dialog, 1, 1, "DIALOG");
-        mvwprintw(channels, 1, 1, "CHANNELS");
-        mvwprintw(contacts, 1, 1, "CONTACTS");
-        mvwprintw(chat_box, 1, 1, "CHATBOX");
+        mvwprintw(this->dialog, 1, 1, "DIALOG");
+        mvwprintw(this->channels, 1, 1, "CHANNELS");
+        mvwprintw(this->contacts, 1, 1, "CONTACTS");
+        mvwprintw(this->chat_box, 1, 1, "CHATBOX");
 		
         wrefresh(stdscr);
-		wrefresh(contacts);
-        wrefresh(dialog);
-        wrefresh(channels);
-        wrefresh(chat_box);
+		wrefresh(this->contacts);
+        wrefresh(this->dialog);
+        wrefresh(this->channels);
+        wrefresh(this->chat_box);
         refresh();
+}
 
-        sleep(1);
+void UI::delete_windows()
+{
+    delwin(this->channels);
+    delwin(this->dialog);
+    delwin(this->contacts);
+    delwin(this->chat_box);
+}
+
+
+void UI::side_display(WINDOW *screen, std::vector<std::string> list)
+{
+    if (screen == this->channels)
+    {
+        for (int i = 0; i < list.size(); i++)
+        {
+            mvwprintw(this->channels, channel_list_yindex, 1, list[i].c_str());
+            channel_list_yindex++;
+        }
     }
+    else if (screen == this->contacts)
+    {
+        for (int i = 0; i < list.size(); i++)
+        {
+            mvwprintw(this->contacts, contact_list_yindex, 1, list[i].c_str());
+            contact_list_yindex++;
+        }
+    }
+    else
+    {
+        return;
+    }
+}
 
-    delwin(channels);
-    delwin(dialog);
-    delwin(contacts);
-    delwin(chat_box);
+void UI::chat_display(std::vector<std::string> list)
+{
+    for (int i = 0; i < list.size(); i++)
+    {
+        time_t rawtime;
+        struct tm * timeinfo;
+        time(&rawtime);
+        timeinfo = gmtime(&rawtime);
 
-    return 0;
+        int hours = (timeinfo->tm_hour+(+8))%24;
+        int minutes = timeinfo->tm_min;
 
+
+        // Time
+        mvwprintw(this->dialog, dialog_list_yindex, 1, std::to_string(hours).c_str());
+        
+        // User
+        mvwprintw(this->dialog, dialog_list_yindex, 26, "Ricky");
+
+        // Message
+        mvwprintw(this->dialog, dialog_list_yindex, 35, "TESTING MY TEST");
+
+        dialog_list_yindex++;
+    }
+}
+
+void UI::splash_display()
+{
+    mvwprintw(this->dialog, 10, 60, " _______ .__   __.  __  ___  __ ");
+    mvwprintw(this->dialog, 11, 60, "|   ____||  \\ |  | |  |/  / |  |");
+    mvwprintw(this->dialog, 12, 60, "|  |__   |   \\|  | |  '  /  |  |");
+    mvwprintw(this->dialog, 13, 60, "|   __|  |  . `  | |    <   |  |");
+    mvwprintw(this->dialog, 14, 60, "|  |____ |  |\\   | |  .  \\  |  |");
+    mvwprintw(this->dialog, 15, 60, "|_______||__| \\__| |__|\\__\\ |__|");
+}
+
+std::vector<std::string> list = {"one", "two", "three", "four"};
+
+void UI::content_update()
+{
+    this->channel_list_yindex = 2;
+    this->dialog_list_yindex = 2;
+    this->contact_list_yindex = 2;
+
+    side_display(this->channels, list);
+    side_display(this->contacts, list);
+    chat_display(list);
 }
