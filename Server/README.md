@@ -1,6 +1,11 @@
-### Server Code - Written by Brian
+## server.cpp & enki_backend.cpp - Written by Brian
 
-#### 10.8:
+
+### Change Log:
+
+#### 10.7
+
+#### 10.5:
 1. Incomplete Accept Function -- Accepted Socket needs to be handled
 2. Use Boost Exception? - http://www.boost.org/doc/libs/1_65_1/libs/exception/doc/boost-exception.html
 3. Possible Template Endpoint for Channel and Server IO input

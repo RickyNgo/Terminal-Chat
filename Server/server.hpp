@@ -2,6 +2,10 @@
 #define __SERVER_HPP__
 
 #include <boost/asio.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/asio/signal_set.hpp>
+#include <iostream>
+
 /* For std::move */
 #include <utility>
 #include <list>
@@ -9,13 +13,17 @@
 using boost::asio::ip::tcp;
 
 class Server {
-private:
-	tcp::socket 		socket_;
-	tcp::acceptor 		acceptor_;
 
 public:
-	Server( boost::asio::io_service, const tcp::endpoint );
-	~Server( void ) { };
+	Server( boost::asio::io_service &, const tcp::endpoint & );
+	~Server( void );
+
+private:
+	void accept( void );
+	void accept_handler( const boost::system::error_code & );
+
+	tcp::acceptor 		acceptor_;
+	tcp::socket			socket_;
 };
 
 #endif
