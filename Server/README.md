@@ -6,7 +6,6 @@
 #### 10.10:
 Compiles and Runs. Use:
 > c++ -std=c++11 enki_backend.cpp server.cpp -lboost_system -lpthread
-executable is a.out.
 
 #### 10.5:
 1. Incomplete Accept Function -- Accepted Socket needs to be handled
