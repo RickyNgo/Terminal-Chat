@@ -5,7 +5,8 @@
 #include <boost/make_shared.hpp>
 #include <boost/asio/signal_set.hpp>
 #include <iostream>
-
+#include <boost/bind.hpp>
+#include <boost/thread.hpp>
 /* For std::move */
 #include <utility>
 #include <list>

@@ -1,11 +1,15 @@
-## server.cpp & enki_backend.cpp - Written by Brian
+## server.cpp && enki_daemon.cpp
 
+**To Compile:**
+> c++ -std=c++11 enki_daemon.cpp server.cpp -lboost_system -lpthread </br>
+> ./a.out
 
 ### Change Log:
 
 #### 10.10:
-Compiles and Runs. Use:
-> c++ -std=c++11 enki_backend.cpp server.cpp -lboost_system -lpthread
+1. Fixed the Template Error
+2. Ctrl-C now safely terminates program by calling io_service::stop
+3. Renamed Backend enki main file to "enki_daemon.cpp"
 
 #### 10.5:
 1. Incomplete Accept Function -- Accepted Socket needs to be handled
