@@ -20,7 +20,6 @@ public:
 
 private:
 	void accept( void );
-	void accept_handler( const boost::system::error_code & );
 
 	tcp::acceptor 		acceptor_;
 	tcp::socket			socket_;

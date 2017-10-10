@@ -30,22 +30,12 @@ Server::~Server( void ) { };
 
 void Server::accept( void ) {
 	try {
-		this->acceptor_.async_accept( socket_, accept_handler );
+		this->acceptor_.async_accept( this->socket_, [ this ]( boost::system::error_code error ) {
+			if ( ! error ) {
+				this->accept();
+			}
+		});
 	} catch ( boost::system::system_error &e ) {
 		std::cerr << "Run: " << e.what() << std::endl;
-	}
-}
-
-void Server::accept_handler( const boost::system::error_code& ec ) {
-	/* If there is no error, create session/channel and begin at top of cycle */
-	if ( ! ec ) {
-			// At this point, the commmand would need to be interpreted (Guaranteed to be a command).
-			// Commands could be completed via function calls in their own threads.
-
-			// Commands:
-			// new channel - a session (inherits from particpant and channel classes) would be made
-			// join channel - find session with inherited channel name (via hash table lookup)
-		
-		this->accept();
 	}
 }
