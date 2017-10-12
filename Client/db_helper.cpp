@@ -5,7 +5,7 @@
 #include <iostream>
 
 #include "client.hpp"
-#include "helper.hpp"
+#include "db_helper.hpp"
 
 /*setting up a new account
 need to add option to quit input loop
