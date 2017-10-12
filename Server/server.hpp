@@ -7,10 +7,6 @@
 #include <iostream>
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
-/* For std::move */
-#include <utility>
-#include <list>
-
 using boost::asio::ip::tcp;
 
 class Server {

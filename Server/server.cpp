@@ -1,4 +1,5 @@
 #include "server.hpp"
+#include "connection.hpp"
 
 /* Server Constructor */
 Server::Server( boost::asio::io_service &ios, const tcp::endpoint &endpoint ) :
@@ -6,7 +7,7 @@ acceptor_( ios, endpoint ),
 socket_( ios ) {
 	try {
 		acceptor_.set_option( tcp::acceptor::reuse_address( true ));
-		std::cerr << "Enki Server listening on port " << endpoint.port() << "." << std::endl;
+		std::cerr << "Enki listening on " << boost::asio::ip::host_name() << ":" << endpoint.port() << ", press ctrl-c to terminate." << std::endl;
 		acceptor_.listen();
 
 		/* Start Async Accept Cycle */
@@ -32,8 +33,9 @@ void Server::accept( void ) {
 	try {
 		this->acceptor_.async_accept( this->socket_, [ this ]( boost::system::error_code error ) {
 			if ( ! error ) {
-				this->accept();
+				std::make_shared<Connection>(std::move(socket_))->start();
 			}
+			this->accept();
 		});
 	} catch ( boost::system::system_error &e ) {
 		std::cerr << "Run: " << e.what() << std::endl;

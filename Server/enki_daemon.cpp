@@ -1,10 +1,7 @@
 /* Written by Brian
-
 This the backend main function 
 */
 
-/* Number of threads provided to ios */
-#define NUMT 4
 #include "server.hpp"
 
 int main( int argc, char ** argv ) {
