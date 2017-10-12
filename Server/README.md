@@ -1,7 +1,7 @@
 ## server.cpp && enki_daemon.cpp
 
 ### To Compile:
-> c++ -std=c++11 enki_daemon.cpp server.cpp -lboost_system -lpthread </br>
+> c++ -std=c++11 enki_daemon.cpp server.cpp connection.cpp -lboost_system -lpthread </br>
 > ./a.out
 
 ### Change Log:
