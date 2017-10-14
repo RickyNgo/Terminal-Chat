@@ -5,6 +5,8 @@
 
 //#include "content_display.hpp"
 
+const int MAX_MSG_LENGTH = 280;
+
 void UI::draw_borders(WINDOW *screen) 
 {
     int x, y, i;
@@ -26,7 +28,6 @@ void UI::draw_borders(WINDOW *screen)
 int UI::windows_init()
 {
     initscr();
-    start_color();
     cbreak();
     getmaxyx(stdscr, this->parent_y, this->parent_x);
 
@@ -162,4 +163,22 @@ void UI::content_update()
     side_display(this->channels, list);
     side_display(this->contacts, list);
     chat_display(list);
+}
+
+void UI::get_input()
+{
+    char *buffer = new char[MAX_MSG_LENGTH];
+    wmove(this->chat_box, 1, 3);
+    wrefresh(this->chat_box);
+
+    wgetnstr(this->chat_box, buffer, MAX_MSG_LENGTH);
+
+    std::string conv(buffer);
+    std::vector<std::string> temp;
+    temp.push_back(conv);
+    this->chat_display(temp);
+    wmove(this->chat_box, 1, 3);
+    wclrtoeol(this->chat_box);
+    wrefresh(this->chat_box);
+    box(this->chat_box, 124, 45);
 }

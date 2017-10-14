@@ -8,9 +8,10 @@ int main()
     
     while(1)
     {   
-        main_win.splash_display();
+        
         //main_win.content_update();
         main_win.resize();
+        main_win.get_input();
         sleep(1);
     }
 

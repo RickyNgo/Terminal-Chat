@@ -16,6 +16,7 @@ class UI
         void chat_display(std::vector<std::string> list);
         void splash_display();
 		void content_update();
+		void get_input();
 
     private:
 		int parent_x;
