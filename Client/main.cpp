@@ -6,6 +6,7 @@
 #include <iostream>
 #include <thread>
 #include <boost/asio.hpp>
+#include "boost/array.hpp"
 
 #include "client.hpp"
 #include "aux_functions.hpp"
@@ -55,7 +56,7 @@ int main(int argc, char* argv[])
 	  	else{
 	  		//send to server
 	  		//doing a normal synchronous write because no other read/writes will be happening
-	  		request_length = strlen(alias);
+	  		request_length = alias.length();
     		boost::asio::write(*(c.get_main_socket()), boost::asio::buffer(alias, request_length));
 
 	  		//get response
@@ -73,12 +74,11 @@ int main(int argc, char* argv[])
 
     std::thread t([&io_service](){ io_service.run(); });
 
-	using namespace std; // For strlen.
-    std::cout << "Enter message: ";
-    char request[max_length];
-    std::cin.getline(request, max_length);
-    size_t request_length = strlen(request);
-    boost::asio::write(*(c.get_main_socket()), boost::asio::buffer(request, request_length));
+    // std::cout << "Enter message: ";
+    // char request[max_length];
+    // std::cin.getline(request, max_length);
+    // size_t request_length = std::strlen(request);
+    // boost::asio::write(*(c.get_main_socket()), boost::asio::buffer(request, request_length));
 
     c.close();
     t.join();

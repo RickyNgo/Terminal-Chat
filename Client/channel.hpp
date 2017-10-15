@@ -9,8 +9,8 @@
 
 using boost::asio::ip::tcp;
 
-enum ChannelRole {admin, mod, guest, owner, none};
-enum ChannelType {private, group, none};
+enum ChannelRole {ADMIN, MOD, GUEST, OWNER, NO_ROLE};
+enum ChannelType {PRIVATE, GROUP, NO_TYPE};
 
 class Channel{
 private:

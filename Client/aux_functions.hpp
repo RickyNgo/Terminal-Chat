@@ -20,10 +20,10 @@ enum Commands {
 	ADD_MOD,		//12
 	MESSAGE_DELETE,	//13
 	CHANNEL_CLOSE,	//14
-	SHOW			//15
+	SHOW,			//15
 	HELP,			//16
 	ONLINE			//17
-}
+};
 
 //verifies that argument meets syntax structure
 //set to between 5 and 25 characters, alphanumeric only

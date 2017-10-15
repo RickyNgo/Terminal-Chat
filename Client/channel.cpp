@@ -8,7 +8,7 @@ using boost::asio::ip::tcp;
 #include "channel.hpp"
 
 Channel::Channel(std::string name, int id):
-    channel_name(name), channel_id(id), role(none), type(none)
+    channel_name(name), channel_id(id), role(NO_ROLE), type(NO_TYPE)
     {}
 
 Channel::~Channel(){   
