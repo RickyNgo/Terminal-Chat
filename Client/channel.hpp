@@ -9,11 +9,16 @@
 
 using boost::asio::ip::tcp;
 
+enum ChannelRole {admin, mod, guest, owner, none};
+enum ChannelType {private, group, none};
+
 class Channel{
 private:
     std::string channel_name;
     int channel_id;
     tcp::socket* channel_socket;
+    ChannelRole role;
+    ChannelType type;
     
 public:
     Channel(std::string, int);

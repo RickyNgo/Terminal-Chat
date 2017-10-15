@@ -12,7 +12,8 @@
 using boost::asio::ip::tcp;
 
 
-Client::Client(boost::asio::io_service& io_serv, tcp::resolver::iterator endpoint_iterator):ios(io_serv),main_socket_(io_serv){
+Client::Client(boost::asio::io_service& io_serv, tcp::resolver::iterator endpoint_iterator)
+:ios(io_serv),main_socket_(io_serv), user_alias_(""), user_id_(-1), current_channel_(0){
     do_connect_(endpoint_iterator);
 }
 /*
@@ -49,12 +50,6 @@ std::string Client::show_help(){
 	return help;
 }
 
-//connection handler for async_connect
-void connect_handler(const boost::system::error_code& error){
-    std::cout << "connection success";
-}
-
-
 /*
 get_user_alias
 */
@@ -85,6 +80,8 @@ std::vector<std::string> Client::get_friend_list(){ //how to print this in corre
 get_channels
 */
 std::vector<Channel*> Client::get_channels(){return client_channels_;}
+
+tcp::socket* Client::get_main_socket(){return &main_socket_;}
 
 
 /*
@@ -158,9 +155,11 @@ void Client::do_connect_(tcp::resolver::iterator endpoint_iterator){
 	boost::asio::async_connect(main_socket_, endpoint_iterator,
         [this](boost::system::error_code ec, tcp::resolver::iterator){
             if (!ec){
-            show_help();
-        }
+            	show_help();	
+        	}
     });
+
+    std::cout << "in else statement" << std::endl;
 }
 
 // next four come straight from example

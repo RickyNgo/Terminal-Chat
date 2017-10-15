@@ -23,6 +23,7 @@ private:
 	int user_id_;
 	std::map<int,std::string> friend_list_;
     std::vector<Channel*> client_channels_;
+    int current_channel_;
 
 private:
     void do_connect_(tcp::resolver::iterator);
@@ -35,13 +36,13 @@ public:
 
 	void write();
 	void close();
-    void connect_handler(const boost::system::error_code&);
 	std::string show_help();
 
 	std::string get_user_alias();
 	int get_user_id();
 	std::vector<std::string> get_friend_list();
     std::vector<Channel*> get_channels();
+    tcp::socket* get_main_socket();
 
 	void set_user_alias(std::string);	
 	void set_user_id(int);

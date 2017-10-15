@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <string>
+#include <cstring>
 #include <vector>
 #include <map>
 #include <iostream>
@@ -7,9 +8,12 @@
 #include <boost/asio.hpp>
 
 #include "client.hpp"
-#include "db_helper.hpp"
+#include "aux_functions.hpp"
+//#include "db_helper.hpp"
 
 using boost::asio::ip::tcp;
+
+enum { max_length = 1024 };
 
 int main(int argc, char* argv[])
 {
@@ -21,44 +25,63 @@ int main(int argc, char* argv[])
       return 1;
     }
 
-    boost::asio::io_service io_service;
+	boost::asio::io_service io_service;
 
     tcp::resolver resolver(io_service);
     tcp::resolver::query query("localhost", argv[1], tcp::resolver::query::canonical_name);
-    auto endpoint_iterator = resolver.resolve(query);
-    Client c(io_service, endpoint_iterator);
+    tcp::resolver::iterator iterator = resolver.resolve(query);
 
-//    int menu_input;
-//    std::cout << "1.Login" << '\n' << "2.Create new account" <<std::endl;
-//    std::cin >> menu_input;
-//
-//    int choice = validate_user_input(menu_input, 1, 2); 
-//
-//    // login
-//    if(choice == 1){login(&c);}
-//
-//    //new account
-//    else{new_account(&c);}
+    Client c(io_service, iterator);
 
-    //START CHATTING
+	int valid_name = 0;
+	std::string alias;
+	size_t request_length;
+	boost::array<char, 30> buf;
+
+
+	//Get alias, verify syntax is correct, send to server for confirmation of uniqueness
+	do
+	  {
+	  	std::cout << "Choose an alias: ";
+
+	  	std::getline(std::cin, alias);
+
+	  	valid_name = syntax_valid_alias(alias);
+
+	  	if(!valid_name){
+	  		std::cout << '\n' << "Not a valid alias. Must be between 5 and 25 alphanumeric characters" << std::endl;
+	  	}
+
+	  	else{
+	  		//send to server
+	  		//doing a normal synchronous write because no other read/writes will be happening
+	  		request_length = strlen(alias);
+    		boost::asio::write(*(c.get_main_socket()), boost::asio::buffer(alias, request_length));
+
+	  		//get response
+	  		//stick into Messages?
+
+
+	  		//update valid_name to true depending on response
+	  	}
+
+
+	  } while (!valid_name);  
 
 
     //below is placeholder from example
-/*
+
     std::thread t([&io_service](){ io_service.run(); });
 
-    char line[chat_message::max_body_length + 1];
-    while (std::cin.getline(line, chat_message::max_body_length + 1))
-    {
-      chat_message msg;
-      msg.body_length(std::strlen(line));
-      std::memcpy(msg.body(), line, msg.body_length());
-      msg.encode_header();
-      c.write(msg);
-    }
-*/
+	using namespace std; // For strlen.
+    std::cout << "Enter message: ";
+    char request[max_length];
+    std::cin.getline(request, max_length);
+    size_t request_length = strlen(request);
+    boost::asio::write(*(c.get_main_socket()), boost::asio::buffer(request, request_length));
+
     c.close();
-    //t.join();
+    t.join();
   }
   catch (std::exception& e)
   {
