@@ -1,11 +1,11 @@
 ## server.cpp && enki_daemon.cpp
 
 ### To Compile:
-> c++ -std=c++11 enki_daemon.cpp server.cpp connection.cpp -lboost_system -lpthread </br>
+> c++ -std=c++11 daemon.cpp server.cpp -lboost_system -lpthread </br>
 > ./a.out
 
 ### Change Log:
-
+#### 10.14 - see commit notes
 #### 10.10:
 1. Fixed the Template Error
 2. Ctrl-C now safely terminates program by calling io_service::stop
