@@ -1,4 +1,4 @@
-c++ -std=c++11 channel.cpp client.cpp db_helper.cpp main.cpp -o chat_client -lboost_system -lpthread
+c++ -std=c++11 channel.cpp client.cpp aux_functions.cpp main.cpp -o chat_client -lboost_system -lpthread
 ./chat_client <port>
 
 
