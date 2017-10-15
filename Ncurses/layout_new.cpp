@@ -9,6 +9,9 @@
 // Windows to be used
 extern WINDOW *chatWin, *chatWinBox, *channelWin, *channelWinBox, *inputWin, *inputWinBox, *contactWin, *contactWinBox;
 
+// Controls the main while() loop
+extern int isRunning;
+
 // Global window parameters
 int parent_x;
 int parent_y;
@@ -162,6 +165,13 @@ void get_input()
         return;
     }
 
+    if (strcmp(buffer, "exit") == 0)
+    {
+        isRunning = 0;
+
+        return;
+    }
+
     time(&ts);
 
     time_info = localtime(&ts);
@@ -218,7 +228,7 @@ void display_chat()
     {
         mvwprintw(chatWinBox, window_limit, 1, time_buffer[chat_buffer_pos].c_str());
         mvwprintw(chatWinBox, window_limit, 10, "<%s>", alias_buffer[chat_buffer_pos].c_str());
-        mvwprintw(chatWinBox, window_limit, 20, "\174%s", chat_buffer[chat_buffer_pos].c_str());
+        mvwprintw(chatWinBox, window_limit, 20, ":%s", chat_buffer[chat_buffer_pos].c_str());
         window_limit--;
         chat_buffer_pos--;
         if (window_limit == 1)
@@ -230,4 +240,14 @@ void display_chat()
     box(chatWinBox, 124, 45);
     mvwprintw(chatWinBox, 1, 1, "Enki");
     wrefresh(chatWinBox);
+}
+
+void splash_display()
+{
+    mvwprintw(chatWinBox, 10, parent_x/3.4+1, " _______ .__   __.  __  ___  __ ");
+    mvwprintw(chatWinBox, 11, parent_x/3.4+1, "|   ____||  \\ |  | |  |/  / |  |");
+    mvwprintw(chatWinBox, 12, parent_x/3.4+1, "|  |__   |   \\|  | |  '  /  |  |");
+    mvwprintw(chatWinBox, 13, parent_x/3.4+1, "|   __|  |  . `  | |    <   |  |");
+    mvwprintw(chatWinBox, 14, parent_x/3.4+1, "|  |____ |  |\\   | |  .  \\  |  |");
+    mvwprintw(chatWinBox, 15, parent_x/3.4+1, "|_______||__| \\__| |__|\\__\\ |__|");
 }

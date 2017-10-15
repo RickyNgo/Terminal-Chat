@@ -34,6 +34,7 @@ void draw_contacts();
 void draw_input();
 void get_input();
 void display_chat();
+void splash_display();
 
 
 #endif

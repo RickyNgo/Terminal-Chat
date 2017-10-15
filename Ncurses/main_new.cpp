@@ -3,14 +3,16 @@
 #include <signal.h>
 
 WINDOW *chatWin, *chatWinBox, *channelWin, *channelWinBox, *inputWin, *inputWinBox, *contactWin, *contactWinBox;
+int isRunning = 1;
 
 int main()
 {
     signal(SIGWINCH, resize_handler);
 
     win_init();
+    splash_display();
 
-    while(1)
+    while(isRunning)
     {
         //scroll(chatWinBox);
         wrefresh(chatWinBox);
