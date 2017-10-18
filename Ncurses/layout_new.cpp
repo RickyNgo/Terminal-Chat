@@ -1,10 +1,11 @@
-//#include "layout_new.hpp"
+#include "layout_new.hpp"
 #include <ncurses.h>
 #include <vector>
 #include <string>
 #include <ctime>
 #include <cstring>
 #include <stdlib.h>
+#include <unistd.h>
 
 // Windows to be used
 extern WINDOW *chatWin, *chatWinBox, *channelWin, *channelWinBox, *inputWin, *inputWinBox, *contactWin, *contactWinBox;
@@ -74,6 +75,7 @@ int win_init()
 {
     initscr();
     cbreak();
+    //keypad(stdscr, TRUE);
     getmaxyx(stdscr, parent_y, parent_x);
 
     draw_channels();
@@ -115,12 +117,6 @@ void resize_handler(int sig)
     draw_chat();
     draw_input();
 
-    /*
-    mvwprintw(channelWinBox, 5, 1, "TEST");
-    mvwprintw(chatWinBox, 5, 1, "TEST");
-    mvwprintw(contactWinBox, 5, 1, "TEST");
-    mvwprintw(inputWinBox, 5, 1, "TEST");
-    */
     int window_limit = parent_y - chat_box_height - 2;
     int chat_buffer_pos = chat_buffer.size()-1;
 
@@ -164,62 +160,56 @@ void get_input()
     {
         return;
     }
-
-    if (strcmp(buffer, "exit") == 0)
+    else if (strcmp(buffer, "/exit") == 0)
     {
         isRunning = 0;
 
         return;
     }
-
-    time(&ts);
-
-    time_info = localtime(&ts);
-    char *haha = new char[12];
-
-    sprintf(haha, "%02d:%02d:%02d", time_info->tm_hour, time_info->tm_min, time_info->tm_sec);
-
-    std::string fmtd_time(haha);
-    fmtd_time.append("| ");
-    time_buffer.push_back(fmtd_time);
-
-    std::string conv(buffer);
-    chat_buffer.push_back(conv);
-    
-    alias_buffer.push_back("Ricky");
-    /*
-    wclear(chatWinBox);
-    
-    // Used to test user input being displayed. Will convert to separate function for handling messages received from the server
-    int window_limit = parent_y - chat_box_height - 2;
-    int chat_buffer_pos = chat_buffer.size()-1;
-
-    for (int i = chat_buffer.size(); i > 0; i--)
+    else if (strcmp(buffer, "/help") == 0)
     {
-        mvwprintw(chatWinBox, window_limit, 1, time_buffer[chat_buffer_pos].c_str());
-        mvwprintw(chatWinBox, window_limit, 12, chat_buffer[chat_buffer_pos].c_str());
-        window_limit--;
-        chat_buffer_pos--;
-        if (window_limit == 1)
-        {
-            break;
-        }
+        show_help();
+        //return;
+    }
+    else
+    {
+        // Modify code below to be sent as a Message to the server
+        time(&ts);
+
+        time_info = localtime(&ts);
+        char *haha = new char[12];
+
+        sprintf(haha, "%02d:%02d:%02d", time_info->tm_hour, time_info->tm_min, time_info->tm_sec);
+
+        std::string conv(buffer);
+        chat_buffer.push_back(conv);
+
+        std::string fmtd_time(haha);
+        fmtd_time.append("| ");
+        time_buffer.push_back(fmtd_time);
+
+        
+        alias_buffer.push_back("Ricky");
     }
     
-    */
+        
 
+    
+
+    /////////////////////////////////////////////////////////
+    // Keep this section as is to refresh the input window
     box(chatWinBox, 124, 45);
     wmove(inputWinBox, 1, 4);
     wclear(inputWinBox);
     box(inputWinBox, 124, 45);
     mvwprintw(inputWinBox, 1, 1, ">:");
-    //mvwprintw(chatWinBox, 1, 1, "Enki");
     wrefresh(inputWinBox);
-    //wrefresh(chatWinBox);
 }
 
 void display_chat()
 {
+    // I dont think this will need to be modified. The Client would put the contents of the Message received
+    // from the server into the buffers.
     wclear(chatWinBox);
     int window_limit = parent_y - chat_box_height - 2;
     int chat_buffer_pos = chat_buffer.size()-1;
@@ -242,6 +232,7 @@ void display_chat()
     wrefresh(chatWinBox);
 }
 
+
 void splash_display()
 {
     mvwprintw(chatWinBox, 10, parent_x/3.4+1, " _______ .__   __.  __  ___  __ ");
@@ -250,4 +241,72 @@ void splash_display()
     mvwprintw(chatWinBox, 13, parent_x/3.4+1, "|   __|  |  . `  | |    <   |  |");
     mvwprintw(chatWinBox, 14, parent_x/3.4+1, "|  |____ |  |\\   | |  .  \\  |  |");
     mvwprintw(chatWinBox, 15, parent_x/3.4+1, "|_______||__| \\__| |__|\\__\\ |__|");
+}
+
+void show_help()
+{
+    int y;
+    int x;
+
+    getmaxyx(chatWinBox, y, x);
+    WINDOW *helpWin = subwin(chatWinBox, 23, 90, y/3, x/3);
+    //WINDOW *helpWin = subwin(chatWinBox, 25, 75, LINES/3, COLS/3);
+
+    
+    keypad(helpWin, TRUE);
+    
+
+    std::string help = "\n"
+                        " Commands are:\n"
+                        " /help - Displays help commands and syntax\n"
+                        " /exit - Exits the Enki chat program\n"
+                        " /friends - Displays your friend list\n"
+                        " /join [room] - Joins the chosen channel if available\n"
+                        " /create [room] - Creates the chosen channel\n"
+                        " /whisper [user] - Sends a direct message to another user\n"
+                        " /invite [user] - Invites another user to your current channel\n"
+                        " /mods - Displays the moderators for the current channel\n"
+                        " /kick_user [user] - (MODS/ADMINS ONLY) Kicks the selected user from the channel\n"
+                        " /kick_mod [mod] - (ADMINS ONLY) Kicks the selected moderator from the channel\n"
+                        " /add_friend [user] - Adds the selected user to your friendlist\n"
+                        " /add_channel [channel] - Adds the selected channel to your channel list\n"
+                        " /add_mod [user] - (ADMINS ONLY) Adds the selected user to the channel's mod team\n"
+                        " /channel_close - (ADMINS ONLY) Closes the current channel\n"
+                        " /online [user] - See if the user is currently online\n"
+                        " PRESS ANY KEY TO CLOSE THIS WINDOW";
+
+    mvwprintw(helpWin, 0, 0, help.c_str());
+    box(helpWin, 124, 45);
+
+    wrefresh(helpWin);
+    
+    while(!wgetch(helpWin))
+    {
+        return;
+
+    }
+
+    delwin(helpWin);
+}
+
+void show_friends(std::vector<std::string> friends)
+{
+    for (int i = 0; i < friends.size(); i++)
+    {
+        mvwprintw(contactWinBox, 1, 2, friends[i].c_str());
+    }
+}
+
+void show_channels(std::vector<std::string> channels)
+{
+    for (int i = 0; i < channels.size(); i++)
+    {
+        mvwprintw(channelWinBox, 1, 2, channels[i].c_str());
+    }
+}
+
+int invite_notification()
+{
+    WINDOW *popup = newwwin(40, 40, 0, 0);
+    
 }
