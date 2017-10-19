@@ -1,5 +1,4 @@
 #include "messages.hpp"
-#include <string>
 #include <ctime>
 #include <iostream>
 
@@ -30,7 +29,7 @@ Messages::Messages(char server_msg[])
 
 	char *token = strtok(msg, "|");
 	
-	std::cout << "Before tokenizing" << std::endl;
+	//std::cout << "Before tokenizing" << std::endl;
 	while (token != NULL)
 	{
 		std::string conv(token);
@@ -39,16 +38,13 @@ Messages::Messages(char server_msg[])
 		token = strtok(NULL, "|");
 	}
 	
-	std::cout << "After tokenizing" << std::endl;	
+	//std::cout << "After tokenizing" << std::endl;	
 	
 	
-	std::cout << msg_contents[0] << std::endl;
-	std::cout << msg_contents[1] << std::endl;
-	std::cout << msg_contents[2] << std::endl;
-	std::cout << msg_contents[3] << std::endl;
-	
-	
-
+	//std::cout << msg_contents[0] << std::endl;
+	//std::cout << msg_contents[1] << std::endl;
+	//std::cout << msg_contents[2] << std::endl;
+	//std::cout << msg_contents[3] << std::endl;
 	
 	this->command = std::stoi(msg_contents[0]);
 	this->timestamp = std::stoi(msg_contents[1]);

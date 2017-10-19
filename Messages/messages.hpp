@@ -3,7 +3,8 @@
 
 #include <string>
 #include <cstring>
-#include <boost/asio.hpp>
+#include <vector>
+
 
 enum Commands {MSG = 0, EXIT = 1, KICK_MOD = 2, KICK_USER = 3, ADD_MOD = 4, MESSAGE_DELETE = 5, SHOW = 6, JOIN = 16, CREATE = 17,
 WHISPER = 18, INVITE = 19, FRIEND_LIST = 20, BLOCK = 21, ADD_FRIEND = 22, CREATE_CHANNEL = 23, ONLINE = 24, HELP = 25, LOGIN = 26,
