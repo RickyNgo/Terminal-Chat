@@ -182,7 +182,7 @@ std::string get_input()
     else if (strcmp(buffer, "/help") == 0)
     {
         show_help();
-        //return;
+        return "";
     }
     else
     {
@@ -267,9 +267,7 @@ void show_help()
 
     getmaxyx(chatWinBox, y, x);
     WINDOW *helpWin = subwin(chatWinBox, 23, 90, y/3, x/3);
-    //WINDOW *helpWin = subwin(chatWinBox, 25, 75, LINES/3, COLS/3);
 
-    
     keypad(helpWin, TRUE);
     
 
@@ -348,7 +346,6 @@ void get_alias()
         wmove(loginWinBox, parent_y/2+3, parent_x/2-17);
         wrefresh(loginWinBox);
 
-
         wgetnstr(loginWinBox, alias, 15);
         
         std::string temp(alias);
@@ -372,9 +369,6 @@ void get_alias()
             return;
         }
     }
-    
-
-    
 }
 
 void draw_login()
