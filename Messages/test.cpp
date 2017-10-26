@@ -3,19 +3,29 @@
 
 int main()
 {
-	Messages test1;
-	Messages test2("Test2", "This is a test for test2");
-	Messages test3("Test3", "Test3", "This is a test for test3");
+	time_t t = time(NULL);
+	Messages test("Ricky", "LOves to program", t, MSG);
+
+	char msg[] = "10|3000000|Ricky|I HOPE THIS WORKS";
+
+	Messages test2(msg);
+
+	std::string test1 = test.encode();
+
+	std::cout << test1 << std::endl;
+	std::cout << test.get_sender() << std::endl;
+	std::cout << test.get_body() << std::endl;
+	std::cout << test.get_time() << std::endl;
+	std::cout << test.get_command() << std::endl;
 	
-	Messages tests[3] = {test1, test2, test3};
-		
-	for (int i = 0; i < 3; i++)
-	{
-		std::cout << "SENDER: " << tests[i].sender() << std::endl;
-		std::cout << "RECIPIENT: " << tests[i].recipient() << std::endl;
-		std::cout << "MSG LENGTH: " << tests[i].length() << std::endl;
-		std::cout << "MSG BODY: " << tests[i].body() << std::endl;
-	}
+
+	
+	std::cout << test2.get_sender() << std::endl;
+	std::cout << test2.get_body() << std::endl;
+	std::cout << test2.get_time() << std::endl;
+	std::cout << test2.get_command() << std::endl;
+	std::cout << test2.encode() << std::endl;
+	
 
 	return 0;
 }
