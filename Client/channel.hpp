@@ -1,5 +1,4 @@
 
-
 #ifndef channel_hpp
 #define channel_hpp
 
@@ -27,10 +26,14 @@ public:
     void set_channel_name(std::string);
     void set_channel_id(int);
     void set_channel_socket(tcp::socket*);
+    void set_channel_type(ChannelType);
+    void set_channel_role(ChannelRole);
     
     std::string get_channel_name();
     int get_channel_id();
     tcp::socket* get_channel_socket();
+    ChannelType get_channel_type();
+    ChannelRole get_channel_role();
     
 };
 

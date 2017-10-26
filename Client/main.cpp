@@ -28,17 +28,17 @@ int main(int argc, char* argv[])
 
 	boost::asio::io_service io_service;
 
-    tcp::resolver resolver(io_service);
-    tcp::resolver::query query("localhost", argv[1], tcp::resolver::query::canonical_name);
-    tcp::resolver::iterator iterator = resolver.resolve(query);
+  tcp::resolver resolver(io_service);
+  tcp::resolver::query query("localhost", argv[1], tcp::resolver::query::canonical_name);
+  tcp::resolver::iterator iterator = resolver.resolve(query);
 
-    Client c(io_service, iterator);
+  Client c(io_service, iterator);
 
-	int valid_name = 0;
-	std::string alias;
+	int valid_name = 0, command_num = -1;
+	std::string alias, u_input, command;
 	size_t request_length;
-	boost::array<char, 30> buf;
 
+	std::thread t([&io_service](){ io_service.run(); });
 
 	//Get alias, verify syntax is correct, send to server for confirmation of uniqueness
 	do
@@ -50,10 +50,11 @@ int main(int argc, char* argv[])
 	  	valid_name = syntax_valid_alias(alias);
 
 	  	if(!valid_name){
-	  		std::cout << '\n' << "Not a valid alias. Must be between 5 and 25 alphanumeric characters" << std::endl;
+	  		std::cout << '\n' << "Not a valid alias. Must be between 5 and 15 alphanumeric characters" << std::endl;
 	  	}
 
 	  	else{
+        //encode input
 	  		//send to server
 	  		//doing a normal synchronous write because no other read/writes will be happening
 	  		request_length = alias.length();
@@ -65,26 +66,28 @@ int main(int argc, char* argv[])
 
 	  		//update valid_name to true depending on response
 	  	}
+	  } while (!valid_name); 
 
+    while(1){
+      u_input = get_input(); //replace with ricky's function
+      command = get_command(u_input);
 
-	  } while (!valid_name);  
+      command_num = find_command(command);
 
+      if(command_num == 1 | command_num == 6){
+        client_command(command_num, u_input);
+      }
+   
+      else{
+        server_command(command_num, u_input, &c);
+      } 
+    } 
 
-    //below is placeholder from example
-
-    std::thread t([&io_service](){ io_service.run(); });
-
-    // std::cout << "Enter message: ";
-    // char request[max_length];
-    // std::cin.getline(request, max_length);
-    // size_t request_length = std::strlen(request);
-    // boost::asio::write(*(c.get_main_socket()), boost::asio::buffer(request, request_length));
-
-    c.close();
+    c.close(); 
     t.join();
   }
-  catch (std::exception& e)
-  {
+
+  catch (std::exception& e){
     std::cerr << "Exception: " << e.what() << "\n";
   }
   
