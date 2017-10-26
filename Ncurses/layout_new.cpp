@@ -8,7 +8,7 @@
 #include <unistd.h>
 
 // Windows to be used
-extern WINDOW *chatWin, *chatWinBox, *channelWin, *channelWinBox, *inputWin, *inputWinBox, *contactWin, *contactWinBox;
+extern WINDOW *chatWin, *chatWinBox, *channelWin, *channelWinBox, *inputWin, *inputWinBox, *contactWin, *contactWinBox, *loginWin, *loginWinBox;
 
 // Controls the main while() loop
 extern int isRunning;
@@ -29,11 +29,20 @@ int dialog_list_yindex = 2;
 int contact_list_yindex = 2;
 
 char *buffer = new char[280];
+char *alias = new char[28];
+
+/*
+struct Buffer
+{
+    std::vector<std::string> time_buffer;
+    std::vector<std::string> alias_buffer;
+    std::vector<std::string> chat_buffer;
+    std::string channel;
+};*/
 
 std::vector<std::string> time_buffer;
 std::vector<std::string> alias_buffer;
 std::vector<std::string> chat_buffer;
-
 
 void draw_channels()
 {
@@ -78,6 +87,7 @@ int win_init()
     //keypad(stdscr, TRUE);
     getmaxyx(stdscr, parent_y, parent_x);
 
+    draw_login();
     draw_channels();
     draw_chat();
     draw_contacts();
@@ -145,10 +155,12 @@ void resize_handler(int sig)
     wrefresh(inputWinBox);
 }
 
-void get_input()
+std::string get_input()
 {
     struct tm *time_info;
     time_t ts;
+
+    std::string for_client;
 
     memset(buffer, 0, 280);
 
@@ -156,15 +168,16 @@ void get_input()
     wrefresh(inputWinBox);
     
     wgetnstr(inputWinBox, buffer, 280);
+
     if (buffer[0] == '\0')
     {
-        return;
+        return "";
     }
     else if (strcmp(buffer, "/exit") == 0)
     {
         isRunning = 0;
 
-        return;
+        return "";
     }
     else if (strcmp(buffer, "/help") == 0)
     {
@@ -173,29 +186,31 @@ void get_input()
     }
     else
     {
-        // Modify code below to be sent as a Message to the server
+        // The code below pretty much echos back what you type in
         time(&ts);
 
         time_info = localtime(&ts);
-        char *haha = new char[12];
+        char *raw_time = new char[12];
 
-        sprintf(haha, "%02d:%02d:%02d", time_info->tm_hour, time_info->tm_min, time_info->tm_sec);
+        sprintf(raw_time, "%02d:%02d:%02d", time_info->tm_hour, time_info->tm_min, time_info->tm_sec);
 
         std::string conv(buffer);
         chat_buffer.push_back(conv);
 
-        std::string fmtd_time(haha);
+        std::string fmtd_time(raw_time);
         fmtd_time.append("| ");
         time_buffer.push_back(fmtd_time);
 
         
-        alias_buffer.push_back("Ricky");
+        alias_buffer.push_back(alias);
+
+        // This will actually return the inputted string with the time appended to the front
+        for_client.append(raw_time);
+
+        for_client.append("|");
+        for_client.append(conv);
     }
     
-        
-
-    
-
     /////////////////////////////////////////////////////////
     // Keep this section as is to refresh the input window
     box(chatWinBox, 124, 45);
@@ -204,6 +219,8 @@ void get_input()
     box(inputWinBox, 124, 45);
     mvwprintw(inputWinBox, 1, 1, ">:");
     wrefresh(inputWinBox);
+
+    return for_client;
 }
 
 void display_chat()
@@ -218,7 +235,7 @@ void display_chat()
     {
         mvwprintw(chatWinBox, window_limit, 1, time_buffer[chat_buffer_pos].c_str());
         mvwprintw(chatWinBox, window_limit, 10, "<%s>", alias_buffer[chat_buffer_pos].c_str());
-        mvwprintw(chatWinBox, window_limit, 20, ":%s", chat_buffer[chat_buffer_pos].c_str());
+        mvwprintw(chatWinBox, window_limit, 26, ":%s", chat_buffer[chat_buffer_pos].c_str());
         window_limit--;
         chat_buffer_pos--;
         if (window_limit == 1)
@@ -260,19 +277,16 @@ void show_help()
                         " Commands are:\n"
                         " /help - Displays help commands and syntax\n"
                         " /exit - Exits the Enki chat program\n"
-                        " /friends - Displays your friend list\n"
                         " /join [room] - Joins the chosen channel if available\n"
                         " /create [room] - Creates the chosen channel\n"
                         " /whisper [user] - Sends a direct message to another user\n"
                         " /invite [user] - Invites another user to your current channel\n"
                         " /mods - Displays the moderators for the current channel\n"
-                        " /kick_user [user] - (MODS/ADMINS ONLY) Kicks the selected user from the channel\n"
-                        " /kick_mod [mod] - (ADMINS ONLY) Kicks the selected moderator from the channel\n"
-                        " /add_friend [user] - Adds the selected user to your friendlist\n"
-                        " /add_channel [channel] - Adds the selected channel to your channel list\n"
+                        " /kick [user] - (MODS/ADMINS ONLY) Kicks the selected user from the channel\n"
                         " /add_mod [user] - (ADMINS ONLY) Adds the selected user to the channel's mod team\n"
                         " /channel_close - (ADMINS ONLY) Closes the current channel\n"
                         " /online [user] - See if the user is currently online\n"
+                        " /show [room] - Displays all the rooms you are connected to\n"
                         " PRESS ANY KEY TO CLOSE THIS WINDOW";
 
     mvwprintw(helpWin, 0, 0, help.c_str());
@@ -305,8 +319,81 @@ void show_channels(std::vector<std::string> channels)
     }
 }
 
-int invite_notification()
+int invite_notification(std::vector<std::string> inviter)
 {
-    WINDOW *popup = newwwin(40, 40, 0, 0);
+    WINDOW *popup = newwin(20, 20, parent_y - 40, 0);
+
+    box(popup, 124, 45);
+
+    std::string alert = inviter[0] + " invites you to " + inviter[1];
+    mvwprintw(popup, 1, 1, alert.c_str());
+
+    std::string response = "Press (y) to accept or (n) to decline";
+
+    mvwprintw(popup, 10, 1, response.c_str());
+    wrefresh(popup);
+    sleep(1);
+
     
+    delwin(popup);
+    
+}
+
+void get_alias()
+{
+    while(1)
+    {
+        memset(alias, 0, 28);
+
+        wmove(loginWinBox, parent_y/2+3, parent_x/2-17);
+        wrefresh(loginWinBox);
+
+
+        wgetnstr(loginWinBox, alias, 15);
+        
+        std::string temp(alias);
+
+        int count = 0;
+        for (int i = 0; i < temp.length(); i++)
+        {
+            if (temp[i] == ' ')
+            {
+                break;
+            }
+            else 
+            {
+                count++;
+            }
+
+        }       
+        
+        if (count == temp.length())
+        {
+            return;
+        }
+    }
+    
+
+    
+}
+
+void draw_login()
+{
+    loginWinBox = newwin(0, 0, 0, 0);
+    box(loginWinBox, 124, 45);
+
+    mvwprintw(loginWinBox, parent_y/2, parent_x/2-18, "LOGIN" );
+    mvwprintw(loginWinBox, parent_y/2+1, parent_x/2-18, "Please enter an alias 5-15 characters long");
+    mvwprintw(loginWinBox, parent_y/2+3, parent_x/2-18, ": ");
+
+    get_alias();
+
+    wrefresh(loginWinBox);
+}
+
+std::string retrieve_alias()
+{
+    std::string temp(alias);
+
+    return temp;
 }
