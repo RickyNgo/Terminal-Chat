@@ -12,7 +12,8 @@
 using boost::asio::ip::tcp;
 
 
-Client::Client(boost::asio::io_service& io_serv, tcp::resolver::iterator endpoint_iterator):ios(io_serv),main_socket_(io_serv){
+Client::Client(boost::asio::io_service& io_serv, tcp::resolver::iterator endpoint_iterator)
+:ios(io_serv),main_socket_(io_serv), user_alias_(""), user_id_(-1), current_channel_(0){
     do_connect_(endpoint_iterator);
 }
 /*
@@ -49,12 +50,6 @@ std::string Client::show_help(){
 	return help;
 }
 
-//connection handler for async_connect
-void connect_handler(const boost::system::error_code& error){
-    std::cout << "connection success";
-}
-
-
 /*
 get_user_alias
 */
@@ -81,10 +76,15 @@ std::vector<std::string> Client::get_friend_list(){ //how to print this in corre
 
 }
 
-/*
-get_channels
-*/
-std::vector<Channel*> Client::get_channels(){return client_channels_;}
+int Client::get_channel_list_size(){return client_channels_.size();}
+
+tcp::socket* Client::get_main_socket(){return &main_socket_;}
+
+int Client::get_current_channel_id(){return current_channel_;}
+
+Channel* Client::get_channel_from_id(int id){
+	return client_channels_[id];
+}
 
 
 /*
@@ -104,9 +104,9 @@ set_friend_list
 void Client::set_friend_list(std::map<int, std::string> friends){friend_list_ = friends;} 
 
 /*
-set_room_list
+set current channel
 */
-void Client::set_channel_list(std::vector<Channel *> chan_list){client_channels_ = chan_list;}
+void Client::set_current_channel(Channel* chan){current_channel_ = chan->get_channel_id();}
 
 /*
 add_friend
@@ -124,8 +124,12 @@ void Client::add_friend(int id, std::string name){ //http://www.cplusplus.com/re
 add_room
 */
 // replace parameter with ChatRoom
-void Client::add_channel(Channel* chan){
-    client_channels_.push_back(chan);
+void Client::add_channel(Channel* chan, int id){
+	std::pair<std::map<int,Channel*>::iterator,bool> ret;
+	ret = client_channels_.insert (std::pair<int,Channel*>(id,chan));
+	if (ret.second==false) {
+		std::cout << "That channel already exists." << std::endl;
+	}
 }
 
 
@@ -133,8 +137,8 @@ void Client::add_channel(Channel* chan){
 remove_room
 this is just removing the room from the vector, not actually closing the room. either do that in a separate function or do it here
 */
-void Client::remove_channel(Channel* chan){
-	client_channels_.erase(std::remove(client_channels_.begin(), client_channels_.end(), chan), client_channels_.end());
+void Client::remove_channel(int id){
+	client_channels_.erase(id);
 }
 
 /*
@@ -158,8 +162,8 @@ void Client::do_connect_(tcp::resolver::iterator endpoint_iterator){
 	boost::asio::async_connect(main_socket_, endpoint_iterator,
         [this](boost::system::error_code ec, tcp::resolver::iterator){
             if (!ec){
-            show_help();
-        }
+            	show_help();	
+        	}
     });
 }
 

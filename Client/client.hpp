@@ -16,13 +16,13 @@ class Client{
 private:
 	boost::asio::io_service& ios;
 	tcp::socket main_socket_;
-	//chat_message read_msg_; //	CHANGE TO RICKY'S CLASS NAME
-	//chat_message_queue write_msgs_; // "
 
 	std::string user_alias_;
 	int user_id_;
+	std::map<int, Channel*> client_channels_;
 	std::map<int,std::string> friend_list_;
-    std::vector<Channel*> client_channels_;
+    int current_channel_;
+    //need a counter so i don't get duplicate channel ids
 
 private:
     void do_connect_(tcp::resolver::iterator);
@@ -35,25 +35,27 @@ public:
 
 	void write();
 	void close();
-    void connect_handler(const boost::system::error_code&);
 	std::string show_help();
 
 	std::string get_user_alias();
 	int get_user_id();
 	std::vector<std::string> get_friend_list();
-    std::vector<Channel*> get_channels();
+    int get_channel_list_size();
+    tcp::socket* get_main_socket();
+    int get_current_channel_id();
+    Channel* get_channel_from_id(int);
 
 	void set_user_alias(std::string);	
 	void set_user_id(int);
 	void set_friend_list(std::map<int, std::string>); //change this to whatever the server sends the friend list as
-	void set_channel_list(std::vector<Channel*>);
+	void set_current_channel(Channel*);
 
 	//add reading/writing functions, integrate with other classes
 
     void add_friend(int, std::string);
-	void add_channel(Channel*);
-
-	void remove_channel(Channel*);
+	void add_channel(Channel*, int);
+	
+	void remove_channel(int);
 
 	void setup_client(std::string, int);
 

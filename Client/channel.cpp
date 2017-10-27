@@ -8,7 +8,7 @@ using boost::asio::ip::tcp;
 #include "channel.hpp"
 
 Channel::Channel(std::string name, int id):
-    channel_name(name), channel_id(id)
+    channel_name(name), channel_id(id), role(NO_ROLE), type(NO_TYPE)
     {}
 
 Channel::~Channel(){   
@@ -30,6 +30,14 @@ void Channel::set_channel_socket(tcp::socket* socket){
     channel_socket = socket;
 }
 
+void Channel::set_channel_type(ChannelType ct){
+    type = ct;
+}
+
+void Channel::set_channel_role(ChannelRole cr){
+    role = cr;
+}
+
 std::string Channel::get_channel_name(){
     return channel_name;
 }
@@ -40,4 +48,12 @@ int Channel::get_channel_id(){
 
 tcp::socket* Channel::get_channel_socket(){
     return channel_socket;
+}
+
+ChannelType Channel::get_channel_type(){
+    return type;
+}
+
+ChannelRole Channel::get_channel_role(){
+    return role;
 }
