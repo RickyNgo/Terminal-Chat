@@ -136,19 +136,7 @@ void resize_handler(int sig)
     draw_chat();
     draw_input();
 
-    int window_limit = parent_y - chat_box_height - 2;
-    int chat_buffer_pos = chat_buffer.size()-1;
-
-    for (int i = chat_buffer.size(); i > 0; i--)
-    {
-        mvwprintw(chatWinBox, window_limit, 5, chat_buffer[chat_buffer_pos].c_str());
-        window_limit--;
-        chat_buffer_pos--;
-        if (window_limit == 1)
-        {
-            break;
-        }
-    }
+    display_chat();
     
     box(chatWinBox, 124, 45);
     wmove(inputWinBox, 1, 4);
