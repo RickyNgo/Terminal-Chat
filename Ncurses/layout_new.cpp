@@ -56,10 +56,19 @@ void draw_channels()
 void draw_chat()
 {
     chatWinBox = newwin(parent_y-chat_box_height, parent_x - channel_width - contact_width, 0, contact_width);
+    chatWin = newwin(parent_y - chat_box_height - 2, parent_x - channel_width - contact_width-2, 1, contact_width+1);
+    
     box(chatWinBox, 124, 45);
-    mvwprintw(chatWinBox, 1, 1, "ENKI");
+    //box(chatWin, 124, 45);
+    
+    //mvwprintw(chatWinBox, 1, 1, "ENKI");
+    mvwprintw(chatWin, 0, 1, "CURRENT BUFFER: ");
+    
     scrollok(chatWinBox, TRUE);
+    scrollok(chatWin, TRUE);
+    
     wrefresh(chatWinBox);
+    wrefresh(chatWin);
 }
 
 void draw_contacts()
@@ -167,7 +176,7 @@ std::string get_input()
     wmove(inputWinBox, 1, 4);
     wrefresh(inputWinBox);
     
-    wgetnstr(inputWinBox, buffer, 280);
+    wgetnstr(inputWinBox, buffer, 128);
 
     if (buffer[0] == '\0')
     {
@@ -227,15 +236,17 @@ void display_chat()
 {
     // I dont think this will need to be modified. The Client would put the contents of the Message received
     // from the server into the buffers.
-    wclear(chatWinBox);
-    int window_limit = parent_y - chat_box_height - 2;
+    wclear(chatWin);
+    int window_limit = parent_y - chat_box_height - 3;
     int chat_buffer_pos = chat_buffer.size()-1;
 
     for (int i = chat_buffer.size(); i > 0; i--)
     {
-        mvwprintw(chatWinBox, window_limit, 1, time_buffer[chat_buffer_pos].c_str());
-        mvwprintw(chatWinBox, window_limit, 10, "<%s>", alias_buffer[chat_buffer_pos].c_str());
-        mvwprintw(chatWinBox, window_limit, 26, ":%s", chat_buffer[chat_buffer_pos].c_str());
+        
+        mvwprintw(chatWin, window_limit, 1, time_buffer[chat_buffer_pos].c_str());
+        mvwprintw(chatWin, window_limit, 10, "<%s>", alias_buffer[chat_buffer_pos].c_str());
+        mvwprintw(chatWin, window_limit, 26, ":%s", chat_buffer[chat_buffer_pos].c_str());
+
         window_limit--;
         chat_buffer_pos--;
         if (window_limit == 1)
@@ -244,20 +255,31 @@ void display_chat()
         }
     }
 
-    box(chatWinBox, 124, 45);
-    mvwprintw(chatWinBox, 1, 1, "Enki");
-    wrefresh(chatWinBox);
+    
+
+    //box(chatWin, 124, 45);
+    mvwprintw(chatWin, 0, 1, "CURRENT BUFFER: %s", buffer);
+    wrefresh(chatWin);
 }
 
 
 void splash_display()
 {
+    /*
     mvwprintw(chatWinBox, 10, parent_x/3.4+1, " _______ .__   __.  __  ___  __ ");
     mvwprintw(chatWinBox, 11, parent_x/3.4+1, "|   ____||  \\ |  | |  |/  / |  |");
     mvwprintw(chatWinBox, 12, parent_x/3.4+1, "|  |__   |   \\|  | |  '  /  |  |");
     mvwprintw(chatWinBox, 13, parent_x/3.4+1, "|   __|  |  . `  | |    <   |  |");
     mvwprintw(chatWinBox, 14, parent_x/3.4+1, "|  |____ |  |\\   | |  .  \\  |  |");
     mvwprintw(chatWinBox, 15, parent_x/3.4+1, "|_______||__| \\__| |__|\\__\\ |__|");
+    */
+
+    mvwprintw(chatWin, 10, parent_x/3.4+1, " _______ .__   __.  __  ___  __ ");
+    mvwprintw(chatWin, 11, parent_x/3.4+1, "|   ____||  \\ |  | |  |/  / |  |");
+    mvwprintw(chatWin, 12, parent_x/3.4+1, "|  |__   |   \\|  | |  '  /  |  |");
+    mvwprintw(chatWin, 13, parent_x/3.4+1, "|   __|  |  . `  | |    <   |  |");
+    mvwprintw(chatWin, 14, parent_x/3.4+1, "|  |____ |  |\\   | |  .  \\  |  |");
+    mvwprintw(chatWin, 15, parent_x/3.4+1, "|_______||__| \\__| |__|\\__\\ |__|");
 }
 
 void show_help()

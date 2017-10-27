@@ -23,13 +23,14 @@ int main()
     while(isRunning)
     {
         //scroll(chatWinBox);
-        wrefresh(chatWinBox);
+        //wrefresh(chatWinBox);
+        wrefresh(chatWin);
         wrefresh(inputWinBox);
         wrefresh(channelWinBox);
         wrefresh(contactWinBox);
         input = get_input();
         display_chat();
-        std::cout << "MOST RECENT INPUT: " << input << std::endl;
+        //std::cout << "MOST RECENT INPUT: " << input << std::endl;
         //invite_notification(test);
         //sleep(1);
     }
@@ -37,7 +38,6 @@ int main()
     del_wins();
 
     std::cout << "ALIAS: " << alias << std::endl;
-    std::cout << "MOST RECENT INPUT: " << input << std::endl;
 
     return 0;
 }
