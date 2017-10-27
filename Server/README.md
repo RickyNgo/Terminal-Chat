@@ -1,11 +1,19 @@
 ## server.cpp && enki_daemon.cpp
 
 ### To Compile:
-> c++ -std=c++11 daemon.cpp server.cpp -lboost_system -lpthread </br>
+> c++ -std=c++11 daemon.cpp server.cpp connection.cpp connection_handler.cpp messages.cpp channel.cpp -lboost_system -lpthread </br>
 > ./a.out
 
 ### Change Log:
-#### 10.14 - see commit notes
+
+#### 10.26:
+1. Reworked the server - contains the io_service now and created a stop asynch function to close connections when server shutsdown
+2. Handler Class - this class contains channel and connection lists. User commands are sent to the handler. Handler processes the commands
+here. The idea was to keep everything in one area.
+
+User should be able to connect now and send a command. By this Saturday I'll finish the response member of the connection class so that the client receives a response about their request.
+
+
 #### 10.10:
 1. Fixed the Template Error
 2. Ctrl-C now safely terminates program by calling io_service::stop

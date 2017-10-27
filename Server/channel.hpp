@@ -1,26 +1,27 @@
 #ifndef __CHANNEL_HPP__
 #define __CHANNEL_HPP__
-#include <string>
 #include <deque>
+#include <set>
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/shared_ptr.hpp>
 
 class Channel :
-public enable_shared_from_this<Channel> {
+public boost::enable_shared_from_this<Channel> {
 public:
 	typedef boost::shared_ptr<Channel> pointer;
 	static const unsigned log_max = 100;
-	Channel( std::string );
+	Channel( void );
 	~Channel( void );
 
-	void join_( User::pointer & );
-	void leave_( User::pointer & );
-	void deliver_( User::pointer & );
+	// void join( Connection::pointer );
+	// void leave( Connection::pointer );
+	// void deliver( boost::shared_ptr<Messages> );
 
-private:
-	void process_( void );
+// private:
+	// void process_( void );
 
-	std::string title_;
-	std::set<User> users_;
-	std::deque<Messages> log_;
+	// std::set<Connection::pointer>	connections_;
+	// std::deque<Messages> 	 		log_;
 };
 
 #endif
