@@ -3,6 +3,7 @@
 #include <cstring>
 #include <vector>
 #include <map>
+#include <ctime>
 #include <iostream>
 #include <thread>
 #include <boost/asio.hpp>
@@ -10,7 +11,7 @@
 
 #include "client.hpp"
 #include "aux_functions.hpp"
-//#include "db_helper.hpp"
+#include "messages.hpp"
 
 using boost::asio::ip::tcp;
 
@@ -35,10 +36,13 @@ int main(int argc, char* argv[])
   Client c(io_service, iterator);
 
 	int valid_name = 0, command_num = -1;
-	std::string alias, u_input, command;
+	std::string alias, alias_req, u_input, command;
+  char ret_msg[512];
 	size_t request_length;
+  time_t current_time;
 
 	std::thread t([&io_service](){ io_service.run(); });
+
 
 	//Get alias, verify syntax is correct, send to server for confirmation of uniqueness
 	do
@@ -55,33 +59,48 @@ int main(int argc, char* argv[])
 
 	  	else{
         //encode input
-	  		//send to server
-	  		//doing a normal synchronous write because no other read/writes will be happening
-	  		request_length = alias.length();
-    		boost::asio::write(*(c.get_main_socket()), boost::asio::buffer(alias, request_length));
+        time(&current_time);
+        Messages alias_construct("", alias, current_time, LOGIN);
+        valid_name = true;
+	  		
+        // send to server
+    		boost::asio::write(*(c.get_main_socket()), boost::asio::buffer(alias_req, alias_req.length()));
+            
 
-	  		//get response
-	  		//stick into Messages?
+	  		// get response
+        boost::asio::read(*(c.get_main_socket()), boost::asio::buffer(ret_msg, 512));
 
 
-	  		//update valid_name to true depending on response
+	  		// decode with Message
+        Messages alias_decode(ret_msg);
+
+	  		// update valid_name to true depending on response
+        if(alias_decode.get_body() == "OK"){
+          c.set_user_alias(alias);
+          std::cout << "Success! Here is the message body: " << alias_decode.get_body() << std::endl;
+          valid_name = true;
+        }
+        else{
+          std::cout << "Alias is taken. Choose another." << std::endl;
+        }
+
 	  	}
 	  } while (!valid_name); 
 
-    while(1){
-      u_input = get_input(); //replace with ricky's function
-      command = get_command(u_input);
+    // while(1){
+    //   u_input = get_input(); //replace with ricky's function
+    //   command = get_command(u_input);
 
-      command_num = find_command(command);
+    //   command_num = find_command(command);
 
-      if(command_num == 1 | command_num == 6){
-        client_command(command_num, u_input);
-      }
+    //   if(command_num == 1 | command_num == 6){
+    //     client_command(command_num, u_input);
+    //   }
    
-      else{
-        server_command(command_num, u_input, &c);
-      } 
-    } 
+    //   else{
+    //     server_command(command_num, u_input, &c);
+    //   } 
+    // } 
 
     c.close(); 
     t.join();

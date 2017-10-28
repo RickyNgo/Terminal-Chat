@@ -7,26 +7,26 @@
 #include "client.hpp"
 #include "channel.hpp"
 
-enum Commands {
+enum ClientCommands {
 	//general
-	EXIT = 0, 
-	SHOW = 1, 
-	JOIN = 2, 
-	CREATE = 3,
-	WHISPER = 4, 	
-	ONLINE = 5,
-	HELP = 6, 
+	C_EXIT = 0, 
+	C_SHOW = 1, 
+	C_JOIN = 2, 
+	C_CREATE = 3,
+	C_WHISPER = 4, 	
+	C_ONLINE = 5,
+	C_HELP = 6, 
 
 	//in channel only
-	INVITE = 7, 
-	LEAVE = 8,
+	C_INVITE = 7, 
+	C_LEAVE = 8,
 
 	//channel mod or admin
-	KICK = 9,
+	C_KICK = 9,
 
 	//channel admin only
-	ADD_MOD = 10,  
-	CHANNEL_CLOSE = 11, 	
+	C_ADD_MOD = 10,  
+	C_CHANNEL_CLOSE = 11, 	
 	};
 
 //verifies that argument meets syntax structure
