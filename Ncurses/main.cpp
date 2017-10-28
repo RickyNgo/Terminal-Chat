@@ -1,21 +1,46 @@
 #include "layout.hpp"
 #include <unistd.h>
+#include <signal.h>
+#include <iostream>
+
+WINDOW *chatWin, *chatWinBox, *channelWin, *channelWinBox, *inputWin, *inputWinBox, *contactWin, *contactWinBox, *loginWin, *loginWinBox;
+int isRunning = 1;
+
+std::vector<std::string> test = {"Ricky", "OBIWAN"};
+
+
 
 int main()
 {
-    UI main_win;
-    main_win.windows_init();
-    
-    while(1)
-    {   
+    signal(SIGWINCH, resize_handler);
+
+    win_init();
+    splash_display();
+
+    std::string alias = retrieve_alias();
+    std::string input;
+
+    while(isRunning)
+    {
+        //scroll(chatWinBox);
+        //wrefresh(chatWinBox);
+        wrefresh(chatWin);
+        //wrefresh(inputWinBox);
+        wrefresh(inputWin);
+        //wrefresh(channelWinBox);
+        wrefresh(channelWin);
+        wrefresh(contactWinBox);
+        input = get_input();
+        display_chat();
         
-        //main_win.content_update();
-        main_win.resize();
-        main_win.get_input();
-        sleep(1);
+        //std::cout << "MOST RECENT INPUT: " << input << std::endl;
+        //invite_notification(test);
+        //sleep(1);
     }
 
-    main_win.delete_windows();
-    return 0;
+    del_wins();
 
+    std::cout << "ALIAS: " << alias << std::endl;
+    std::cout << COLORS << std::endl;
+    return 0;
 }
