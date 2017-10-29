@@ -12,22 +12,22 @@ using boost::asio::ip::tcp;
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
 #include <deque>
-#include <set>
+#include <list>
 #include <map>
 #include "messages.hpp"
 #include "channel.hpp"
+#include "guest.hpp"
 
 class ConnectionHandler;
 
 class Connection : 
+public Guest,
 public boost::enable_shared_from_this<Connection> {
 public:
 	typedef boost::shared_ptr<Connection> pointer;
 	Connection( tcp::socket, tcp::endpoint, ConnectionHandler & );
-	~Connection( void );
 	void start( void );
-	void stop( void );
-	const unsigned long get_id( void );
+	void quit( void );
 
 private:
 	void do_read_( void );
@@ -35,8 +35,6 @@ private:
 	void do_write_( void );
 	void on_write_( boost::system::error_code error, size_t bytes );
 	
-	static unsigned	long	id;
-	const unsigned long		id_;
 	char 					recv_buffer_[ 1024 ];
 	char 					send_buffer_[ 1024 ];
 	tcp::socket				socket_;
@@ -56,16 +54,16 @@ public:
 	ConnectionHandler( void );
 	~ConnectionHandler( void );
 
-	void connect( Connection::pointer );
-	void request( boost::shared_ptr<Messages>, Connection::pointer );
+	void join( Guest::pointer );
+	void request( boost::shared_ptr<Messages>, Guest::pointer );
 	void stop_all( void );
 
 private:
-	void response_( boost::shared_ptr<Messages>, Connection::pointer );
+	void response_( boost::shared_ptr<Messages>, Guest::pointer );
 
-	std::set<Connection::pointer> 				connections_;
+	std::list<Guest::pointer> 					guests_;
 	std::map<std::string, Channel::pointer>		channels_;
-	std::map<std::string, unsigned long>		users_;
+
 };
 
 #endif  /* END CONNECTION_HANDLER */

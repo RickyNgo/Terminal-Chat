@@ -4,6 +4,6 @@ LDFLAGS=-lncurses
 
 all: layout
 
-layout_new: main_new.cpp layout_new.cpp layout_new.hpp
-	$(CC) $(CFLAGS) main_new.cpp layout_new.cpp layout_new.hpp -o layout_new $(LDFLAGS)
+layout: main.cpp layout.cpp layout.hpp
+	$(CC) $(CFLAGS) main.cpp layout.cpp layout.hpp -o layout $(LDFLAGS)
 

@@ -36,7 +36,7 @@ void Server::do_stop_( void ) {
 }
 
 void Server::on_stop_( void ) {
-	std::cerr << "\nClosing all connections...";
+	std::cerr << "\nClosing all connections...\n";
 	handler_.stop_all();
 	std::cerr << "complete." << std::endl;
 	ios_.stop();
