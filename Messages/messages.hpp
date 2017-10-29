@@ -24,7 +24,7 @@ class Messages
 		Messages(std::string sender, std::string msg_body, time_t t, int command);
 
 		// Parses strings from the server
-		Messages(char server_msg[]);
+		Messages(const char * server_msg);
 
 		~Messages();
 		
