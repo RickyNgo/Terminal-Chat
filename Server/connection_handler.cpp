@@ -6,7 +6,6 @@ ConnectionHandler::~ConnectionHandler( void ) { }
 
 void ConnectionHandler::join( Guest::pointer guest ) {
 	guests_.push_back( guest );
-	std::cerr << "after push_back count: " << guest.use_count() << std::endl;
 }
 
 void ConnectionHandler::stop_all( void ) {
@@ -22,6 +21,7 @@ void ConnectionHandler::stop( Guest::pointer guest ) {
 
 void ConnectionHandler::request( const char * msg, Guest::pointer guest ) {
 	if ( strlen( msg ) == 0 ) {
+		guest->response( boost::make_shared<Messages>( "Server", "Empty Command", 0, 0 ));
 		return;
 	} 
 	Messages req( msg );
@@ -40,7 +40,7 @@ void ConnectionHandler::request( const char * msg, Guest::pointer guest ) {
 		if ( HANDLER_OUT ) std::cerr << "Handler: new user " << req_body << " added." << std::endl;
 		guest->response( boost::make_shared<Messages>( "Server", "OK", 0, LOGIN ));
 
-	/* Create Channel */
+	/* CREATE CHANNEL */
 	} else if ( req.get_command() == CREATE_CHANNEL ) {
 
 		// /* Create Channel */

@@ -27,9 +27,11 @@ void Connection::do_write_( void ) {
 void Connection::on_read_( boost::system::error_code error, size_t bytes ) {
 	if ( ! error ) {
 		std::cerr <<  client_ << " >> " << bytes << " bytes." << std::endl;
-
 		handler_.request( std::move( recv_buffer_ ), shared_from_this());
 	} else {
+		if ( error == EOF ) {
+			std::cerr << "EOF error" << std::endl;
+		}
 		std::cerr << "Connection Error: on_read_: " << error << std::endl;
 	}
 }
