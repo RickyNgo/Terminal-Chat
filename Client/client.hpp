@@ -8,7 +8,10 @@
 #include <map>
 #include <iostream>
 #include <thread>
+
 #include "channel.hpp"
+#include "aux_functions.hpp"
+#include "messages.hpp"
 
 using boost::asio::ip::tcp;
 
@@ -27,13 +30,16 @@ private:
 private:
     void do_connect_(tcp::resolver::iterator);
 	void do_read_header_();
-	void do_read_body_();
-	void do_write_();
+	void do_read_body_(char[]);
+    void do_write_(std::string);
 
 public:
 	Client(boost::asio::io_service&, tcp::resolver::iterator);
+    
+    void choose_alias();
 
-	void write();
+    void write(std::string);
+    void handler(const boost::system::error_code&, std::size_t);
 	void close();
 	std::string show_help();
 

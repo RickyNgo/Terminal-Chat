@@ -1,4 +1,5 @@
 #include <boost/asio.hpp>
+#include <boost/bind.hpp>
 #include <cstdlib>
 #include <string>
 #include <vector>
@@ -9,28 +10,104 @@
 
 #include "client.hpp"
 
+
 using boost::asio::ip::tcp;
 
 
 Client::Client(boost::asio::io_service& io_serv, tcp::resolver::iterator endpoint_iterator)
 :ios(io_serv),main_socket_(io_serv), user_alias_(""), user_id_(-1), current_channel_(0){
     do_connect_(endpoint_iterator);
+    
+    //choose_alias();
 }
+
+void Client::choose_alias(){
+    std::string alias, alias_req, u_input, command;
+    char ret_msg[512];
+    size_t request_length;
+    time_t current_time;
+    int valid_name = 0;
+    
+    do
+    {
+        std::cout << "Choose an alias: ";
+        
+        std::getline(std::cin, alias);
+        
+        valid_name = syntax_valid_alias(alias);
+        
+        if(!valid_name){
+            std::cout << '\n' << "Not a valid alias. Must be between 5 and 15 alphanumeric characters" << std::endl;
+        }
+        
+        else{
+            //encode input
+            time(&current_time);
+            Messages alias_construct("", alias, current_time, LOGIN);
+            alias_req = alias_construct.encode();
+            
+            valid_name = true;
+            
+            
+            
+            // send to server
+//            ios.post(boost::bind(&Client::do_write_, this, alias));
+            do_write_(alias);
+            
+            // get response
+//            ios.post[this, ret_msg](){do_read_body_(ret_msg)};
+
+            
+            
+            std::cout << "am i here?" << std::endl;
+            std::cout << "receive message length: " << strlen(ret_msg) << std::endl;
+            
+            
+//            for(int i = 0; i < strlen(ret_msg); i++){
+//                std::cout << ret_msg[i] << std::endl;
+//            }
+//            
+//            
+//            // decode with Message
+//            Messages alias_decode(ret_msg);
+//            
+//            // update valid_name to true depending on response
+//            if(alias_decode.get_body() == "OK"){
+//                c.set_user_alias(alias);
+//                std::cout << "Success! Here is the message body: " << alias_decode.get_body() << std::endl;
+//                valid_name = true;
+//            }
+//            else{
+//                std::cout << "Alias is taken. Choose another." << std::endl;
+//            }
+        }
+        
+    } while (!valid_name);
+}
+
 /*
 write
 */
-//void Client::write(){
-//    ios.post(
-//        [this, msg]()
-//        {
-//          bool write_in_progress = !write_msgs_.empty();
-//          write_msgs_.push_back(msg);
-//          if (!write_in_progress)
-//          {
-//            do_write_();
-//          }
-//        });
-//}
+void Client::write(std::string msg){
+    // send to server
+//    std::cout << "alias req length: " << msg.length() << std::endl;
+//    boost::asio::async_write(*(c.get_main_socket()), boost::asio::buffer(alias_req, alias_req.length()), handler);
+//    io_service.run();
+    //c.get_main_socket()->async_send(boost::asio::buffer(alias_req, alias_req.length()), handler);
+
+}
+
+void handler(const boost::system::error_code& error, std::size_t bytes_transferred){
+    if (!error){
+        std::cout << "write success\n";
+        std::cout << "bytes written: " << bytes_transferred << std::endl;
+    }
+    else{
+        std::cout << "write not a success\n";
+        std::cout << "category: " << error.category().name() << " code: " << error.value() << " message: " << error.message() << std::endl;
+        std::cout << "bytes written: " << bytes_transferred << std::endl;
+    }
+}
 
 /*
 close
@@ -203,44 +280,44 @@ do_read_header_
 /*
 do_read_body_
 */
-//void Client::do_read_body_(){
-//    boost::asio::async_read(main_socket_,
-//    boost::asio::buffer(read_msg_.body(), read_msg_.body_length()),
-//    [this](boost::system::error_code ec, std::size_t /*length*/)
-//    {
-//      if (!ec){
-//        std::cout.write(read_msg_.body(), read_msg_.body_length());
-//        std::cout << "\n";
-//        do_read_header_();
-//      }
-//      else{
-//        main_socket_.close();
-//      }
-//    });
-//}
+void Client::do_read_body_(char ret_msg[]){
+    boost::asio::async_read(main_socket_,
+    boost::asio::buffer(ret_msg, 512),
+        [this](boost::system::error_code ec, std::size_t bytes_transferred){
+            if (!ec){
+                std::cout << "write success\n";
+                std::cout << "bytes written: " << bytes_transferred << std::endl;
+                }
+            else{
+                std::cout << "write not a success\n";
+                std::cout << "category: " << ec.category().name() << " code: " << ec.value() << " message: " << ec.message() << std::endl;
+                std::cout << "bytes written: " << bytes_transferred << std::endl;
+                }
+            });
+//    ios.run();
+}
 
 /*
 do_write_
 */
-//void do_write_(){
-//    boost::asio::async_write(main_socket_,
-//    boost::asio::buffer(write_msgs_.front().data(),
-//      write_msgs_.front().length()),
-//    [this](boost::system::error_code ec, std::size_t /*length*/)
-//    {
-//      if (!ec)
-//      {
-//        write_msgs_.pop_front();
-//        if (!write_msgs_.empty())
-//        {
-//          do_write_();
-//        }
-//      }
-//      else
-//      {
-//        main_socket_.close();
-//      }
-//    });
-//}
+void Client::do_write_(std::string msg){
+    // send to server
+    std::cout << "alias req length: " << msg.length() << std::endl;
+
+    boost::asio::async_write(main_socket_, boost::asio::buffer(msg, msg.length()),
+                             [this](boost::system::error_code ec, std::size_t bytes_transferred){
+                             if (!ec){
+                                 std::cout << "write success\n";
+                                 std::cout << "bytes written: " << bytes_transferred << std::endl;
+                             }
+                             else{
+                                 std::cout << "write not a success\n";
+                                 std::cout << "category: " << ec.category().name() << " code: " << ec.value() << " message: " << ec.message() << std::endl;
+                                 std::cout << "bytes written: " << bytes_transferred << std::endl;
+                             }
+                             });
+    
+    ios.run();
+}
 
 
