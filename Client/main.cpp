@@ -17,6 +17,16 @@ using boost::asio::ip::tcp;
 
 enum { max_length = 1024 };
 
+void handler(const boost::system::error_code& error, std::size_t bytes_transferred){
+    if (!error){
+        std::cout << "write success\n";
+    }
+    else{
+       std::cout << "write not a success\n";
+    }
+}
+
+
 int main(int argc, char* argv[])
 {
   try
@@ -41,7 +51,9 @@ int main(int argc, char* argv[])
 	size_t request_length;
   time_t current_time;
 
-	std::thread t([&io_service](){ io_service.run(); });
+//	std::thread t([&io_service](){
+//    io_service.run();
+//    });
 
 
 	//Get alias, verify syntax is correct, send to server for confirmation of uniqueness
@@ -64,7 +76,11 @@ int main(int argc, char* argv[])
         valid_name = true;
 	  		
         // send to server
-    		boost::asio::write(*(c.get_main_socket()), boost::asio::buffer(alias_req, alias_req.length()));
+        boost::asio::async_write(*(c.get_main_socket()), boost::asio::buffer(alias_req, alias_req.length()), handler);
+            
+        io_service.run();
+            
+//                    std::cout << "charswritten: " << charswritten << std::endl;
             
 
 	  		// get response
@@ -103,7 +119,7 @@ int main(int argc, char* argv[])
     // } 
 
     c.close(); 
-    t.join();
+//    t.join();
   }
 
   catch (std::exception& e){
