@@ -3,6 +3,7 @@
 
 #include <string>
 #include <boost/shared_ptr.hpp>
+#include "messages.hpp"
 
 class Guest {
 public:
@@ -14,6 +15,7 @@ public:
 	void set_alias( const std::string & );
 	const unsigned long get_id( void ) const;
 	virtual void quit() = 0;
+	virtual void response( boost::shared_ptr<Messages> ) = 0;
 
 private:
 	static unsigned long 	id;

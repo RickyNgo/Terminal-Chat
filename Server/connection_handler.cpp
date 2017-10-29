@@ -4,34 +4,44 @@ ConnectionHandler::ConnectionHandler( void ) { }
 
 ConnectionHandler::~ConnectionHandler( void ) { }
 
-void ConnectionHandler::join( Guest::pointer c ) {
-	guests_.push_back( c );
+void ConnectionHandler::join( Guest::pointer guest ) {
+	guests_.push_back( guest );
+	std::cerr << "after push_back count: " << guest.use_count() << std::endl;
 }
 
 void ConnectionHandler::stop_all( void ) {
 	for ( auto guest: guests_ ) {
 		guest->quit();
-		guests_.remove( guest );
 	}
+	guests_.clear();
 }
 
-void ConnectionHandler::request( boost::shared_ptr<Messages> req, Guest::pointer c ) {
-	std::string req_body = req->get_body();
-	std::cerr << "Connection Request: " << req->get_command() << std::endl;
+void ConnectionHandler::stop( Guest::pointer guest ) {
+	guests_.remove( guest );
+}
+
+void ConnectionHandler::request( const char * msg, Guest::pointer guest ) {
+	if ( strlen( msg ) == 0 ) {
+		return;
+	} 
+	Messages req( msg );
+	std::string req_body = req.get_body();
+	std::cerr << "Connection Request: " << req.get_command() << std::endl;
+
 	/* LOGIN */
-	if ( req->get_command() == LOGIN ) {
-		for ( auto guest: guests_ ) {
-			if ( guest->get_alias() == req_body ) {
+	if ( req.get_command() == LOGIN ) {
+		for ( auto g: guests_ ) {
+			if ( g->get_alias() == req_body ) {
 				if ( HANDLER_OUT ) std::cerr << "Handler: user " << req_body << " already exists." << std::endl;
-				response_( boost::make_shared<Messages>( "Server", "Error: Alias already taken", 0, LOGIN ), c );
+				guest->response( boost::make_shared<Messages>( "Server", "Error: Alias already taken", 0, LOGIN ));
 				return;
 			}
 		}
 		if ( HANDLER_OUT ) std::cerr << "Handler: new user " << req_body << " added." << std::endl;
-		response_( boost::make_shared<Messages>( "Server", "OK", 0, LOGIN ), c );
+		guest->response( boost::make_shared<Messages>( "Server", "OK", 0, LOGIN ));
 
 	/* Create Channel */
-	} else if ( req->get_command() == CREATE_CHANNEL ) {
+	} else if ( req.get_command() == CREATE_CHANNEL ) {
 
 		// /* Create Channel */
 		// case CREATE_CHANNEL:
@@ -49,9 +59,7 @@ void ConnectionHandler::request( boost::shared_ptr<Messages> req, Guest::pointer
 
 		/* There was an error delivering the command */
 	} else {
-		response_( boost::make_shared<Messages>( "Server", "Command Error", 0, 0 ), c );
+		guest->response( boost::make_shared<Messages>( "Server", "Command Error", 0, 0 ));
 	}
 }
-
-void ConnectionHandler::response_( boost::shared_ptr<Messages> resp, Guest::pointer c ) { }
 

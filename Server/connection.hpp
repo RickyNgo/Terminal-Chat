@@ -28,6 +28,7 @@ public:
 	Connection( tcp::socket, tcp::endpoint, ConnectionHandler & );
 	void start( void );
 	void quit( void );
+	void response( boost::shared_ptr<Messages> );
 
 private:
 	void do_read_( void );
@@ -55,12 +56,11 @@ public:
 	~ConnectionHandler( void );
 
 	void join( Guest::pointer );
-	void request( boost::shared_ptr<Messages>, Guest::pointer );
+	void request( const char *, Guest::pointer );
 	void stop_all( void );
+	void stop( Guest::pointer );
 
 private:
-	void response_( boost::shared_ptr<Messages>, Guest::pointer );
-
 	std::list<Guest::pointer> 					guests_;
 	std::map<std::string, Channel::pointer>		channels_;
 

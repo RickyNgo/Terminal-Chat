@@ -19,7 +19,7 @@ Messages::Messages(std::string sender, std::string msg_body, time_t t, int comma
 }
 
 // Takes a C-string and parses it into its respective segments.
-Messages::Messages(char server_msg[])
+Messages::Messages(const char * server_msg)
 {
 	char msg[512];
 

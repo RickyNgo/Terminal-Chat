@@ -36,9 +36,10 @@ void Server::do_stop_( void ) {
 }
 
 void Server::on_stop_( void ) {
-	std::cerr << "\nClosing all connections...\n";
+	std::cerr << "\n\nInitiating Server Shutdown." << std::endl;
+	std::cerr << "\nClosing all connections..." << std::endl;
 	handler_.stop_all();
-	std::cerr << "complete." << std::endl;
+	std::cerr << "** Complete **" << std::endl;
 	ios_.stop();
 	std::cerr << "Server shutdown sucessful." << std::endl;
 }
@@ -59,7 +60,7 @@ void Server::accept_( void ) {
 			to create a connection class to handle asynchronous reads and writes with a socket. Alternatively, stack space
 			can be passed with the completion handler to boost::bind to ensure valid memory use. */
 
-			boost::make_shared<Connection>( std::move( socket_ ), std::move( client_ ), handler_ )->start(); 
+			boost::make_shared<Connection>( std::move( socket_ ), std::move( client_ ), handler_ )->start();
 
 		} else { 
 			std::cerr << "Connection Error: " << error << "." << std::endl;
