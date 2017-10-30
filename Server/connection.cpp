@@ -31,6 +31,7 @@ void Connection::do_read_( void ) {
 }
 
 void Connection::do_write_( void ) {
+	std::cerr << "Echoing " << send_buffer_ << std::endl;
 	socket_.async_send( boost::asio::buffer( send_buffer_, strlen( send_buffer_ )), boost::bind( &Connection::on_write_, shared_from_this(), _1, _2 ));
 }
 
@@ -38,13 +39,18 @@ void Connection::do_write_( void ) {
 void Connection::on_read_( boost::system::error_code error, size_t bytes ) {
 
 	/* If there is no error, send the message */
-	std::cerr << "error value: " << error.value() << std::endl;
 	if ( ! error ) {
 		std::cerr <<  client_ << " >> " << bytes << " bytes." << std::endl;
-		handler_.request( std::move( recv_buffer_ ), shared_from_this());
+
+		/* ECHO SERVER */
+		std::strcpy( send_buffer_, recv_buffer_);
+		send_buffer_[ strlen( recv_buffer_) ] = '\0';
+		memset( recv_buffer_, '\0', sizeof( recv_buffer_ ));
+		do_write_();
+		// handler_.request( std::move( recv_buffer_ ), shared_from_this());
 	} else {
 		if ( error.value() == boost::asio::error::eof ) {
-			std::cerr << client_ << ">> EOF." << std::endl;
+			std::cerr << client_ << " >> EOF." << std::endl;
 		}
 	}
 }
@@ -55,6 +61,7 @@ void Connection::on_write_( boost::system::error_code error, size_t bytes ) {
 	} else {
 		std::cerr << "Connection Error: on_write_: " << error << std::endl;
 	}
+	std::memset( send_buffer_, '\0', sizeof( send_buffer_ ));
 	do_read_();
 }
 
