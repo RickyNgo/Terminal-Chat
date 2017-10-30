@@ -1,5 +1,6 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
+#include <boost/enable_shared_from_this.hpp>
 #include <cstdlib>
 #include <string>
 #include <vector>
@@ -51,11 +52,10 @@ void Client::choose_alias(){
             
             
             // send to server
-//            ios.post(boost::bind(&Client::do_write_, this, alias));
             do_write_(alias);
             
             // get response
-//            ios.post[this, ret_msg](){do_read_body_(ret_msg)};
+            do_read_body_();
 
             
             
@@ -97,7 +97,7 @@ void Client::write(std::string msg){
 
 }
 
-void handler(const boost::system::error_code& error, std::size_t bytes_transferred){
+void Client::handler(const boost::system::error_code& error, std::size_t bytes_transferred){
     if (!error){
         std::cout << "write success\n";
         std::cout << "bytes written: " << bytes_transferred << std::endl;
@@ -280,13 +280,16 @@ do_read_header_
 /*
 do_read_body_
 */
-void Client::do_read_body_(char ret_msg[]){
+void Client::do_read_body_(){
+    char ret_msg[512];
     boost::asio::async_read(main_socket_,
     boost::asio::buffer(ret_msg, 512),
         [this](boost::system::error_code ec, std::size_t bytes_transferred){
             if (!ec){
                 std::cout << "write success\n";
                 std::cout << "bytes written: " << bytes_transferred << std::endl;
+                
+                
                 }
             else{
                 std::cout << "write not a success\n";
@@ -294,7 +297,6 @@ void Client::do_read_body_(char ret_msg[]){
                 std::cout << "bytes written: " << bytes_transferred << std::endl;
                 }
             });
-//    ios.run();
 }
 
 /*
@@ -303,12 +305,18 @@ do_write_
 void Client::do_write_(std::string msg){
     // send to server
     std::cout << "alias req length: " << msg.length() << std::endl;
+    
+//    boost::asio::async_write(main_socket_, boost::asio::buffer(msg, msg.length()), boost::bind(&Client::handler, shared_from_this(), _1, _2));
+//    
+//        boost::asio::write(main_socket_, boost::asio::buffer(msg, msg.length()));
 
     boost::asio::async_write(main_socket_, boost::asio::buffer(msg, msg.length()),
                              [this](boost::system::error_code ec, std::size_t bytes_transferred){
                              if (!ec){
                                  std::cout << "write success\n";
                                  std::cout << "bytes written: " << bytes_transferred << std::endl;
+                                 do_read_body_();
+                                 
                              }
                              else{
                                  std::cout << "write not a success\n";
@@ -317,7 +325,9 @@ void Client::do_write_(std::string msg){
                              }
                              });
     
-    ios.run();
+        std::cout << "bytes available " << main_socket_.available() << std::endl;
+    
+//    ios.run();
 }
 
 

@@ -2,6 +2,8 @@
 #define client_hpp
 
 #include <boost/asio.hpp>
+#include <boost/bind.hpp>
+#include <boost/enable_shared_from_this.hpp>
 #include <cstdlib>
 #include <string>
 #include <vector>
@@ -15,7 +17,7 @@
 
 using boost::asio::ip::tcp;
 
-class Client{
+class Client: public boost::enable_shared_from_this<Client>{
 private:
 	boost::asio::io_service& ios;
 	tcp::socket main_socket_;
@@ -30,7 +32,7 @@ private:
 private:
     void do_connect_(tcp::resolver::iterator);
 	void do_read_header_();
-	void do_read_body_(char[]);
+	void do_read_body_();
     void do_write_(std::string);
 
 public:

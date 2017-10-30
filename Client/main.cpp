@@ -27,7 +27,9 @@ int main(int argc, char* argv[])
       tcp::resolver::query query("localhost", argv[1], tcp::resolver::query::canonical_name);
       tcp::resolver::iterator iterator = resolver.resolve(query);
       
-      std::thread t([&io_service](){ io_service.run(); });
+//      std::thread t([&io_service](){ io_service.run(); });
+      
+      io_service.run();
 
       Client c(io_service, iterator);
       
@@ -50,8 +52,8 @@ int main(int argc, char* argv[])
     // }
       
 
-    c.close(); 
-    t.join();
+//    c.close(); 
+//    t.join();
   }
 
   catch (std::exception& e){
