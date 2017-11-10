@@ -1,70 +1,53 @@
-#ifndef __CONNECTION_FILES__
-#define __CONNECTION_FILES__
-
-#ifndef __CONNECTION__
-#define __CONNECTION__
+#ifndef __CONNECTION_HPP__
+#define __CONNECTION_HPP__
 
 #include <boost/asio.hpp>
 using boost::asio::ip::tcp;
-
 #include <boost/bind.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
-#include <deque>
-#include <list>
-#include <map>
-#include "messages.hpp"
-#include "channel.hpp"
+#include <boost/noncopyable.hpp>
+
+
+#include "processor1.hpp"
+// #include "messages.hpp"
 #include "guest.hpp"
 
-class ConnectionHandler;
+#define HEADER_LEN 2
 
 class Connection : 
 public Guest,
-public boost::enable_shared_from_this<Connection> {
+public boost::enable_shared_from_this<Connection>,
+public boost::noncopyable {
 public:
 	typedef boost::shared_ptr<Connection> pointer;
-	Connection( tcp::socket, tcp::endpoint, ConnectionHandler & );
+	typedef boost::system::error_code error_code;
+	
+	Connection( tcp::socket, tcp::endpoint, Processor & );
+	~Connection( void );
 	void start( void );
-	void quit( void );
-	void response( boost::shared_ptr<Messages> );
 
 private:
-	void do_read_( void );
-	void on_read_( boost::system::error_code error, size_t bytes );
+	void on_login_( error_code );
+	void on_stage_( error_code );
+
+	void do_read_header_( void );
+	void on_read_header_( error_code, size_t );
+
+	void do_read_body_( void );
+	void on_read_body_( error_code, size_t );
+
 	void do_write_( void );
-	void on_write_( boost::system::error_code error, size_t bytes );
+	void on_write_( error_code, size_t );
 	
-	char 					recv_buffer_[ 1024 ];
-	char 					send_buffer_[ 1024 ];
+	char 					recv_buffer_[ 512 ];
+	char 					send_buffer_[ 512 ];
+	uint8_t 				command_;
+	uint8_t					body_length_;					
 	tcp::socket				socket_;
 	tcp::endpoint			client_;
-	ConnectionHandler 		& handler_;
+	Processor		 		& handler_;
 };
 
 #endif  /* END CONNECTION */
-
-#ifndef __CONNECTION_HANDLER__
-#define __CONNECTION_HANDLER__
-
-#define HANDLER_OUT true
-
-class ConnectionHandler {
-public:
-	ConnectionHandler( void );
-	~ConnectionHandler( void );
-
-	void join( Guest::pointer );
-	void request( const char *, Guest::pointer );
-	void stop_all( void );
-	void stop( Guest::pointer );
-
-private:
-	std::list<Guest::pointer> 					guests_;
-	std::map<std::string, Channel::pointer>		channels_;
-
-};
-
-#endif  /* END CONNECTION_HANDLER */
-#endif  /* END CONNECTION_FILES */
