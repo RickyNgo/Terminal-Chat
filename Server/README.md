@@ -1,10 +1,15 @@
 ## server.cpp && enki_daemon.cpp
 
 ### To Compile:
-> c++ -std=c++11 daemon.cpp server.cpp connection.cpp connection_handler.cpp messages.cpp channel.cpp guest.cpp -lboost_system -lpthread </br>
+> make all</br>
 > ./a.out
 
 ### Change Log:
+
+#### 11.9
+Processor class has replaced the handler and is designed to execute commands. It is working correctly and I think should make writing commands easier on the back end. I have 2 commands right now; stage and login. Stage is called as soon as the connection is made, and it stores the connection in a temporary buffer in the processor. Login is called when a message has the login command set. I do not have much of that command implemented, but the plan is to take the connection out of the temporary buffer and place it in a permanent data structure i.e. a set or map. In order to get this to work, I'm thinking that the stage command will send back a connection id to the client, in which, the client will send along with the alias they chose during login. However it happens though, the big thing is that these commands were pretty easy to write so far with the processor backbone in place.
+
+There weren't too many major changes besides that. Take a look though and let me know if you guys have questions about any of it.
 
 #### 10.26:
 1. Reworked the server - contains the io_service now and created a stop asynch function to close connections when server shutsdown
