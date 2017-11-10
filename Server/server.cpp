@@ -17,7 +17,10 @@ acceptor_( ios_, address_ ),
 socket_( ios_ ),
 
 /* Create signal set that will be used to determine when to stop the server */
-signals_( ios_, SIGINT )
+signals_( ios_, SIGINT ),
+
+/* Handles Connections */
+handler_( ios_ )
 {
 	try {
 		acceptor_.set_option( tcp::acceptor::reuse_address( true ));
@@ -36,7 +39,7 @@ signals_( ios_, SIGINT )
 
 
 /* Server Destructor */
-Server::~Server( void ) { };
+Server::~Server( void ) { }
 
 /* Start Server */
 void Server::start( void ) {
@@ -50,12 +53,7 @@ void Server::do_stop_( void ) {
 
 /* Handler function for do_stop_. This function closes all connections in the hanlder */
 void Server::on_stop_( void ) {
-	std::cerr << "\n\nInitiating Server Shutdown." << std::endl;
-	std::cerr << "\nClosing all connections..." << std::endl;
-	handler_.stop_all();
-	std::cerr << "** Complete **" << std::endl;
 	ios_.stop();
-	std::cerr << "Server shutdown sucessful." << std::endl;
 }
 
 /***
@@ -75,7 +73,7 @@ void Server::accept_( void ) {
 			to create a connection class to handle asynchronous reads and writes with a socket. Alternatively, stack space
 			can be passed with the completion handler to boost::bind to ensure valid memory use. */
 
-			/* The server points to a newly created shared connection and calls start */
+			/* The server requests that the connection be staged for the duration of the login process */
 			boost::make_shared<Connection>( std::move( socket_ ), std::move( client_ ), handler_ )->start();
 
 			/* At this point, the shared pointer above will go out of scope. The handler will be the main owner of

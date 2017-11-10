@@ -21,5 +21,7 @@ int main( int argc, char ** argv ) {
 	} catch( std::exception & error ) {
 		std::cerr << error.what() << std::endl;
 	}
+
+	std::cerr << "Program terminated sucessfully." << std::endl;
 	return 0;
 }

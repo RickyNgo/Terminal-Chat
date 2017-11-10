@@ -13,6 +13,7 @@ using boost::asio::ip::tcp;
 #include <utility>
 
 #include "connection.hpp"
+#include "processor1.hpp"
 
 class Server {
 public:
@@ -32,7 +33,7 @@ private:
 	tcp::socket					socket_;
 	tcp::endpoint				client_;
 	boost::asio::signal_set 	signals_;
-	ConnectionHandler			handler_;
+	Processor					handler_;
 
 };
 

@@ -1,7 +1,7 @@
 #include "connection.hpp"
 
 /* Constructor */
-Connection::Connection( tcp::socket socket, tcp::endpoint client, ConnectionHandler & handler ) : 
+Connection::Connection( tcp::socket socket, tcp::endpoint client, Processor & handler ) : 
 /* The handler interacts with the connection via this guest object through virtual functions defined in this class */
 Guest(),
 
@@ -15,45 +15,114 @@ client_( client ),
 handler_( handler )
 { }
 
+Connection::~Connection( void ) {
+	socket_.shutdown( tcp::socket::shutdown_both );
+	socket_.close();
+	std::cerr << "Connection " << get_id() << "::" << client_ << " terminated." << std::endl;
+}
+
 /* Initiate the connection */
 void Connection::start( void ) {
-
-	/* Handler creates shared pointer to this connection - 2 pointers now: 1. Server, 2. Handler */
-	handler_.join( shared_from_this());
-	std::cerr << "Ready to receive data from " << client_ << std::endl;
-
-	/* Start async recv-send cycle */
-	do_read_();
+	handler_.async_stage(
+		shared_from_this(),
+		boost::bind( &Connection::on_stage_, shared_from_this(), _1 )
+	); 
 }
 
-void Connection::do_read_( void ) {
-	socket_.async_receive( boost::asio::buffer( recv_buffer_, sizeof( send_buffer_ )), boost::bind( &Connection::on_read_, shared_from_this(), _1, _2 ));
+void Connection::on_stage_( error_code ec ) {
+	if ( ! ec ) {
+		std::sprintf( send_buffer_ + 6, "Hello. Your connection # is %d.\0", get_id());
+		std::printf( "%s\n", send_buffer_ + 6 );
+		send_buffer_[ 0 ] = static_cast<unsigned char>( strlen( send_buffer_ + 2 ));
+		send_buffer_[ 1 ] = static_cast<unsigned char>( 2 );
+		sprintf( send_buffer_ + 2, "%d", get_id());
+		std::printf( "%s\n", send_buffer_ + 2 );
+		do_write_();
+	}
 }
 
-void Connection::do_write_( void ) {
-	std::cerr << "Echoing " << send_buffer_ << std::endl;
-	socket_.async_send( boost::asio::buffer( send_buffer_, strlen( send_buffer_ )), boost::bind( &Connection::on_write_, shared_from_this(), _1, _2 ));
+void Connection::on_login_( error_code ec ) {
+	if ( ! ec ) {
+		std::sprintf( send_buffer_ + 6, "Hi %s, your login was successful!", get_alias());
+		std::printf( "%s\n", send_buffer_ + 6 );
+		send_buffer_[ 0 ] = static_cast<unsigned char>( strlen( send_buffer_ + 2 ));
+		send_buffer_[ 1 ] = static_cast<unsigned char>( 1 );
+		sprintf( send_buffer_ + 2, "%u", get_id() );
+		std::printf( "%s\n", send_buffer_ + 6 );
+
+		do_write_();
+	}
+}
+
+void Connection::do_read_header_( void ) {
+	std::cerr << "In do read header" << std::endl;
+	socket_.async_receive(
+		boost::asio::buffer(
+			recv_buffer_,
+			HEADER_LEN
+		), boost::bind(
+			&Connection::on_read_header_,
+			shared_from_this(), 
+			_1, _2 						/* errorcode, bytes read */
+		)
+	);
 }
 
 /* On Read, the message is passed to the handler for processing */
-void Connection::on_read_( boost::system::error_code error, size_t bytes ) {
-
-	/* If there is no error, send the message */
+void Connection::on_read_header_( error_code error, size_t bytes ) {
+	/* If there is no error, read the body */
 	if ( ! error ) {
-		std::cerr <<  client_ << " >> " << bytes << " bytes." << std::endl;
 
-		/* ECHO SERVER */
-		std::strcpy( send_buffer_, recv_buffer_);
-		send_buffer_[ strlen( recv_buffer_) ] = '\0';
-		memset( recv_buffer_, '\0', sizeof( recv_buffer_ ));
-		do_write_();
-		// handler_.request( std::move( recv_buffer_ ), shared_from_this());
+		body_length_ 	= recv_buffer_[ 0 ];
+		command_		= recv_buffer_[ 1 ];
+
+		do_read_body_();
+
 	} else {
 		if ( error.value() == boost::asio::error::eof ) {
 			std::cerr << client_ << " >> EOF." << std::endl;
 		}
 	}
 }
+
+void Connection::do_read_body_( void ) {
+	socket_.async_receive( 
+		boost::asio::buffer( 
+			recv_buffer_,
+			body_length_
+		), boost::bind( 
+			&Connection::on_read_body_,
+			shared_from_this(),
+			_1, _2
+		)
+	);
+}
+
+void Connection::on_read_body_( error_code error, size_t bytes ) {
+	switch( command_ ) {
+		case 1: /* TEMPORARY command for login */
+		handler_.async_login(
+			boost::asio::buffer( recv_buffer_, sizeof( recv_buffer_ )),
+			boost::bind( &Connection::on_login_, shared_from_this(), _1 )
+		);
+		std::cerr << client_ << " >> LOGIN." << std::endl;
+		break;
+	}	
+}
+
+void Connection::do_write_( void ) {
+	socket_.async_send(
+		boost::asio::buffer(
+			send_buffer_,
+			strlen( send_buffer_ )
+		), boost::bind(
+			&Connection::on_write_,
+			shared_from_this(),
+			_1, _2
+		)
+	);
+}
+
 
 void Connection::on_write_( boost::system::error_code error, size_t bytes ) {
 	if ( ! error ) {
@@ -62,17 +131,5 @@ void Connection::on_write_( boost::system::error_code error, size_t bytes ) {
 		std::cerr << "Connection Error: on_write_: " << error << std::endl;
 	}
 	std::memset( send_buffer_, '\0', sizeof( send_buffer_ ));
-	do_read_();
-}
-
-void Connection::response( boost::shared_ptr<Messages> msg ) {
-	std::string m = msg->encode();
-	std::strcpy( send_buffer_, m.c_str());
-	do_write_();
-}
-
-void Connection::quit( void ) {
-	socket_.shutdown( tcp::socket::shutdown_both );
-	socket_.close();
-	std::cerr << "Connection " << get_id() << "::" << client_ << "." << std::endl;
+	do_read_header_();
 }

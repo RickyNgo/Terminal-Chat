@@ -1,28 +1,30 @@
 #ifndef __GUEST_HPP__
 #define __GUEST_HPP__
 
-#include <string>
+#include <cstring>
 #include <boost/shared_ptr.hpp>
-#include "messages.hpp"
+// #include "messages.hpp"
 
 class Guest {
 public:
-	typedef boost::shared_ptr<Guest> pointer;
+	typedef boost::shared_ptr<Guest> 		pointer;
 	Guest( void );
 	virtual ~Guest( void );
 
-	const std::string get_alias( void ) const;
-	void set_alias( const std::string & );
-	const unsigned long get_id( void ) const;
-	virtual void quit() = 0;
-	virtual void response( boost::shared_ptr<Messages> ) = 0;
+	const char * 			get_alias( void ) const;
+	void					set_alias( const char * );
+	const unsigned int 		get_id( void ) const;
+
+	/* Utility */
+
+	// static bool	compare_alias_( Guest::pointer lhs, Guest::pointer rhs );
+
 
 private:
-	static unsigned long 	id;
+	static unsigned int 	id;
 
-	const unsigned long 	id_;
-	std::string		 		alias_;
-
+	const unsigned int 		id_;
+	char 	 				alias_[ 25 ];	
 };
 
 #endif
