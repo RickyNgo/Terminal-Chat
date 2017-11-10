@@ -8,24 +8,22 @@ int main()
 
 	char msg[] = "10|3000000|Ricky|I HOPE THIS WORKS";
 
-	Messages test2(msg);
+//	Messages test2(msg);
 
-	std::string test1 = test.encode();
+	std::string test1 = test.get_header();
+	std::string test2 = test.get_body();
 
 	std::cout << test1 << std::endl;
-	std::cout << test.get_sender() << std::endl;
-	std::cout << test.get_body() << std::endl;
-	std::cout << test.get_time() << std::endl;
-	std::cout << test.get_command() << std::endl;
+	std::cout << test2 << std::endl;
 	
 
-	
+	/*
 	std::cout << test2.get_sender() << std::endl;
 	std::cout << test2.get_body() << std::endl;
 	std::cout << test2.get_time() << std::endl;
 	std::cout << test2.get_command() << std::endl;
 	std::cout << test2.encode() << std::endl;
-	
+	*/
 
 	return 0;
 }
