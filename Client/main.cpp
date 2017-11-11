@@ -5,7 +5,8 @@
 #include <iostream>
 #include <thread>
 #include <boost/asio.hpp>
-
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
 #include "client.hpp"
 
 using boost::asio::ip::tcp;
@@ -26,34 +27,22 @@ int main(int argc, char* argv[])
       tcp::resolver resolver(io_service);
       tcp::resolver::query query("localhost", argv[1], tcp::resolver::query::canonical_name);
       tcp::resolver::iterator iterator = resolver.resolve(query);
-      
-//      std::thread t([&io_service](){ io_service.run(); });
-      
-      io_service.run();
 
-      Client c(io_service, iterator);
-      
-      c.choose_alias();
+      boost::shared_ptr<Client> c = boost::make_shared<Client>(io_service, iterator);
+      std::thread t([&io_service](){ io_service.run(); });
+      //io_service.run();
 
-
-    // while(1){
-    //   u_input = get_input(); //replace with ricky's function
-    //   command = get_command(u_input);
-
-    //   command_num = find_command(command);
-
-    //   if(command_num == 1 | command_num == 6){
-    //     client_command(command_num, u_input);
-    //   }
-   
-    //   else{
-    //     server_command(command_num, u_input, &c);
-    //   } 
-    // }
-      
-
-//    c.close(); 
-//    t.join();
+      c->choose_alias();
+      char write_buffer[512];
+      time_t current_time;
+      while ( std::cin.getline( write_buffer, 511 )) {
+        // Changed c->send() to c->do_write
+          time(&current_time);
+          Messages sendbuf("rachel", write_buffer, current_time, LOGIN);
+          c->send(sendbuf);
+      }
+      c->close(); 
+      t.join();
   }
 
   catch (std::exception& e){
