@@ -1,4 +1,4 @@
-#include "processor1.hpp"
+#include "processor.hpp"
 
 Processor::Processor( boost::asio::io_service & ios ) :
 ios_( ios ),
@@ -48,7 +48,10 @@ void Processor::async_login( mutable_buffer buff, on_async_op comp ) {
 
 error_code Processor::do_stage_( Guest::pointer guest ) {
 	error_code ec;
-	stage_.push_back( guest );
+	{
+		boost::recursive_mutex::scoped_lock lk( stage_m_ );
+		stage_.push_back( guest );
+	}
 	return ec;
 }
 
@@ -73,9 +76,9 @@ void Processor::add_( do_async_op func, on_async_op comp ) {
 	bool work = ! ops_.empty();
 	ops_.push( op );
 	if ( ! work ) {
-		// started_ = true;
 		cond_.notify_one();
 	}
+
 }
 
 void Processor::run_( void ) {
@@ -91,7 +94,6 @@ void Processor::run_( void ) {
 			
 			/* Check that thread should continue with operation -- check interruption flag */
 			boost::this_thread::sleep( boost::posix_time::millisec(10));
-
 			op.run();
 		}
 	} catch ( boost::thread_interrupted& e ) {

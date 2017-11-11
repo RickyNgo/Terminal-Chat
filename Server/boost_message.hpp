@@ -18,7 +18,7 @@
 class chat_message
 {
 public:
-  enum { header_length = 6 };
+  enum { header_length = 1 };
   enum { max_body_length = 255 };
 
   chat_message()
@@ -68,12 +68,8 @@ public:
     char header[header_length + 1] = "";
     std::strncat(header, data_, header_length );
     uint8_t cmd;
-    body_length_ = cmd = 0;
+    body_length_ = 0;
     body_length_ |= header[ 0 ];
-    cmd          |= header[ 1 ];
-    id_           = std::atoi( header + 2 );
-    printf("%d\n", body_length_ );
-    printf("%d\n", cmd );
     if (body_length_ > max_body_length)
     {
       body_length_ = 0;
@@ -86,8 +82,7 @@ public:
   {
     char header[header_length + 1] = "";
     header[ 0 ] |= static_cast<uint8_t>( body_length());
-    header[ 1 ] |= static_cast<uint8_t>( 1 );
-    sprintf( header + 2, "%d", id_ );
+    sprintf( header + 1, "%d", id_ );
     std::memcpy(data_, header, header_length );
   }
 

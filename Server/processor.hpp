@@ -74,6 +74,7 @@ public:
 private:
 	io_service &										ios_;
 	std::vector<Guest::pointer>							stage_;
+	boost::recursive_mutex								stage_m_;
 	std::map<const unsigned char *, Guest::pointer>		guests_;
 	// std::set<Channel::pointer>						channels_;
 	std::queue<Processor::Operation> 					ops_;

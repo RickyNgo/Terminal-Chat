@@ -8,10 +8,11 @@ using boost::asio::ip::tcp;
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
+#include <vector>
 
 
-#include "processor1.hpp"
-// #include "messages.hpp"
+#include "processor.hpp"
+#include "messages.hpp"
 #include "guest.hpp"
 
 #define HEADER_LEN 2
@@ -41,10 +42,8 @@ private:
 	void do_write_( void );
 	void on_write_( error_code, size_t );
 	
-	char 					recv_buffer_[ 512 ];
-	char 					send_buffer_[ 512 ];
-	uint8_t 				command_;
-	uint8_t					body_length_;					
+	Messages 				msg_;
+	char					read_buffer_[ 512 ];
 	tcp::socket				socket_;
 	tcp::endpoint			client_;
 	Processor		 		& handler_;

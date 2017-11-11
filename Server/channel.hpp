@@ -4,6 +4,7 @@
 #include <set>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
+#include "session.hpp"
 
 class Channel :
 public boost::enable_shared_from_this<Channel> {
@@ -13,15 +14,15 @@ public:
 	Channel( void );
 	~Channel( void );
 
-	// void join( Connection::pointer );
-	// void leave( Connection::pointer );
-	// void deliver( boost::shared_ptr<Messages> );
+	void join( Session::pointer );
+	void leave( Session::pointer );
+	void deliver( boost::shared_ptr<Messages> );
 
-// private:
-	// void process_( void );
+private:
+	void process_( void );
 
-	// std::set<Connection::pointer>	connections_;
-	// std::deque<Messages> 	 		log_;
+	std::set<Session::pointer>		connections_;
+	std::deque<Messages> 	 		log_;
 };
 
 #endif
