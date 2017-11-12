@@ -2,7 +2,7 @@
 
 Processor::Processor( boost::asio::io_service & ios ) :
 ios_( ios ),
-num_t_( 3 ) {
+num_t_( 2 ) {
 	for ( int i = 0; i < num_t_; i++ ) {
 		threads_.add_thread( new boost::thread( boost::bind( &Processor::run_, this )));
 	}
@@ -57,10 +57,12 @@ error_code Processor::do_stage_( Guest::pointer guest ) {
 
 error_code Processor::do_login_( mutable_buffer data ) {
 
+	std::cerr << "in do_login_" << std::endl;
 	error_code ec;
 	const unsigned char * alias;
 	
 	alias = boost::asio::buffer_cast<const unsigned char *>( data );
+	std::cerr << "alias: " << alias << std::endl;
 
 	return ec; 
 }

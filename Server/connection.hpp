@@ -10,7 +10,6 @@ using boost::asio::ip::tcp;
 #include <boost/noncopyable.hpp>
 #include <vector>
 
-
 #include "processor.hpp"
 #include "messages.hpp"
 #include "guest.hpp"

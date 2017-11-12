@@ -93,15 +93,19 @@ void Connection::do_read_body_( void ) {
 void Connection::on_read_body_( error_code error, size_t bytes ) {
 	std::cerr << "on read body" << std::endl;
 	(msg_.get_body()) = ( &read_buffer_[ 0 ] );
-	switch( msg_.get_command() ) {
-		case 1: /* TEMPORARY command for login */
-		handler_.async_login(
+	// switch( msg_.get_command() ) {
+	// 	case 1: /* TEMPORARY command for login */
+	// 	handler_.async_login(
+	// 		boost::asio::buffer( read_buffer_, msg_.get_length() ),
+	// 		boost::bind( &Connection::on_login_, shared_from_this(), _1 )
+	// 	);
+	// 	std::cerr << client_ << " >> LOGIN." << std::endl;
+	// 	break;
+	// }
+	handler_.async_login(
 			boost::asio::buffer( read_buffer_, msg_.get_length() ),
 			boost::bind( &Connection::on_login_, shared_from_this(), _1 )
 		);
-		std::cerr << client_ << " >> LOGIN." << std::endl;
-		break;
-	}	
 }
 
 void Connection::do_write_( void ) {
