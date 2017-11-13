@@ -29,8 +29,9 @@ Processor::Operation::~Operation( void ) { }
 void Processor::Operation::run( void ) {
 	ios_.post( boost::bind( complete_, func_() ));
 }
+
 /* ------------------------------ */
-/* External Requests To Processor */
+/*            Commands            */
 /* ------------------------------ */
 
 void Processor::async_stage( Guest::pointer guest, on_async_op comp ) {
@@ -42,6 +43,7 @@ void Processor::async_login( mutable_buffer buff, on_async_op comp ) {
 	do_async_op fn = boost::bind( &Processor::do_login_, this, buff );
 	ios_.post( boost::bind( &Processor::add_, this, fn, comp ));
 }
+
 /* ----------------------------------- */
 /* Internal Processor Request Helpers  */
 /* ----------------------------------- */

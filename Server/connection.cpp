@@ -21,7 +21,10 @@ Connection::~Connection( void ) {
 	std::cerr << "Connection " << get_id() << "::" << client_ << " terminated." << std::endl;
 }
 
-/* Initiate the connection */
+/* ------------------------------- */
+/*        Public Interface         */
+/* ------------------------------- */
+
 void Connection::start( void ) {
 	handler_.async_stage(
 		shared_from_this(),
@@ -29,21 +32,31 @@ void Connection::start( void ) {
 	); 
 }
 
+/* ------------------------------- */
+/*   Command Completion Handlers   */
+/* ------------------------------- */
+
 void Connection::on_stage_( error_code ec ) {
 	if ( ! ec ) {
-		std::string temp = "Hello. Your connection # is " + std::to_string( get_id());
-		( msg_.get_body()) = std::move( temp );
-		std::cerr << msg_.get_body() << std::endl;
-		do_write_();
+
+		std::string body = "Hello. Your connection # is " + std::to_string( get_id());
+		Messages data( "Server", body, time( NULL ), 1 );
+		do_write_( data );
 	}
 }
 
 void Connection::on_login_( error_code ec ) {
 	if ( ! ec ) {
-		( msg_.get_body()) = "Login Successful!";
-		do_write_();
+
+		std::string body = "Hello. Your connection # is " + std::to_string( get_id());
+		Messages data( "Server", body, time( NULL ), 2 );
+		do_write_( data );
 	}
 }
+
+/* ------------------------------- */
+/*       Read-Write Handlers 	   */
+/* ------------------------------- */
 
 void Connection::do_read_header_( void ) {
 	std::cerr << "In do read header" << std::endl;
@@ -93,36 +106,37 @@ void Connection::do_read_body_( void ) {
 void Connection::on_read_body_( error_code error, size_t bytes ) {
 	std::cerr << "on read body" << std::endl;
 	(msg_.get_body()) = ( &read_buffer_[ 0 ] );
-	switch( msg_.get_command() ) {
+	// switch( msg_.get_command() ) {
 		
-		case 1: /* TEMPORARY command for login */
+	// 	case 1: /* TEMPORARY command for login */
 		
-		handler_.async_login(
-			boost::asio::buffer(
-				read_buffer_,
-				msg_.get_length()
-			), boost::bind(
-				&Connection::on_login_,
-				shared_from_this(),
-				_1 
-			)
-		);
+	// 	handler_.async_login(
+	// 		boost::asio::buffer(
+	// 			read_buffer_,
+	// 			msg_.get_length()
+	// 		), boost::bind(
+	// 			&Connection::on_login_,
+	// 			shared_from_this(),
+	// 			_1 
+	// 		)
+	// 	);
 
-		std::cerr << client_ << " >> LOGIN." << std::endl;
-		break;
-	}
+	// 	std::cerr << client_ << " >> LOGIN." << std::endl;
+	// 	break;
+	// }
 	handler_.async_login(
-			boost::asio::buffer( read_buffer_, msg_.get_length() ),
-			boost::bind( &Connection::on_login_, shared_from_this(), _1 )
-		);
+		boost::asio::buffer( read_buffer_, msg_.get_length() ),
+		boost::bind( &Connection::on_login_, shared_from_this(), _1 )
+	);
 }
 
-void Connection::do_write_( void ) {
-	std::cerr << "writing: " << msg_.get_body() << std::endl;
+void Connection::do_write_( Messages msg ) {
+	std::cerr << "writing: " << msg.get_body() << std::endl;
+	std::string data = msg.get_header() + msg.get_body();
 	socket_.async_send(
 		boost::asio::buffer(
-			msg_.get_body(),
-			msg_.get_body().length()
+			data,
+			data.length()
 		), boost::bind( 
 			&Connection::on_write_,
 			shared_from_this(),

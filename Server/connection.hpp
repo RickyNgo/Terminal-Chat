@@ -8,8 +8,9 @@ using boost::asio::ip::tcp;
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
-#include <vector>
 #include <iostream>
+#include <vector>
+#include <ctime>
 
 #include "processor.hpp"
 #include "messages.hpp"
@@ -39,7 +40,7 @@ private:
 	void do_read_body_( void );
 	void on_read_body_( error_code, size_t );
 
-	void do_write_( void );
+	void do_write_( Messages );
 	void on_write_( error_code, size_t );
 	
 	Messages 				msg_;

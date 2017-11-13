@@ -138,7 +138,7 @@ int Messages::get_command()
 	return this->command;
 }
 
-int Messages::get_length()
+int & Messages::get_length()
 {
 	return this->body_length;
 }
