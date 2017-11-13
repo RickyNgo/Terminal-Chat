@@ -9,6 +9,7 @@ using boost::asio::ip::tcp;
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
 #include <vector>
+#include <iostream>
 
 #include "processor.hpp"
 #include "messages.hpp"
