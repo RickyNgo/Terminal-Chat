@@ -16,6 +16,14 @@ int main()
 	std::cout << test1 << std::endl;
 	std::cout << test2 << std::endl;
 	
+	test.get_header() = "012801234567890RICKY0000000000";
+	test.parse_header();
+
+	std::cout << test.get_header() << std::endl;
+	std::cout << test.get_command() << std::endl;
+	std::cout << test.get_length() << std::endl;
+	std::cout << test.get_time() << std::endl;
+	std::cout << test.get_sender() << std::endl;
 
 	/*
 	std::cout << test2.get_sender() << std::endl;
