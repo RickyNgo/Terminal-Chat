@@ -80,7 +80,7 @@ void Processor::add_( do_async_op func, on_async_op comp ) {
 	bool work = ! ops_.empty();
 	ops_.push( op );
 	if ( ! work ) {
-		cond_.notify_one();
+		cond_.notify_all();
 	}
 
 }

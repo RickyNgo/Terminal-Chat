@@ -83,6 +83,7 @@ void Server::accept_( void ) {
 			std::cerr << "Connection Error: " << error << "." << std::endl;
 		}
 
+		std::cerr << "Server: calling accept_()" << std::endl;
 		/* Call accept to be async accept cycle again */
 		this->accept_();
 	});

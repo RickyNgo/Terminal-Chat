@@ -37,7 +37,7 @@ private:
 	void do_read_header_( void );
 	void on_read_header_( error_code, size_t );
 
-	void do_read_body_( void );
+	void do_read_body_( Messages );
 	void on_read_body_( error_code, size_t );
 
 	void do_write_( Messages );

@@ -38,8 +38,6 @@ class Messages
 		~Messages();
 		
 		// Converts the C++ string to a C string for socket transfer
-		std::string encode();
-
 
 		std::string get_sender();
 		std::string& get_body();
