@@ -24,34 +24,34 @@ Messages::Messages(std::string sender, std::string msg_body, time_t t, int comma
 	{
 		this->header.append("0");
 		this->header.append(std::to_string(command));
-		this->header.append("-");
+		//this->header.append("-");
 	}
 	else
 	{
 		this->header.append(std::to_string(command));
-		this->header.append("-");
+		//this->header.append("-");
 	}
 
 	if (this->body_length < 10)
 	{
 		this->header.append("00");
 		this->header.append(std::to_string(this->body_length));
-		this->header.append("-");
+		//this->header.append("-");
 	}
 	else if (this->body_length < 100)
 	{
 		this->header.append("0");
 		this->header.append(std::to_string(this->body_length));
-		this->header.append("-");
+		//this->header.append("-");
 	}
 	else
 	{
 		this->header.append(std::to_string(this->body_length));
-		this->header.append("-");
+		//this->header.append("-");
 	}
 
 	this->header.append(std::to_string(this->timestamp));
-	this->header.append("-");
+	//this->header.append("-");
 	this->header.append(sender_id);
 	
 
@@ -168,9 +168,16 @@ void Messages::clear()
 void Messages::parse_header()
 {
 	this->command = std::stoi(this->header.substr(0, 2));
+	std::cout << this->command << std::endl;
+
 	this->body_length = std::stoi(this->header.substr(2, 3));
-	this->timestamp = std::stoi(this->header.substr(5, 10));
-	this->sender_id = this->header.substr(10, 15);
+	std::cout << this->body_length << std::endl;
+
+	this->timestamp = std::stoi(this->header.substr(5, 15));
+	std::cout << this->timestamp << std::endl;
+
+	this->sender_id = this->header.substr(15, 30);
+	std::cout << this->sender_id << std::endl;
 
 	for (int i = 0; i < this->sender_id.length(); i++)
 	{

@@ -45,7 +45,7 @@ class Messages
 		std::string& get_body();
 		int get_time();
 		int get_command();
-		int get_length();
+		int& get_length();
 		std::string& get_header();
 		void clear();
 		void parse_header();
