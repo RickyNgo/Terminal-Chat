@@ -62,6 +62,7 @@ void Client::on_read_header( boost::system::error_code ec, std::size_t bytes ) {
 void Client::on_read_body( boost::system::error_code ec, std::size_t bytes ) {
     if (!ec) {
         std::cout << "read_buffer_: " << this->read_buffer_ << std::endl;
+        memset(read_buffer_, '\0', sizeof(char)*512);
         do_read_header();
     } else {
         std::cout << "Read error: " << ec << std::endl;
@@ -76,7 +77,7 @@ void Client::do_read_header() {
     main_socket_.async_receive(
                                boost::asio::buffer(
                                                    read_buffer_,
-                                                   HEADER_LEN),
+                                                   MAX_HEADER_LENGTH),
                                boost::bind(&Client::on_read_header,
                                            shared_from_this(),
                                            _1, _2 ));
@@ -156,7 +157,7 @@ void Client::do_write_header(Messages msg){
     
     boost::asio::async_write(main_socket_,
                              boost::asio::buffer(msg.get_header(),
-                                                 HEADER_LEN),
+                                                 MAX_HEADER_LENGTH),
                              boost::bind( &Client::on_write_header,
                                          shared_from_this(),
                                          _1, _2, msg));
@@ -204,7 +205,7 @@ void Client::choose_alias(){
         else{
             //encode input
             time(&current_time);
-            Messages alias_req("", alias, current_time, LOGIN);
+            Messages alias_req(alias, alias, current_time, LOGIN);
             
             valid_name = true;
 

@@ -5,15 +5,24 @@
 #include <cstring>
 #include <vector>
 
-
+/*
 enum Commands {MSG = 0, EXIT = 1, KICK_MOD = 2, KICK_USER = 3, ADD_MOD = 4, MESSAGE_DELETE = 5, SHOW = 6, JOIN = 16, CREATE = 17,
 WHISPER = 18, INVITE = 19, FRIEND_LIST = 20, BLOCK = 21, ADD_FRIEND = 22, CREATE_CHANNEL = 23, ONLINE = 24, HELP = 25, LOGIN = 26,
-INVITE_YES = 27, INVITE_NO = 28, INVITE_REQUEST = 29, CHANNEL_UPDATE = 30, CHANNEL_CLOSE = 31, LEAVE = 32};
+INVITE_YES = 27, INVITE_NO = 28, INVITE_REQUEST = 29, CHANNEL_UPDATE = 30, CHANNEL_CLOSE = 31, LEAVE = 32};*/
+
+enum Commands {MSG, KICK_USER, ADD_MOD, JOIN_CHANNEL, 
+				CREATE_CHANNEL, WHISPER, INVITE_USER, ONLINE, LOGIN, 
+				INVITE_YES, INVITE_NO, CHANNEL_UPDATE, CHANNEL_CLOSE, LEAVE};
 
 
 // Maximum length of a message body
 const int MAX_MSG_LENGTH = 280;
- 
+
+// Max length of message header
+const int MAX_HEADER_LENGTH = 30;
+
+// Max length of alias
+const int MAX_ALIAS_LENGTH = 15;
 class Messages
 {
 	public:
@@ -24,7 +33,7 @@ class Messages
 		Messages(std::string sender, std::string msg_body, time_t t, int command);
 
 		// Parses strings from the server
-		Messages(char server_msg[]);
+		//Messages(const char * server_msg);
 
 		~Messages();
 		
@@ -33,15 +42,21 @@ class Messages
 
 
 		std::string get_sender();
-		std::string get_body();
+		std::string& get_body();
 		int get_time();
 		int get_command();
+		int& get_length();
+		std::string& get_header();
+		void clear();
+		void parse_header();
 
 	private:
 		std::string sender_id;
 		std::string msg_body;
+		std::string header;
 		time_t timestamp;
 		int command;
+		int body_length;
 };
 
 #endif

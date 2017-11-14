@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
       while ( std::cin.getline( write_buffer, 511 )) {
         // Changed c->send() to c->do_write
           time(&current_time);
-          Messages sendbuf("rachel", write_buffer, current_time, LOGIN);
+          Messages sendbuf("rachel", write_buffer, current_time, MSG);
           c->send(sendbuf);
       }
       c->close(); 
