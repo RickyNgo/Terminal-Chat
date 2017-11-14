@@ -6,12 +6,13 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 
-#include "channel.hpp"
-#include "connection.hpp"
 #include "messages.hpp"
 #include <queue>
 
+
 using boost::asio::ip::tcp;
+
+class Channel;
 
 class Session :
 public boost::enable_shared_from_this<Session> {
@@ -22,7 +23,6 @@ public:
     
     //void deliver( const std::string & );
 	void start();
-	void relay_msg();
 
 	void do_read_header();
 	void on_read_header(const boost::system::error_code error, size_t bytes);
@@ -30,8 +30,12 @@ public:
 	void do_read_body();
 	void on_read_body(const boost::system::error_code error, size_t bytes);
 
-	void do_write();
-	void on_write(const boost::system::error_code error, size_t bytes);
+	void do_write_header();
+	void on_write_header(const boost::system::error_code error, size_t bytes);
+	
+	void do_write_body();
+	void on_write_body(const boost::system::error_code error, size_t bytes);
+	
 	
 
 private: 
