@@ -24,34 +24,34 @@ Messages::Messages(std::string sender, std::string msg_body, time_t t, int comma
 	{
 		this->header.append("0");
 		this->header.append(std::to_string(command));
-		this->header.append("-");
+		//this->header.append("-");
 	}
 	else
 	{
 		this->header.append(std::to_string(command));
-		this->header.append("-");
+		//this->header.append("-");
 	}
 
 	if (this->body_length < 10)
 	{
 		this->header.append("00");
 		this->header.append(std::to_string(this->body_length));
-		this->header.append("-");
+		//this->header.append("-");
 	}
 	else if (this->body_length < 100)
 	{
 		this->header.append("0");
 		this->header.append(std::to_string(this->body_length));
-		this->header.append("-");
+		//this->header.append("-");
 	}
 	else
 	{
 		this->header.append(std::to_string(this->body_length));
-		this->header.append("-");
+		//this->header.append("-");
 	}
 
 	this->header.append(std::to_string(this->timestamp));
-	this->header.append("-");
+	//this->header.append("-");
 	this->header.append(sender_id);
 	
 
@@ -67,8 +67,11 @@ Messages::Messages(std::string sender, std::string msg_body, time_t t, int comma
 Messages::Messages(const char * server_msg)
 {
 	char msg[512];
+
 	strcpy(msg, server_msg);
+
 	std::vector<std::string> msg_contents;
+
 	char *token = strtok(msg, "|");
 	
 	//std::cout << "Before tokenizing" << std::endl;
@@ -102,7 +105,23 @@ Messages::~Messages()
 }
 
 // Takes the Message contents and concatenates them into a C-string for sending over sockets.
+/*
+std::string Messages::encode()
+{
+	std::string cmd_conv = std::to_string(this->command);
+	std::string t_conv = std::to_string(this->timestamp);
 
+	int length = cmd_conv.length() + t_conv.length() + this->sender_id.length() + this->msg_body.length() + 4;
+	std::string length_conv = std::to_string(length);
+
+	std::string to_send = length_conv + "|" + cmd_conv + "|" + t_conv + "|" + this->sender_id + "|" + this->msg_body;
+
+	//return to_send.c_str();
+
+	return to_send;
+}
+*/
+// length+command+time+sender+body
 
 
 
@@ -126,7 +145,7 @@ int Messages::get_command()
 	return this->command;
 }
 
-int & Messages::get_length()
+int& Messages::get_length()
 {
 	return this->body_length;
 }
@@ -149,9 +168,16 @@ void Messages::clear()
 void Messages::parse_header()
 {
 	this->command = std::stoi(this->header.substr(0, 2));
+	//std::cout << this->command << std::endl;
+
 	this->body_length = std::stoi(this->header.substr(2, 3));
-	this->timestamp = std::stoi(this->header.substr(5, 10));
-	this->sender_id = this->header.substr(10, 15);
+	//std::cout << this->body_length << std::endl;
+
+	this->timestamp = std::stoi(this->header.substr(5, 15));
+	//std::cout << this->timestamp << std::endl;
+
+	this->sender_id = this->header.substr(15, 30);
+	//std::cout << this->sender_id << std::endl;
 
 	for (int i = 0; i < this->sender_id.length(); i++)
 	{
