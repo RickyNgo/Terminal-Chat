@@ -45,7 +45,7 @@ void Connection::on_stage_( error_code ec ) {
 
 		std::string body = "Hello. Your connection # is " + std::to_string( get_id()) + ".";
 		Messages data( "Server", body, time( NULL ), 1 );
-		do_write_header( data );
+		do_write_header_( data );
 	}
 }
 
@@ -54,7 +54,7 @@ void Connection::on_login_( error_code ec ) {
 
 		std::string body = "Your login was successful.";
 		Messages data( "Server", body, time( NULL ), 2 );
-		do_write_header( data );
+		do_write_header_( data );
 	}
 }
 
@@ -79,21 +79,21 @@ void Connection::do_read_header_( void ) {
 /* On Read, the message is passed to the handler for processing */
 void Connection::on_read_header_( error_code error, size_t bytes ) {
 	std::cerr << "On Read Header" << std::endl;
-	Messages msg;
-	
-	msg.get_header() = std::move( read_buffer_ );
-	msg.parse_header();
-
-	// TESTING //
-	msg_.get_header() = std::move( read_buffer_ );
-	msg_.parse_header();
-	// TESTING //
-
-	std::cout << "header body length: " << msg.get_length() << "\nby member: " << msg.get_sender() << std::endl;
-    std::cout << "\nheader command: " << msg.get_command() << "\ntime: " << msg.get_time() << std::endl;
-
+	std::cerr << "Error: " << error << std::endl;
 	/* If there is no error, read the body */
 	if ( ! error ) {
+		Messages msg;
+	
+		msg.get_header() = std::move( read_buffer_ );
+		msg.parse_header();
+
+		// TESTING //
+		msg_.get_header() = std::move( read_buffer_ );
+		msg_.parse_header();
+		// TESTING //
+
+		std::cout << "header body length: " << msg.get_length() << "\nby member: " << msg.get_sender() << std::endl;
+	    std::cout << "\nheader command: " << msg.get_command() << "\ntime: " << msg.get_time() << std::endl;
 		do_read_body_( msg );
 
 	} else {
@@ -121,39 +121,44 @@ void Connection::do_read_body_( Messages msg ) {
 
 void Connection::on_read_body_( error_code error, size_t bytes ) {
 	msg_.get_body() = std::move( read_buffer_ );
-	// switch( msg_.get_command() ) {
+	switch( msg_.get_command() ) {
 		
-	// 	case 1: /* TEMPORARY command for login */
+		case LOGIN: /* TEMPORARY command for login */
 		
-	// 	handler_.async_login(
-	// 		boost::asio::buffer(
-	// 			read_buffer_,
-	// 			msg_.get_length()
-	// 		), boost::bind(
-	// 			&Connection::on_login_,
-	// 			shared_from_this(),
-	// 			_1 
-	// 		)
-	// 	);
-
-	// 	std::cerr << client_ << " >> LOGIN." << std::endl;
-	// 	break;
-	// }
-	if (msg_.get_command() == LOGIN)
-	{
 		handler_.async_login(
-		boost::asio::buffer( read_buffer_, msg_.get_length() ),
-		boost::bind( &Connection::on_login_, shared_from_this(), _1 )
+			boost::asio::buffer(
+				read_buffer_,
+				msg_.get_length()
+			), boost::bind(
+				&Connection::on_login_,
+				shared_from_this(),
+				_1 
+			)
 		);
+
+		std::cerr << client_ << " >> LOGIN." << std::endl;
+		break;
+
+		default:
+		do_write_header_( msg_ );
+
 	}
-	else 
-	{
-		do_write_header(msg_);
-	}
+
+
+	// if (msg_.get_command() == LOGIN ) {
+	// 	handler_.async_login(
+	// 		boost::asio::buffer( read_buffer_, msg_.get_length() ),
+	// 		boost::bind( &Connection::on_login_, shared_from_this(), _1 )
+	// 	);
+	// }
+	// else 
+	// {
+	// 	do_write_header(msg_);
+	// }
 	
 }
 
-void Connection::do_write_header( Messages msg ) {
+void Connection::do_write_header_( Messages msg ) {
 	std::cerr << "writing header: " << msg.get_header() << std::endl;
 	//std::string data = msg.get_header() + msg.get_body();
 	socket_.async_send(
@@ -161,7 +166,7 @@ void Connection::do_write_header( Messages msg ) {
 			msg.get_header(),
 			MAX_HEADER_LENGTH
 		), boost::bind( 
-			&Connection::on_write_header,
+			&Connection::on_write_header_,
 			shared_from_this(),
 			_1, _2, msg
 		)
@@ -169,10 +174,10 @@ void Connection::do_write_header( Messages msg ) {
 }
 
 
-void Connection::on_write_header( boost::system::error_code error, size_t bytes , Messages msg) {
+void Connection::on_write_header_( boost::system::error_code error, size_t bytes , Messages msg) {
 	if ( ! error ) {
 		std::cerr << bytes << " bytes >> " << client_ << "." << std::endl;
-		do_write_body(msg);
+		do_write_body_(msg);
 	} else {
 		std::cerr << "Connection Error: on_write_: " << error << std::endl;
 	}
@@ -180,7 +185,7 @@ void Connection::on_write_header( boost::system::error_code error, size_t bytes 
 	
 }
 
-void Connection::do_write_body( Messages msg ) {
+void Connection::do_write_body_( Messages msg ) {
 	std::cerr << "writing body: " << msg.get_body() << std::endl;
 	std::string data = msg.get_header() + msg.get_body();
 	socket_.async_send(
@@ -188,7 +193,7 @@ void Connection::do_write_body( Messages msg ) {
 			msg.get_body(),
 			msg.get_length()
 		), boost::bind( 
-			&Connection::on_write_body,
+			&Connection::on_write_body_,
 			shared_from_this(),
 			_1, _2
 		)
@@ -196,7 +201,7 @@ void Connection::do_write_body( Messages msg ) {
 }
 
 
-void Connection::on_write_body( boost::system::error_code error, size_t bytes ) {
+void Connection::on_write_body_( boost::system::error_code error, size_t bytes ) {
 	if ( ! error ) {
 		std::cerr << bytes << " bytes >> " << client_ << "." << std::endl;
 	} else {
