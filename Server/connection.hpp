@@ -40,11 +40,11 @@ private:
 	void do_read_body_( Messages );
 	void on_read_body_( error_code, size_t );
 
-	void do_write_header( Messages );
-	void on_write_header( error_code, size_t , Messages);
+	void do_write_header_( Messages );
+	void on_write_header_( error_code, size_t , Messages);
 	
-	void do_write_body( Messages );
-	void on_write_body( error_code, size_t );
+	void do_write_body_( Messages );
+	void on_write_body_( error_code, size_t );
 
 	Messages 				msg_;
 	char					read_buffer_[ 512 ];
