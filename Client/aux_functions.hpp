@@ -34,7 +34,7 @@ enum ClientCommands {
 bool syntax_valid_alias(std::string);
 
 //prompts for input and captures string until newline is entered
-std::string get_input();
+std::string Dget_input();
 
 //clean input of leading and trailing whitespace
 //returns 1 if string starts with '/' or 0 if not

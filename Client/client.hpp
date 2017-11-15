@@ -52,6 +52,8 @@ private:
     void on_write_header(boost::system::error_code, std::size_t, Messages);
     void on_write_body(boost::system::error_code, std::size_t);
     
+    Messages read_msg;
+
     char read_buffer_[512];
 
 public:
