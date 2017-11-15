@@ -261,13 +261,21 @@ void display_chat()
 
     for (int i = chat_buffer.size(); i > 0; i--)
     {
-        color = rand() % 6+2;
+        color = 7;
 
         mvwprintw(chatWin, window_limit, 1, time_buffer[chat_buffer_pos].c_str());
 
-        wattron(chatWin, COLOR_PAIR(color));
-        mvwprintw(chatWin, window_limit, 10, "<%s>", alias_buffer[chat_buffer_pos].c_str());
-        wattroff(chatWin, COLOR_PAIR(color));
+        if (strcmp(alias_buffer[chat_buffer_pos].c_str(), alias) == 0)
+        {
+            wattron(chatWin, COLOR_PAIR(color));
+            mvwprintw(chatWin, window_limit, 10, "<%s>", alias_buffer[chat_buffer_pos].c_str());
+            wattroff(chatWin, COLOR_PAIR(color));
+        }
+        else
+        {
+            mvwprintw(chatWin, window_limit, 10, "<%s>", alias_buffer[chat_buffer_pos].c_str());
+        }
+        
         
         mvwprintw(chatWin, window_limit, 26, "|%s", chat_buffer[chat_buffer_pos].c_str());
 
