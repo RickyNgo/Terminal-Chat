@@ -2,7 +2,7 @@
 
 ### To Compile:
 > make all</br>
-> ./a.out
+> ./server
 
 ### Change Log:
 
