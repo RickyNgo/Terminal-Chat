@@ -17,6 +17,38 @@ Processor::~Processor( void ) {
 	boost::this_thread::sleep( boost::posix_time::millisec(1000));
 }
 
+/* ------------------------------ */
+/*              Error             */
+/* ------------------------------ */
+
+const char * Processor::Error::name( void ) const noexcept { 
+	return "proc.result";
+}
+
+std::string Processor::Error::message( int ev ) const { 
+	switch( ev ) {
+		case boost::system::errc::success:
+		return "OK";
+		break;
+
+		case boost::system::errc::connection_refused:
+		return "connection refused";
+		break;
+
+		case boost::system::errc::file_exists:
+		return "alias already in use";
+		break;
+
+		default:
+		return "processor error code not recorded";
+		break;
+	}
+}
+
+/* ------------------------------ */
+/*           Operation            */
+/* ------------------------------ */
+
 Processor::Operation::Operation( 
 	io_service & ios, do_async_op func, on_async_op complete ) :
 ios_( ios ),
@@ -31,7 +63,18 @@ void Processor::Operation::run( void ) {
 }
 
 /* ------------------------------ */
-/*            Commands            */
+/*           Comparator           */
+/* ------------------------------ */
+
+bool Processor::Equal::operator() ( const char * lhs, const char * rhs ) const noexcept{
+	bool result = ( std::strcmp( lhs, rhs ) == 0 );
+	std::cerr << std::boolalpha;
+	std::cerr << lhs << " " << rhs << " " << result << std::endl;
+	return ! result;
+}
+
+/* ------------------------------ */
+/* Public Interface ( Commands )  */
 /* ------------------------------ */
 
 void Processor::async_stage( Guest::pointer guest, on_async_op comp ) {
@@ -39,8 +82,8 @@ void Processor::async_stage( Guest::pointer guest, on_async_op comp ) {
 	ios_.post( boost::bind( &Processor::add_, this, fn, comp ));
 }
 
-void Processor::async_login( mutable_buffer buff, on_async_op comp ) {
-	do_async_op fn = boost::bind( &Processor::do_login_, this, buff );
+void Processor::async_login( Guest::pointer guest, const_buffer buff, on_async_op comp ) {
+	do_async_op fn = boost::bind( &Processor::do_login_, this, guest, buff );
 	ios_.post( boost::bind( &Processor::add_, this, fn, comp ));
 }
 
@@ -48,26 +91,76 @@ void Processor::async_login( mutable_buffer buff, on_async_op comp ) {
 /* Internal Processor Request Helpers  */
 /* ----------------------------------- */
 
+
+/* ---------------------------------------------------- */
 error_code Processor::do_stage_( Guest::pointer guest ) {
+/* ---------------------------------------------------- */
 	error_code ec;
 	{
-		boost::recursive_mutex::scoped_lock lk( stage_m_ );
-		stage_.push_back( guest );
+		scoped_lock lk( stage_m_ );
+		auto result = stage_.insert( guest );
+		if ( ! result.second ) {
+			ec.assign( boost::system::errc::connection_refused, proc_errc_ );
+		}
 	}
+	ec.assign( boost::system::errc::success, proc_errc_ );
+	return ec;
+}
+/* ------------------------------------------------------------------------- */
+error_code Processor::do_login_( Guest::pointer guest, const_buffer data ) {
+/* ------------------------------------------------------------------------- */
+	error_code 		ec;
+	const char * 	alias;
+
+	alias = boost::asio::buffer_cast<const char *>( data );
+	/* Check that the alias is OK first */
+	{
+		scoped_lock lk( stage_m_ );
+		auto result = guests_.find( alias );
+
+		/* If it's not, return */
+		if ( result != guests_.end() ) {
+			ec.assign( boost::system::errc::file_exists, proc_errc_ );
+			return ec;
+		}
+	}
+	/* Alias is OK */
+	{
+		scoped_lock lk( stage_m_ );
+		stage_.erase( stage_.find( guest ));
+	}
+	{
+		scoped_lock lk( guests_m_ );
+		guests_.insert( guest_t( alias, guest ));
+	}
+ 	ec.assign( boost::system::errc::success, proc_errc_ ); 
 	return ec;
 }
 
-error_code Processor::do_login_( mutable_buffer data ) {
+/* ---------------------------------------------------------------------------------- */
+error_code Processor::do_create_channel_( Guest::pointer guest, mutable_buffer data ) {
+/* ---------------------------------------------------------------------------------- */
+	error_code 		ec;
+	const char *	channel;
 
-	std::cerr << "in do_login_" << std::endl;
-	error_code ec;
-	const unsigned char * alias;
-	
-	alias = boost::asio::buffer_cast<const unsigned char *>( data );
-	std::cerr << "alias: " << alias << std::endl;
+	channel = boost::asio::buffer_cast<const char *>( data );
+	{
+		scoped_lock lk( channels_m_ );
+		auto result = channels_.find( channel );
 
-	return ec; 
+		if ( result != channels_.end() ) {
+			ec.assign( boost::system::errc::file_exists, proc_errc_ );
+		} else {
+			Channel c;
+			channels_.insert( channel_t( channel, Channel() ));   // Create channel
+
+		}
+	}
+	ec.assign( boost::system::errc::success, proc_errc_ );
+	return ec;
 }
+
+// error_code Processor::create_channel_( G)
 
 /* ----------------------------------- */
 /* Internal Processor Utility Helpers  */
