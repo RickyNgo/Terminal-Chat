@@ -42,7 +42,7 @@ public:
 
 	void 	async_stage( Guest::pointer, on_async_op );
 	void	async_login( Guest::pointer, const_buffer, on_async_op );
-	// void	async_leave( Guest::pointer, on_async_op );
+	void	async_leave( Guest::pointer, on_async_op );
 
 
 private:

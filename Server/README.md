@@ -1,4 +1,4 @@
-## server.cpp && enki_daemon.cpp
+# SERVER
 
 ### To Compile:
 > make all</br>

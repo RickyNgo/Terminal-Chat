@@ -87,6 +87,11 @@ void Processor::async_login( Guest::pointer guest, const_buffer buff, on_async_o
 	ios_.post( boost::bind( &Processor::add_, this, fn, comp ));
 }
 
+void Processor::async_leave( Guest::pointer guest, on_async_op comp ) {
+	do_async_op fn = boost::bind( &processor::do_leave_, this, guest );
+	ios_.post( boost::bind( &Processor::add_, this, fn, comp ));
+}
+
 /* ----------------------------------- */
 /* Internal Processor Request Helpers  */
 /* ----------------------------------- */
@@ -160,7 +165,20 @@ error_code Processor::do_create_channel_( Guest::pointer guest, mutable_buffer d
 	return ec;
 }
 
-// error_code Processor::create_channel_( G)
+/* ---------------------------------------------------- */
+error_code Processor::do_leave_( Guest::pointer guest ) {
+/* ---------------------------------------------------- */
+	error_code ec;
+	{
+		scoped_lock lk( stage_m_ );
+		auto result = stage_.insert( guest );
+		if ( ! result.second ) {
+			ec.assign( boost::system::errc::connection_refused, proc_errc_ );
+		}
+	}
+	ec.assign( boost::system::errc::success, proc_errc_ );
+	return ec;
+}
 
 /* ----------------------------------- */
 /* Internal Processor Utility Helpers  */
