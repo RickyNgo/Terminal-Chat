@@ -180,7 +180,7 @@ std::string get_input()
     struct tm *time_info;
     time_t ts;
 
-    std::string for_client;
+    //std::string for_client;
 
     memset(buffer, 0, 280);
 
@@ -207,6 +207,7 @@ std::string get_input()
     else
     {
         // The code below pretty much echos back what you type in
+        /*
         time(&ts);
 
         time_info = localtime(&ts);
@@ -214,7 +215,7 @@ std::string get_input()
 
         sprintf(raw_time, "%02d:%02d:%02d", time_info->tm_hour, time_info->tm_min, time_info->tm_sec);
 
-        std::string conv(buffer);
+        
         chat_buffer.push_back(conv);
 
         std::string fmtd_time(raw_time);
@@ -229,8 +230,11 @@ std::string get_input()
 
         for_client.append("|");
         for_client.append(conv);
+        */
+        //std::string conv(buffer);
+        
     }
-    
+    std::string for_client(buffer);
     /////////////////////////////////////////////////////////
     // Keep this section as is to refresh the input window
     box(chatWinBox, 124, 45);
@@ -257,13 +261,21 @@ void display_chat()
 
     for (int i = chat_buffer.size(); i > 0; i--)
     {
-        color = rand() % 6+2;
+        color = 7;
 
         mvwprintw(chatWin, window_limit, 1, time_buffer[chat_buffer_pos].c_str());
 
-        wattron(chatWin, COLOR_PAIR(color));
-        mvwprintw(chatWin, window_limit, 10, "<%s>", alias_buffer[chat_buffer_pos].c_str());
-        wattroff(chatWin, COLOR_PAIR(color));
+        if (strcmp(alias_buffer[chat_buffer_pos].c_str(), alias) == 0)
+        {
+            wattron(chatWin, COLOR_PAIR(color));
+            mvwprintw(chatWin, window_limit, 10, "<%s>", alias_buffer[chat_buffer_pos].c_str());
+            wattroff(chatWin, COLOR_PAIR(color));
+        }
+        else
+        {
+            mvwprintw(chatWin, window_limit, 10, "<%s>", alias_buffer[chat_buffer_pos].c_str());
+        }
+        
         
         mvwprintw(chatWin, window_limit, 26, "|%s", chat_buffer[chat_buffer_pos].c_str());
 
@@ -374,7 +386,7 @@ void get_alias()
 
         wmove(loginWinBox, parent_y/2+3, parent_x/2-17);
         wrefresh(loginWinBox);
-
+        
         wgetnstr(loginWinBox, alias, 15);
         
         std::string temp(alias);
@@ -393,7 +405,7 @@ void get_alias()
 
         }       
         
-        if (count == temp.length())
+        if (count == temp.length() && temp.length() >= 5 && temp.length() <= 15)
         {
             return;
         }
@@ -423,7 +435,21 @@ std::string retrieve_alias()
 
 void update_buffers(std::string time, std::string alias, std::string chat)
 {
-    time_buffer.push_back(time);
+    time_t raw_time = std::stoi(time);
+    struct tm *time_info;
+    
+
+    time_info = localtime(&raw_time);
+
+    //std::string fmtd_time = std::to_string(time_info->tm_hour) + ':' + std::to_string(time_info->tm_min) + ':' + std::to_string(time_info->tm_sec) + '|';
+
+    char *temp_time = new char[12];
+
+    sprintf(temp_time, "%02d:%02d:%02d|", time_info->tm_hour, time_info->tm_min, time_info->tm_sec);
+
+    std::string fmtd_time(temp_time);
+
+    time_buffer.push_back(fmtd_time);
     alias_buffer.push_back(alias);
     chat_buffer.push_back(chat);
 }

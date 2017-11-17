@@ -11,6 +11,7 @@
 
 #include "client.hpp"
 #include "aux_functions.hpp"
+#include "layout.hpp"
 
 #define MIN_ALIAS 5
 #define MAX_ALIAS 15
@@ -37,20 +38,27 @@ current_channel_(0)
  ***************************************/
 void Client::on_read_header( boost::system::error_code ec, std::size_t bytes ) {
     if (!ec) {
+        read_msg.get_header() = read_buffer_;
+        read_msg.parse_header();
+        /*
         Messages msg;
         msg.get_header() = read_buffer_;
         
         msg.parse_header();
         body_length_ = msg.get_length();
         command_ = msg.get_command();
+        */
+
+        body_length_ = read_msg.get_length();
+        command_ = read_msg.get_command();
         
-        std::cout << "header body length: " << msg.get_length() << "by member: " << body_length_ << std::endl;
-        std::cout << "header command: " << msg.get_command() << "by member: " << command_ << std::endl;
+        //std::cout << "header body length: " << read_msg.get_length() << "by member: " << body_length_ << std::endl;
+        //std::cout << "header command: " << read_msg.get_command() << "by member: " << command_ << std::endl;
         
         
         do_read_body();
     } else {
-        std::cout << "Read error in on_read_header: " << ec << std::endl;
+        //std::cout << "Read error in on_read_header: " << ec << std::endl;
     }
 }
 
@@ -61,11 +69,16 @@ void Client::on_read_header( boost::system::error_code ec, std::size_t bytes ) {
  ***************************************/
 void Client::on_read_body( boost::system::error_code ec, std::size_t bytes ) {
     if (!ec) {
-        std::cout << "read_buffer_: " << this->read_buffer_ << std::endl;
-        memset(read_buffer_, '\0', sizeof(char)*512);
+        //std::cout << "read_buffer_: " << this->read_buffer_ << std::endl;
+        read_msg.get_body() = read_buffer_;
+        //std::cout << "Read body: " << read_msg.get_body() << std::endl;
+        //memset(read_buffer_, '\0', sizeof(char)*512);
+        
+        
+        update_buffers(std::to_string(read_msg.get_time()), read_msg.get_sender(), read_msg.get_body());
         do_read_header();
     } else {
-        std::cout << "Read error: " << ec << std::endl;
+        //std::cout << "Read error: " << ec << std::endl;
     }
 }
 
@@ -74,6 +87,8 @@ void Client::on_read_body( boost::system::error_code ec, std::size_t bytes ) {
  
  ***************************************/
 void Client::do_read_header() {
+    read_msg.clear();
+    memset(read_buffer_, '\0', sizeof(char)*512);
     main_socket_.async_receive(
                                boost::asio::buffer(
                                                    read_buffer_,
@@ -82,7 +97,7 @@ void Client::do_read_header() {
                                            shared_from_this(),
                                            _1, _2 ));
     
-    std::cerr << "called handler on_read_header" << std::endl;
+    //std::cerr << "called handler on_read_header" << std::endl;
     
 }
 
@@ -92,15 +107,16 @@ void Client::do_read_header() {
  
  ***************************************/
 void Client::do_read_body() {
+    memset(read_buffer_, '\0', sizeof(char)*512);
     main_socket_.async_receive(
                                boost::asio::buffer(
                                                    read_buffer_,
-                                                   body_length_),
+                                                   read_msg.get_length()),
                                boost::bind(&Client::on_read_body,
                                            shared_from_this(),
                                            _1, _2 ));
     
-    std::cerr << "called handler on_read_body" << std::endl;
+    //std::cerr << "called handler on_read_body" << std::endl;
     
 }
 
@@ -120,13 +136,13 @@ void Client::send(Messages msg) {
 void Client::on_write_header( boost::system::error_code error, size_t bytes, Messages msg) {
     
     if (!error){
-        std::cout << "header bytes written: " << bytes << std::endl;
+        //std::cout << "header bytes written: " << bytes << std::endl;
         do_write_body(msg);
     }
     else{
-        std::cout << "header write not a success\n";
-        std::cout << "category: " << error.category().name() << " code: " << error.value() << " message: " << error.message() << std::endl;
-        std::cout << "bytes written: " << bytes << std::endl;
+        //std::cout << "header write not a success\n";
+        //std::cout << "category: " << error.category().name() << " code: " << error.value() << " message: " << error.message() << std::endl;
+        //std::cout << "bytes written: " << bytes << std::endl;
     }
 }
 
@@ -138,12 +154,12 @@ void Client::on_write_header( boost::system::error_code error, size_t bytes, Mes
 void Client::on_write_body( boost::system::error_code error, size_t bytes) {
     
     if (!error){
-        std::cout << "body bytes written: " << bytes<< std::endl;
+        //std::cout << "body bytes written: " << bytes<< std::endl;
     }
     else{
-        std::cout << "write not a success\n";
-        std::cout << "category: " << error.category().name() << " code: " << error.value() << " message: " << error.message() << std::endl;
-        std::cout << "bytes written: " << bytes << std::endl;
+        //std::cout << "write not a success\n";
+        //std::cout << "category: " << error.category().name() << " code: " << error.value() << " message: " << error.message() << std::endl;
+        //std::cout << "bytes written: " << bytes << std::endl;
     }
 }
 
@@ -153,7 +169,7 @@ void Client::on_write_body( boost::system::error_code error, size_t bytes) {
  ***************************************/
 void Client::do_write_header(Messages msg){
     // send to server
-    std::cout << "do write header" <<std::endl;
+    //std::cout << "do write header" <<std::endl;
     
     boost::asio::async_write(main_socket_,
                              boost::asio::buffer(msg.get_header(),
@@ -169,7 +185,7 @@ void Client::do_write_header(Messages msg){
  ***************************************/
 void Client::do_write_body(Messages msg){
     // send to server
-    std::cout << "do write body" << std::endl;
+    //std::cout << "do write body" << std::endl;
     
     boost::asio::async_write(main_socket_,
                              boost::asio::buffer(msg.get_body(),

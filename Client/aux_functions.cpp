@@ -23,7 +23,8 @@ bool syntax_valid_alias(std::string u_string){
 }
 
 //prompts for input and captures string until newline is entered
-std::string get_input(){
+/*Added D to function name as it was clashing with the UI get_string() function*/ 
+std::string Dget_input(){
 	std::string user_input;
 
 	std::cout << ">> ";

@@ -14,6 +14,7 @@ class Session;
 class Channel :
 public boost::enable_shared_from_this<Channel> {
 public:
+	// typedef boost::shared_ptr<Channel> pointer;
 	typedef boost::shared_ptr<Session> pointer;
 	static const unsigned log_max = 100;
 	Channel( void );
