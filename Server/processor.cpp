@@ -88,7 +88,7 @@ void Processor::async_login( Guest::pointer guest, const_buffer buff, on_async_o
 }
 
 void Processor::async_leave( Guest::pointer guest, on_async_op comp ) {
-	do_async_op fn = boost::bind( &processor::do_leave_, this, guest );
+	do_async_op fn = boost::bind( &Processor::do_leave_, this, guest );
 	ios_.post( boost::bind( &Processor::add_, this, fn, comp ));
 }
 
@@ -138,6 +138,7 @@ error_code Processor::do_login_( Guest::pointer guest, const_buffer data ) {
 		scoped_lock lk( guests_m_ );
 		guests_.insert( guest_t( alias, guest ));
 	}
+	guest->set_alias( alias );
  	ec.assign( boost::system::errc::success, proc_errc_ ); 
 	return ec;
 }
@@ -158,7 +159,6 @@ error_code Processor::do_create_channel_( Guest::pointer guest, mutable_buffer d
 		} else {
 			Channel c;
 			channels_.insert( channel_t( channel, Channel() ));   // Create channel
-
 		}
 	}
 	ec.assign( boost::system::errc::success, proc_errc_ );
@@ -171,8 +171,8 @@ error_code Processor::do_leave_( Guest::pointer guest ) {
 	error_code ec;
 	{
 		scoped_lock lk( stage_m_ );
-		auto result = stage_.insert( guest );
-		if ( ! result.second ) {
+		auto result = guests_.erase( guest->get_alias() );
+		if ( result != 1 ) {
 			ec.assign( boost::system::errc::connection_refused, proc_errc_ );
 		}
 	}

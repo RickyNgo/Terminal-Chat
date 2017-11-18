@@ -52,6 +52,12 @@ void Connection::on_login_( error_code ec ) {
 	do_write_header_( data ); 
 }
 
+void Connection::on_leave_( error_code ec ) {
+	std::cerr << client_ << "::LEAVE => " << ec << " [" << ec.message() << "]" << std::endl;
+	std::cerr << shared_from_this().use_count() - 1 << std::endl;
+	/* Leave Scope ... */
+}
+
 /* ------------------------------- */
 /*       Read-Write Handlers 	   */
 /* ------------------------------- */
@@ -82,9 +88,14 @@ void Connection::on_read_header_( error_code error, size_t bytes ) {
 	} else {
 		if ( error.value() == boost::asio::error::eof ) {
 			std::cerr << client_ << " >> EOF." << std::endl;
-			// handler_.do_leave_(
-			// 	shared_from_this(),
-			// );
+			handler_.async_leave(
+				shared_from_this(),
+				boost::bind(
+					&Connection::on_leave_,
+					shared_from_this(),
+					_1
+				)
+			);
 
 		} else {
 			std::cerr << error << std::endl;

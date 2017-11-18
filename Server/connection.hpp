@@ -33,6 +33,7 @@ public:
 private:
 	void on_login_( error_code );
 	void on_stage_( error_code );
+	void on_leave_( error_code );
 
 	void do_read_header_( void );
 	void on_read_header_( error_code, size_t );

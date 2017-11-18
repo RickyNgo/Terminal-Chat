@@ -122,9 +122,12 @@ public:
 	void			add_( do_async_op, on_async_op );
 	void 			run_( void );
 
+	/* Command helpers */
+
 	error_code		do_stage_( Guest::pointer );
 	error_code		do_login_( Guest::pointer, const_buffer );
 	error_code 		do_create_channel_( Guest::pointer, mutable_buffer );
+	error_code		do_leave_( Guest::pointer );
 };
 
 #endif  /* End Processor */
