@@ -28,24 +28,27 @@ public:
 	
 	Connection( tcp::socket, tcp::endpoint, Processor & );
 	~Connection( void );
-	void start( void );
+	
+	void 	start( void );
 
 private:
-	void on_login_( error_code );
-	void on_stage_( error_code );
-	void on_leave_( error_code );
+	void 	on_login_( error_code );
+	void 	on_create_channel_( error_code );
+	void 	on_join_channel_( error_code );
+	void 	on_close_channel_( error_code );
+	void 	on_leave_( error_code );
 
-	void do_read_header_( void );
-	void on_read_header_( error_code, size_t );
+	void 	do_read_header_( void );
+	void 	on_read_header_( error_code, size_t );
 
-	void do_read_body_( void );
-	void on_read_body_( error_code, size_t );
+	void 	do_read_body_( void );
+	void 	on_read_body_( error_code, size_t );
 
-	void do_write_header_( Messages );
-	void on_write_header_( error_code, size_t , Messages);
+	void 	do_write_header_( Messages );
+	void 	on_write_header_( error_code, size_t , Messages);
 	
-	void do_write_body_( Messages );
-	void on_write_body_( error_code, size_t );
+	void 	do_write_body_( Messages );
+	void 	on_write_body_( error_code, size_t );
 
 	Messages 				msg_;
 	char					read_buffer_[ 512 ];

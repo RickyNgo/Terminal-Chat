@@ -17,7 +17,3 @@ const char * Guest::get_alias( void ) const {
 void Guest::set_alias( const char * alias ) {
 	std::memcpy( alias_, alias, strlen( alias ));
 }
-
-// static bool Guest::compare_alias_( Guest::pointer lhs, Guest::pointer rhs ) {
-// 	return ( lhs.get_alias() == rhs.get_alias() ) ? true : false;
-// }
