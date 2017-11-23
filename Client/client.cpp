@@ -21,12 +21,13 @@ using boost::asio::ip::tcp;
 /***************************************
 constructor
  ***************************************/
-Client::Client(boost::asio::io_service& io_serv, tcp::resolver::iterator endpoint_iterator) : 
+Client::Client(boost::asio::io_service& io_serv, tcp::resolver::iterator endpoint_iterator, int secondPort) : 
 ios(io_serv),
 main_socket_(io_serv),
 user_alias_(""),
 user_id_(-1),
-current_channel_(0)
+current_channel_(0),
+connection_port_(secondPort)
 {
     do_connect_(endpoint_iterator);
 }
@@ -74,8 +75,8 @@ void Client::on_read_body( boost::system::error_code ec, std::size_t bytes ) {
         //std::cout << "Read body: " << read_msg.get_body() << std::endl;
         //memset(read_buffer_, '\0', sizeof(char)*512);
         
-        
-        update_buffers(std::to_string(read_msg.get_time()), read_msg.get_sender(), read_msg.get_body());
+        // UNCOMMENT THIS!!
+        //update_buffers(std::to_string(read_msg.get_time()), read_msg.get_sender(), read_msg.get_body());
         do_read_header();
     } else {
         //std::cout << "Read error: " << ec << std::endl;
@@ -106,7 +107,7 @@ void Client::do_read_header() {
  
  
  ***************************************/
-void Client::do_read_body() {
+void Client::do_read_body() { //get_current_socket().async_receive
     memset(read_buffer_, '\0', sizeof(char)*512);
     main_socket_.async_receive(
                                boost::asio::buffer(
@@ -255,7 +256,7 @@ void Client::close(){
 show_help()
 ***************************************/
 std::string Client::show_help(){
-	std::string help = "Here is some basic help output";  //how to print this in correct place using ncurses?
+	std::string help = "Here is some basic help output";  
 
 	return help;
 }
@@ -273,7 +274,7 @@ int Client::get_user_id(){return user_id_;}
 /***************************************
 get_friend_list
 ***************************************/
-std::vector<std::string> Client::get_friend_list(){ //how to print this in correct place using ncurses?
+std::vector<std::string> Client::get_friend_list(){
 	std::vector<std::string> f_list;
 	std::map<int, std::string>::iterator it = friend_list_.begin();
  
@@ -290,10 +291,10 @@ int Client::get_channel_list_size(){return client_channels_.size();}
 
 tcp::socket* Client::get_main_socket(){return &main_socket_;}
 
-int Client::get_current_channel_id(){return current_channel_;}
+int Client::get_current_channel_id(){return current_channel_->get_channel_id();}
 
-Channel* Client::get_channel_from_id(int id){
-	return client_channels_[id];
+Channel* Client::get_current_channel(){
+	return current_channel_;
 }
 
 
@@ -316,7 +317,7 @@ void Client::set_friend_list(std::map<int, std::string> friends){friend_list_ = 
 /***************************************
 set current channel
 ***************************************/
-void Client::set_current_channel(Channel* chan){current_channel_ = chan->get_channel_id();}
+void Client::set_current_channel(Channel* chan){current_channel_ = chan;}
 
 /***************************************
 add_friend
@@ -410,8 +411,24 @@ bool Client::syntax_valid_alias(std::string u_string){
 int Client::clean_input(std::string input){
     boost::algorithm::trim(input);
     
-    if(input[0] == '/'){return 1;}
-    else {return 0;}
+    if(input[0] == '/'){
+    	get_command(input);
+    	return 1;
+    }
+    
+    else { //message, go ahead and send it
+    	time_t current_time;
+
+    	time(&current_time);
+        Messages message(user_alias_, input, current_time, MSG);
+
+        // UNCOMMENT THIS
+        // send(message);
+
+        std::cout << "sending this message: " << message.get_body() << std::endl;
+
+    	return 0;
+    }
     
 }
 
@@ -420,6 +437,8 @@ std::string Client::get_command(std::string input){
     std::string delim = " ";
     
     std::string token = input.substr(0, input.find(delim));
+
+    std::cout << "Your command is: " << token << std::endl;
     
     find_command(token, input);
     
@@ -443,17 +462,31 @@ int Client::find_command(std::string command, std::string u_input){
             //place client function call here? with break?
         }
     }
+
+    std::cout << "Your command is number " << command_num << std::endl;
     
     if(command_num != -1){
         if(command_num == 1 | command_num == 6){
+        	std::cout << "client command!" << std::endl;
             client_command(command_num, u_input);
         }
         
         else{
+        	std::cout << "server command!" << std::endl;
             server_command(command_num, u_input);
         }
     }
     
+    else if(command_num == -1){ //message, send it
+    	std::cout << "if we're here, it's because command_num is -1, and the command was not found. just send this as a message" << std::endl;
+    	time_t current_time;
+
+    	time(&current_time);
+        Messages message(user_alias_, u_input, current_time, MSG);
+
+        // UNCOMMENT THIS
+        // send(message);
+    }
     return command_num;
 }
 
@@ -463,8 +496,8 @@ int Client::find_command(std::string command, std::string u_input){
 // -2 if user does not have correct permissions for command in current room
 int Client::check_channel_permissions(int command){
 	//get ChannelType of current channel
-	ChannelType ct = (get_channel_from_id(get_current_channel_id()))->get_channel_type();
-	ChannelRole cr = (get_channel_from_id(get_current_channel_id()))->get_channel_role();
+	ChannelType ct = get_current_channel()->get_channel_type();
+	ChannelRole cr = get_current_channel()->get_channel_role();
 
 
  	if(ct == NO_TYPE){
@@ -537,13 +570,14 @@ int Client::command_cat(int command){
 void Client::client_command(int command, std::string message){
     if(command == 1){
         //show channel
+        channel_update(message);
         std::cout << "Here is your channel" << std::endl;
     }
     else if(command == 6){
-        std::cout << "here is some help" << std::endl;
+        show_help();
     }
     else{
-        std::cout << "error. not a client command" << std::endl;
+        std::cout << "error. not a client command. how did you get here." << std::endl;
     }
 }
 
@@ -552,6 +586,7 @@ void Client::client_command(int command, std::string message){
 void Client::server_command(int command, std::string message){
 	int perm = check_channel_permissions(command);
 
+	//check permissions, only moving on to taking action if permitted
 	if(perm == -1){
 		std::cout << "That command is not allowed here" << std::endl;
 	}
@@ -561,24 +596,92 @@ void Client::server_command(int command, std::string message){
 	}
 
 	else{
-		int command_type = command_cat(command);
-
-		switch(command_type){
-			case 0:
-				//general command
-				std::cout << "general command: making a Message and sending" << std::endl;
-				//stick into Message and send
+		switch(command){
+    // void invite_yes();
+    // void invite_no();
+			case 0:	//exit
+				exit_enki();
 				break;
-			case 1:
-				//in channel only
-				if(get_channel_from_id(get_current_channel_id())){
-					std::cout << "sticking string in a Message and sending" << std::endl;
-					//stick into Message and send
-				}
-				else{
-					std::cout << "you need to be in a channel to do that" << std::endl;
-				}
+			case 2: //join	
+				join(message);
+				break;
+			case 3: //create
+				create_channel(message);
+				break;
+			case 4: //whisper
+				whisper(message);	
+				break;
+			case 5: //online
+				online();
+				break;
+			case 7: //invite
+				invite_user(message);	
+				break;
+			case 8: //leave
+				leave();
+				break;
+			case 9: //kick
+				kick(message);
+				break;
+			case 10: //add_mod
+				add_mod(message);
+				break;
+			case 11: //channel_close
+				channel_close();
+				break;
 		}
 	}
+}
+
+void Client::exit_enki(){//***
+	//leave channels
+
+	close();
+
+	std::cout << "You have exited Enki." << std::endl;
+
+} 
+
+void Client::join(std::string){}
+
+void Client::add_mod(std::string){}
+
+void Client::create_channel(std::string channel_name){ //***
+	// set up listening connection
+	// on accept, move socket by reference to new channel object
+	// set this to currentChannel
+	tcp::acceptor a(ios, tcp::endpoint(tcp::v4(), connection_port_));
+
+	std::cout << "acceptor is open : " << a.is_open() << std::endl;
+
+	tcp::socket sock(ios);
+	a.accept(sock);
+
+	Channel newChat(channel_name, 1, sock);
+	set_current_channel(&newChat);
+}
+
+void Client::whisper(std::string){
+
+}
+void Client::invite_user(std::string){
+
+}
+
+void Client::online(){
+
+}
+void Client::channel_update(std::string){
+
+}
+void Client::channel_close(){
+
+}
+void Client::leave(){
+
+}
+
+void Client::kick(std::string user){
+
 }
 

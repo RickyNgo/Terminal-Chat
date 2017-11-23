@@ -28,14 +28,13 @@ private:
 
 	std::string user_alias_;
 	int user_id_;
+    int connection_port_;
+    Channel* current_channel_;
 	std::map<int, Channel*> client_channels_;
 	std::map<int,std::string> friend_list_;
-    int current_channel_;
-    
+   
     uint8_t command_;
     uint8_t	body_length_;
-    
-    //need a counter so i don't get duplicate channel ids
 
 private:
     void do_connect_(tcp::resolver::iterator);
@@ -57,13 +56,12 @@ private:
     char read_buffer_[512];
 
 public:
-	Client(boost::asio::io_service&, tcp::resolver::iterator);
+	Client(boost::asio::io_service&, tcp::resolver::iterator, int);
     
     void choose_alias();
+    void close();
 
     void send(Messages);
-	void close();
-	std::string show_help();
 
 	std::string get_user_alias();
 	int get_user_id();
@@ -71,7 +69,7 @@ public:
     int get_channel_list_size();
     tcp::socket* get_main_socket();
     int get_current_channel_id();
-    Channel* get_channel_from_id(int);
+    Channel* get_current_channel();
 
 	void set_user_alias(std::string);	
 	void set_user_id(int);
@@ -118,6 +116,54 @@ public:
     //if command is a server side command, checks permissions for desired command and either packages and sends message if allowed
     //or displays error if not allowed
     void server_command(int, std::string);
+
+    // MSG, - don't need
+    // KICK_USER, ** can package with leave s
+    // ADD_MOD, ** s
+    // JOIN_CHANNEL, ** cs
+    // CREATE_CHANNEL, ** s
+    // WHISPER, ** cs can package with create/join
+    // INVITE_USER, ** c 
+    // ONLINE, ** cs
+    // LOGIN, ** cs
+    // INVITE_YES, ** c 
+    // INVITE_NO, ** c
+    // CHANNEL_UPDATE, ** cs 
+    // CHANNEL_CLOSE, ** cs
+    // LEAVE ** cs
+    // exit ** can package with leave c
+
+    std::string show_help();
+
+    //share socket by reference
+    //use main socket for general commands, not channel specific commands
+    //only time to read for general commands is not in channel
+
+    // client side, FROM client TO server
+    void exit_enki(); //***
+    void join(std::string); //*** send channel name and port #, and then if ok, listen
+    void add_mod(std::string);
+    void create_channel(std::string); //***
+    void whisper(std::string);
+    void invite_user(std::string);
+    void kick(std::string);
+    void online();
+    void invite_yes();
+    void invite_no();
+    void channel_update(std::string);
+    void channel_close();
+    void leave();
+
+    // server side, FROM server TO client
+    void s_kick_user();
+    void s_add_mod();
+    void s_join_channel(std::string);
+    void s_create_channel(); // if ok, get port #, send port # back then listen
+    void s_whisper();
+    void s_online(std::vector<std::string>);
+    void s_channel_update();
+    void s_channel_close();
+    void s_leave();
 
 };
 

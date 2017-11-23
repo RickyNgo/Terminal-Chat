@@ -18,8 +18,8 @@ std::string ChannelRole_to_string(ChannelRole cr);
 int main(int argc, char* argv[])
 {
 	try{
-	    if (argc != 2){
-	      std::cerr << "Usage: <port>\n" << "argc == " << argc;
+	    if (argc != 3){
+	      std::cerr << "Usage: <port> <port>\n" << "argc == " << argc;
 	      return 1;
 		}
 
@@ -31,40 +31,29 @@ int main(int argc, char* argv[])
 		tcp::resolver::query query("localhost", argv[1], tcp::resolver::query::canonical_name);
 		tcp::resolver::iterator iterator = resolver.resolve(query);
 
-		Client c(io_service, iterator);
+		Client c(io_service, iterator, atoi(argv[2]));
 
-		//make a channel object
-		Channel* testchannel = new Channel("testchannel", 1);
-		//add it to the client using add_channel
-		c.add_channel(testchannel, 1);
-		//set client's current channel to new channel
-		c.set_current_channel(testchannel);
-		//set testchannel type to group
-		testchannel->set_channel_type(PRIVATE);
-		testchannel->set_channel_role(GUEST); 
+		// //make a channel object
+		// Channel* testchannel = new Channel("testchannel", 1);
+		// //add it to the client using add_channel
+		// c.add_channel(testchannel, 1);
+		// //set client's current channel to new channel
+		// c.set_current_channel(testchannel);
+		// //set testchannel type to group
+		// testchannel->set_channel_type(GROUP);
+		// testchannel->set_channel_role(ADMIN); 
 
 		// while(u_input != "rachel"){
-		u_input = get_input();
-		std::string command = get_command(u_input);
-		  
-		std::cout << "You entered: " << u_input << std::endl;
-		std::cout << "Your command is: " << command << std::endl;
+		// u_input = Dget_input();
+		// int hasCommand = c.clean_input(u_input);
 
-		int command_num = find_command(command);
+		c.create_channel("name");
+		std::cout << "Channel name: " << c.get_current_channel()->get_channel_name() << std::endl;
 
-		std::cout << "Your command number is " << command_num <<std::endl;
-		std::cout << "Your original input is now: " << u_input << std::endl;
+		// ChannelRole cr = (c.get_channel_from_id(c.get_current_channel_id()))->get_channel_role();		
+		// std::cout << "channel role is: " << ChannelRole_to_string(cr) << std::endl;
 
-		ChannelRole cr = (c.get_channel_from_id(c.get_current_channel_id()))->get_channel_role();		
-		std::cout << "channel role is: " << ChannelRole_to_string(cr) << std::endl;
-
-		if(command_num == 1 | command_num == 6){
-			client_command(command_num, u_input);
-		}
- 
-		else{
-			server_command(command_num, u_input, &c);
-		} 
+		
 
 	}  //try
     

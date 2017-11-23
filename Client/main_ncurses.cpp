@@ -18,9 +18,9 @@ std::vector<std::string> test = {"Ricky", "OBIWAN"};
 int main(int argc, char* argv[])
 {
     //    immediately check command arguments
-    if (argc != 3)
+    if (argc != 2)
     {
-        std::cerr << "Usage: <port> <port>\n" << "argc == " << argc;
+        std::cerr << "Usage: <port>\n" << "argc == " << argc;
         return 1;
     }
 
@@ -35,16 +35,13 @@ int main(int argc, char* argv[])
     tcp::resolver::query query("localhost", argv[1], tcp::resolver::query::canonical_name);
     tcp::resolver::iterator iterator = resolver.resolve(query);
     
-    boost::shared_ptr<Client> c = boost::make_shared<Client>(io_service, iterator, atoi(argv[2]));
+    boost::shared_ptr<Client> c = boost::make_shared<Client>(io_service, iterator);
     std::thread t([&io_service](){ io_service.run(); });
 
     std::string alias = retrieve_alias();
-    std::string input = "";
+    std::string input;
 
-    time_t current_time;
-    time(&current_time);
-    Messages msg(alias, input, current_time, LOGIN);
-    c->send(msg);
+    c->send(alias.data());
 
     while(isRunning)
     {
@@ -52,26 +49,17 @@ int main(int argc, char* argv[])
         wrefresh(inputWin);
         wrefresh(channelWin);
         wrefresh(contactWinBox);
-
-        for (int i = 0; i < 30; i ++)
-        {
-            display_chat();
-        }
+        c->send(get_input().data());
+        display_chat();
         
-        //input = get_input();
-        input = get_input();
-        Messages input_msg(alias, input, time(&current_time), MSG);
-        c->send(input_msg);
-        //display_chat();
-        
-        for (int i = 0; i < 30; i ++)
-        {
-            display_chat();
-        }
-    
+        //std::cout << "MOST RECENT INPUT: " << input << std::endl;
+        //invite_notification(test);
+        //sleep(1);
     }
-    c->close();
+
     del_wins();
 
+    std::cout << "ALIAS: " << alias << std::endl;
+    std::cout << COLORS << std::endl;
     return 0;
 }
