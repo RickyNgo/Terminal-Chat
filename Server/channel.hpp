@@ -22,6 +22,7 @@ public:
 
 	void join( boost::shared_ptr<Session> );
 	void leave( boost::shared_ptr<Session> );
+	void init_session();
 	void deliver( Messages );
 	void process_( Messages );
 	

@@ -148,7 +148,13 @@ error_code Processor::do_create_channel_( const_buffer data ) {
 			ec.assign( boost::system::errc::file_exists, proc_errc_ );
 			return ec;
 		} else {
-			channels_.insert( channel_t( channel, Channel() ));   // Create channel
+			Channel new_channel();
+
+			auto new_session = boost::make_shared<Session>(std::move(socket_), &new_channel);
+
+			new_channel.join(new_session);
+
+			channels_.insert( channel_t( channel, new_channel ));   // Create channel
 		}
 	}
 	ec.assign( boost::system::errc::success, proc_errc_ );

@@ -60,6 +60,9 @@ int main(int argc, char* argv[])
         
         //input = get_input();
         input = get_input();
+        
+        //Parse the input to determine what the command should be
+        //int cmd = decipher_cmd(input);
         Messages input_msg(alias, input, time(&current_time), MSG);
         c->send(input_msg);
         //display_chat();
