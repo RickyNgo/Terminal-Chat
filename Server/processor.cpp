@@ -22,26 +22,25 @@ Processor::~Processor( void ) {
 /* ------------------------------ */
 
 const char * Processor::Error::name( void ) const noexcept { 
-	return "proc.result";
+	return "error";
 }
 
 std::string Processor::Error::message( int ev ) const { 
+
+	/* List of errors: http://www.boost.org/doc/libs/1_61_0/boost/system/error_code.hpp */
+
 	switch( ev ) {
 		case boost::system::errc::success:
 		return "OK";
-		break;
-
-		case boost::system::errc::connection_refused:
-		return "connection refused";
-		break;
 
 		case boost::system::errc::file_exists:
-		return "alias already in use";
-		break;
+		return "already in use";
+
+		case boost::system::errc::no_such_file_or_directory:
+		return "does not exist";
 
 		default:
 		return "processor error code not recorded";
-		break;
 	}
 }
 
@@ -66,24 +65,33 @@ void Processor::Operation::run( void ) {
 /*           Comparator           */
 /* ------------------------------ */
 
-bool Processor::Equal::operator() ( const char * lhs, const char * rhs ) const noexcept{
-	bool result = ( std::strcmp( lhs, rhs ) == 0 );
-	std::cerr << std::boolalpha;
-	std::cerr << lhs << " " << rhs << " " << result << std::endl;
-	return ! result;
+bool Processor::Equal::operator() ( const char * lhs, const char * rhs ) const noexcept {
+	int result = std::strcmp( lhs, rhs );
+	std::cerr << "equal: " << result << std::endl;
+	return ( result ) ? true : false;
 }
 
 /* ------------------------------ */
-/* Public Interface ( Commands )  */
+/*   Public Interface (Commands)  */
 /* ------------------------------ */
 
-void Processor::async_stage( Guest::pointer guest, on_async_op comp ) {
-	do_async_op fn = boost::bind( &Processor::do_stage_, this, guest );
+void Processor::async_login( Guest::pointer guest, const_buffer alias, on_async_op comp ) {
+	do_async_op fn = boost::bind( &Processor::do_login_, this, guest, alias );
 	ios_.post( boost::bind( &Processor::add_, this, fn, comp ));
 }
 
-void Processor::async_login( Guest::pointer guest, const_buffer buff, on_async_op comp ) {
-	do_async_op fn = boost::bind( &Processor::do_login_, this, guest, buff );
+void Processor::async_create_channel( const_buffer channel, on_async_op comp ) {
+	do_async_op fn = boost::bind( &Processor::do_create_channel_, this, channel );
+	ios_.post( boost::bind( &Processor::add_, this, fn, comp ));
+}
+
+void Processor::async_join_channel( const_buffer channel, on_async_op comp ) {
+	do_async_op fn = boost::bind( &Processor::do_join_channel_, this, channel );
+	ios_.post( boost::bind( &Processor::add_, this, fn, comp ));
+}
+
+void Processor::async_close_channel( const_buffer channel, on_async_op comp ) {
+	do_async_op fn = boost::bind( &Processor::do_close_channel_, this, channel );
 	ios_.post( boost::bind( &Processor::add_, this, fn, comp ));
 }
 
@@ -97,20 +105,6 @@ void Processor::async_leave( Guest::pointer guest, on_async_op comp ) {
 /* ----------------------------------- */
 
 
-/* ---------------------------------------------------- */
-error_code Processor::do_stage_( Guest::pointer guest ) {
-/* ---------------------------------------------------- */
-	error_code ec;
-	{
-		scoped_lock lk( stage_m_ );
-		auto result = stage_.insert( guest );
-		if ( ! result.second ) {
-			ec.assign( boost::system::errc::connection_refused, proc_errc_ );
-		}
-	}
-	ec.assign( boost::system::errc::success, proc_errc_ );
-	return ec;
-}
 /* ------------------------------------------------------------------------- */
 error_code Processor::do_login_( Guest::pointer guest, const_buffer data ) {
 /* ------------------------------------------------------------------------- */
@@ -120,20 +114,16 @@ error_code Processor::do_login_( Guest::pointer guest, const_buffer data ) {
 	alias = boost::asio::buffer_cast<const char *>( data );
 	/* Check that the alias is OK first */
 	{
-		scoped_lock lk( stage_m_ );
-		auto result = guests_.find( alias );
+		scoped_lock lk( guests_m_ );
+		auto result = guests_.count( alias );
 
 		/* If it's not, return */
-		if ( result != guests_.end() ) {
+		if ( result != 0 ) {
 			ec.assign( boost::system::errc::file_exists, proc_errc_ );
 			return ec;
 		}
 	}
 	/* Alias is OK */
-	{
-		scoped_lock lk( stage_m_ );
-		stage_.erase( stage_.find( guest ));
-	}
 	{
 		scoped_lock lk( guests_m_ );
 		guests_.insert( guest_t( alias, guest ));
@@ -144,7 +134,7 @@ error_code Processor::do_login_( Guest::pointer guest, const_buffer data ) {
 }
 
 /* ---------------------------------------------------------------------------------- */
-error_code Processor::do_create_channel_( Guest::pointer guest, mutable_buffer data ) {
+error_code Processor::do_create_channel_( const_buffer data ) {
 /* ---------------------------------------------------------------------------------- */
 	error_code 		ec;
 	const char *	channel;
@@ -156,10 +146,62 @@ error_code Processor::do_create_channel_( Guest::pointer guest, mutable_buffer d
 
 		if ( result != channels_.end() ) {
 			ec.assign( boost::system::errc::file_exists, proc_errc_ );
+			return ec;
 		} else {
-			Channel c;
-			channels_.insert( channel_t( channel, Channel() ));   // Create channel
+			Channel new_channel();
+
+			auto new_session = boost::make_shared<Session>(std::move(socket_), &new_channel);
+
+			new_channel.join(new_session);
+
+			channels_.insert( channel_t( channel, new_channel ));   // Create channel
 		}
+	}
+	ec.assign( boost::system::errc::success, proc_errc_ );
+	return ec;
+}
+
+/* ---------------------------------------------------------------------------------- */
+error_code Processor::do_join_channel_( const_buffer data ) {
+/* ---------------------------------------------------------------------------------- */
+	error_code 		ec;
+	const char *	channel;
+
+	channel = boost::asio::buffer_cast<const char *>( data );
+	{
+		scoped_lock lk( channels_m_ );
+		auto result = channels_.find( channel );
+
+		if ( result == channels_.end() ) {
+			ec.assign( boost::system::errc::no_such_file_or_directory, proc_errc_ );
+			return ec;
+		}
+	}
+	ec.assign( boost::system::errc::success, proc_errc_ );
+	return ec;
+}
+
+/* ---------------------------------------------------------------------------------- */
+error_code Processor::do_close_channel_( const_buffer data ) {
+/* ---------------------------------------------------------------------------------- */
+	error_code 		ec;
+	const char *	channel;
+
+	channel = boost::asio::buffer_cast<const char *>( data );
+	{
+
+		/* Where does the channel keep it's name? */
+
+
+		// scoped_lock lk( channels_m_ );
+		// auto result = channels_.find( channel );
+
+		// if ( result != channels_.end() ) {
+		// 	ec.assign( boost::system::errc::file_exists, proc_errc_ );
+		// 	return ec;
+		// } else {
+		// 	channels_.erase( );   // Create channel
+		// }
 	}
 	ec.assign( boost::system::errc::success, proc_errc_ );
 	return ec;
@@ -170,10 +212,12 @@ error_code Processor::do_leave_( Guest::pointer guest ) {
 /* ---------------------------------------------------- */
 	error_code ec;
 	{
-		scoped_lock lk( stage_m_ );
-		auto result = guests_.erase( guest->get_alias() );
-		if ( result != 1 ) {
-			ec.assign( boost::system::errc::connection_refused, proc_errc_ );
+		scoped_lock lk( guests_m_ );
+		std::cerr << guest->get_alias() << std::endl;
+		int result = guests_.erase( guest->get_alias() );
+		if ( result == 0 ) {
+			ec.assign( boost::system::errc::no_such_file_or_directory, proc_errc_ );
+			return ec;
 		}
 	}
 	ec.assign( boost::system::errc::success, proc_errc_ );

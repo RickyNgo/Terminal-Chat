@@ -26,36 +26,68 @@ Connection::~Connection( void ) {
 /* ------------------------------- */
 
 void Connection::start( void ) {
-	handler_.async_stage(
-		shared_from_this(),
-		boost::bind(
-			&Connection::on_stage_,
-			shared_from_this(),
-			_1
-		)
-	); 
+	do_read_header_();
 }
 
 /* ------------------------------- */
 /*   Command Completion Handlers   */
 /* ------------------------------- */
 
-void Connection::on_stage_( error_code ec ) {
-	std::cerr << client_ << "::STAGE => " << ec << " [" << ec.message() << "]" << std::endl;
-	Messages data( "Server", ec.message(), time( NULL ), 0 );
-	do_write_header_( data );
-}
 
 void Connection::on_login_( error_code ec ) {
-	std::cerr << client_ << "::LOGIN => " << ec << " [" << ec.message() << "]" << std::endl;
+
+	std::cerr << client_ << "::LOGIN => " << ec << " [" << ec.message() << "]." << std::endl;
 	Messages data( "Server", ec.message(), time( NULL ), LOGIN );
+
+	/* Informs user if their alias is ok; if ok, the connection and name were stored */
+
 	do_write_header_( data ); 
 }
 
+void Connection::on_create_channel_( error_code ec ) {
+	
+	std::cerr << client_ << "::CREATE_CHANNEL => " << ec << " [" << ec.message() << "]." << std::endl;
+	Messages data( "Server", ec.message(), time( NULL ), CREATE_CHANNEL );
+
+	/* Need a solution. Connection could send back "OK" if the channel name is available.
+	The client could then start listening on their listen port, and could then notify
+	the server. The server gets the message and tries to connect (the client would need
+	to pass the port number they are listening on in the message. This could also happen
+	during the initial connection ). */
+
+	do_write_header_( data );
+}
+
+void Connection::on_join_channel_( error_code ec ) {
+
+	std::cerr << client_ << "::JOIN_CHANNEL => " << ec << " [" << ec.message() << "]." << std::endl;
+	Messages data( "Server", ec.message(), time( NULL ), JOIN_CHANNEL );
+
+	/* Need a solution. Connection could send back "OK" if the channel name is available.
+	The client could then start listening on their listen port, and could then notify
+	the server. The server gets the message and tries to connect (the client would need
+	to pass the port number they are listening on in the message. This could also happen
+	during the initial connection ). */
+
+	do_write_header_( data );
+}
+
+void Connection::on_close_channel_( error_code ec ) {
+	
+	std::cerr << client_ << "::CLOSE_CHANNEL => " << ec << " [" << ec.message() << "]." << std::endl;
+	Messages data( "Server", ec.message(), time( NULL ), CHANNEL_CLOSE );
+
+	/* Informs moderator whether the channel was sucessfully closed */
+
+	do_write_header_( data );
+}
+
 void Connection::on_leave_( error_code ec ) {
-	std::cerr << client_ << "::LEAVE => " << ec << " [" << ec.message() << "]" << std::endl;
+
+	std::cerr << client_ << "::LEAVE => " << ec << " [" << ec.message() << "]." << std::endl;
 	std::cerr << shared_from_this().use_count() - 1 << std::endl;
-	/* Leave Scope ... */
+
+	/* Calls Destructor by leaving scope here! */
 }
 
 /* ------------------------------- */
@@ -118,12 +150,12 @@ void Connection::do_read_body_( void ) {
 }
 
 void Connection::on_read_body_( error_code error, size_t bytes ) {
+
 	msg_.get_body() = std::move( read_buffer_ );
 	switch( msg_.get_command() ) {
-		
+/* ----------------------------------- */
 		case LOGIN:
 		
-		std::cerr << "alias: " << msg_.get_sender() << std::endl;
 		handler_.async_login(
 			shared_from_this(),
 			const_buffer(
@@ -139,11 +171,64 @@ void Connection::on_read_body_( error_code error, size_t bytes ) {
 
 		std::cerr << client_ << " >> LOGIN." << std::endl;
 		break;
+/* ----------------------------------- */
+		case CREATE_CHANNEL:
 
-		default:
-		do_write_header_( msg_ );
+		handler_.async_login(
+			shared_from_this(),
+			const_buffer(
+				msg_.get_sender().data(),
+				msg_.get_length()
+			),
+			boost::bind(
+				&Connection::on_login_,
+				shared_from_this(),
+				_1 
+			)
+		);
+
+		std::cerr << client_ << " >> CREATE_CHANNEL." << std::endl;
 		break;
+/* ----------------------------------- */
+		case JOIN_CHANNEL:
 
+		handler_.async_join_channel(
+			const_buffer(
+				msg_.get_body().data(),
+				msg_.get_body().length()
+			),
+			boost::bind(
+				&Connection::on_join_channel_,
+				shared_from_this(),
+				_1
+			)
+		);
+
+		std::cerr << client_ << " >> JOIN_CHANNEL." << std::endl;
+		break;
+/* ----------------------------------- */
+		case LISTENING:
+
+
+/* ----------------------------------- */
+		case LEAVE:
+
+		handler_.async_leave(
+			shared_from_this(),
+			boost::bind(
+				&Connection::on_leave_,
+				shared_from_this(),
+				_1
+			)
+		);
+
+		std::cerr << client_ << " >> LEAVE." << std::endl;
+		break;
+/* ----------------------------------- */
+		default:
+
+		do_write_header_( msg_ );	/* Echo Back Message */
+		break;
 	}
 	
 }

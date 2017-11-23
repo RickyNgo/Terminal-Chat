@@ -3,7 +3,6 @@
 
 #include <cstring>
 #include <boost/shared_ptr.hpp>
-// #include "messages.hpp"
 
 class Guest {
 public:
@@ -14,11 +13,6 @@ public:
 	const char * 			get_alias( void ) const;
 	void					set_alias( const char * );
 	const unsigned int 		get_id( void ) const;
-
-	/* Utility */
-
-	// static bool	compare_alias_( Guest::pointer lhs, Guest::pointer rhs );
-
 
 private:
 	static unsigned int 	id;
