@@ -176,6 +176,12 @@ error_code Processor::do_join_channel_( const_buffer data ) {
 			ec.assign( boost::system::errc::no_such_file_or_directory, proc_errc_ );
 			return ec;
 		}
+		else
+		{
+			auto new_session = boost::make_shared<Session>(std::move(socket_), channels_[channel]);
+			
+			channels_[channel].join(new_session);
+		}
 	}
 	ec.assign( boost::system::errc::success, proc_errc_ );
 	return ec;

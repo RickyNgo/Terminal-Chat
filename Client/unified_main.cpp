@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
         wrefresh(channelWin);
         wrefresh(contactWinBox);
 
-        for (int i = 0; i < 30; i ++)
+        for (int i = 0; i < 20; i ++)
         {
             display_chat();
         }
@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
         c->send(input_msg);
         //display_chat();
         
-        for (int i = 0; i < 30; i ++)
+        for (int i = 0; i < 20; i ++)
         {
             display_chat();
         }

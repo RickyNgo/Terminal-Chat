@@ -75,8 +75,17 @@ void Client::on_read_body( boost::system::error_code ec, std::size_t bytes ) {
         //std::cout << "Read body: " << read_msg.get_body() << std::endl;
         //memset(read_buffer_, '\0', sizeof(char)*512);
         
-        // UNCOMMENT THIS!!
-        //update_buffers(std::to_string(read_msg.get_time()), read_msg.get_sender(), read_msg.get_body());
+        time_t temp = read_msg.get_time();
+
+        struct tm *time_info = localtime(&temp);
+        char *raw_time = new char[12];
+
+        sprintf(raw_time, "%02d:%02d:%02d|", time_info->tm_hour, time_info->tm_min, time_info->tm_sec);
+
+        std::string fmtd_time(raw_time);
+
+        update_buffers(fmtd_time, read_msg.get_sender(), read_msg.get_body());
+
         do_read_header();
     } else {
         //std::cout << "Read error: " << ec << std::endl;
