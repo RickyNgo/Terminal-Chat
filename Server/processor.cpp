@@ -2,7 +2,9 @@
 
 Processor::Processor( boost::asio::io_service & ios ) :
 ios_( ios ),
+socket_(ios),
 num_t_( 2 ) {
+	//socket_(ios_);
 	for ( int i = 0; i < num_t_; i++ ) {
 		threads_.add_thread( new boost::thread( boost::bind( &Processor::run_, this )));
 	}
@@ -148,9 +150,9 @@ error_code Processor::do_create_channel_( const_buffer data ) {
 			ec.assign( boost::system::errc::file_exists, proc_errc_ );
 			return ec;
 		} else {
-			Channel new_channel();
+			Channel new_channel;
 
-			auto new_session = boost::make_shared<Session>(std::move(socket_), &new_channel);
+			auto new_session = boost::make_shared<Session>(std::move(socket_), new_channel);
 
 			new_channel.join(new_session);
 

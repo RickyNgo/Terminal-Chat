@@ -54,7 +54,7 @@ private:
 	typedef boost::recursive_mutex::scoped_lock			scoped_lock;
 	typedef std::pair<const char *, Guest::pointer>		guest_t;
 	typedef std::pair<const char *, Channel>			channel_t;
-	boost::tcp::socket 									socket_;
+	tcp::socket 									socket_;
 	/* Start Error Code Category */
 
 #ifndef __ERROR__
