@@ -2,7 +2,10 @@
 
 unsigned int Guest::id = 0;
 
-Guest::Guest( void ) : id_( ++id ) { }
+Guest::Guest( tcp::endpoint address ) :
+client_( address ),
+id_( ++id )
+{ }
 
 Guest::~Guest( void ) { }
 
@@ -16,4 +19,7 @@ const char * Guest::get_alias( void ) const {
 
 void Guest::set_alias( const char * alias ) {
 	std::memcpy( alias_, alias, strlen( alias ));
+}
+const tcp::endpoint Guest::get_address( void ) const {
+	return client_;
 }

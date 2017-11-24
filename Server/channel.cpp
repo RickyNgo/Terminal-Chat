@@ -1,9 +1,7 @@
 #include "channel.hpp"
 
 
-Channel::Channel( void ) {
-	
- }
+Channel::Channel( void ) { }
 
 Channel::~Channel( void ) { }
 

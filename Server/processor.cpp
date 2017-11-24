@@ -1,10 +1,10 @@
 #include "processor.hpp"
 
-Processor::Processor( boost::asio::io_service & ios ) :
+Processor::Processor( boost::asio::io_service & ios, const short port ) :
 ios_( ios ),
-socket_(ios),
+socket_( ios_ ),
+port_( port ),
 num_t_( 2 ) {
-	//socket_(ios_);
 	for ( int i = 0; i < num_t_; i++ ) {
 		threads_.add_thread( new boost::thread( boost::bind( &Processor::run_, this )));
 	}
@@ -12,6 +12,9 @@ num_t_( 2 ) {
 
 Processor::~Processor( void ) {
 	std::cerr << "Closing Connections..." << std::endl;
+	for ( auto guest: guests_ ) {
+		delete [] guest.first;
+	}
 	guests_.clear();
 
 	std::cerr << "Deleting processor..." << std::endl;
@@ -68,9 +71,7 @@ void Processor::Operation::run( void ) {
 /* ------------------------------ */
 
 bool Processor::Equal::operator() ( const char * lhs, const char * rhs ) const noexcept {
-	int result = std::strcmp( lhs, rhs );
-	std::cerr << "equal: " << result << std::endl;
-	return ( result ) ? true : false;
+	return ( std::strcmp( lhs, rhs )) ? true : false;
 }
 
 /* ------------------------------ */
@@ -82,8 +83,8 @@ void Processor::async_login( Guest::pointer guest, const_buffer alias, on_async_
 	ios_.post( boost::bind( &Processor::add_, this, fn, comp ));
 }
 
-void Processor::async_create_channel( const_buffer channel, on_async_op comp ) {
-	do_async_op fn = boost::bind( &Processor::do_create_channel_, this, channel );
+void Processor::async_create_channel( Guest::pointer guest, const_buffer channel, on_async_op comp ) {
+	do_async_op fn = boost::bind( &Processor::do_create_channel_, this, guest, channel );
 	ios_.post( boost::bind( &Processor::add_, this, fn, comp ));
 }
 
@@ -117,18 +118,21 @@ error_code Processor::do_login_( Guest::pointer guest, const_buffer data ) {
 	/* Check that the alias is OK first */
 	{
 		scoped_lock lk( guests_m_ );
-		auto result = guests_.count( alias );
+		auto result = guests_.find( alias );
 
 		/* If it's not, return */
-		if ( result != 0 ) {
+		if ( result != guests_.end() ) {
+			std::cerr << "Processor: found: " << alias << std::endl;
 			ec.assign( boost::system::errc::file_exists, proc_errc_ );
 			return ec;
 		}
 	}
 	/* Alias is OK */
+	char * new_ = new char [ 25 ]();
+	std::strcpy( new_, alias );
 	{
 		scoped_lock lk( guests_m_ );
-		guests_.insert( guest_t( alias, guest ));
+		guests_.insert( guest_t( new_, guest ));
 	}
 	guest->set_alias( alias );
  	ec.assign( boost::system::errc::success, proc_errc_ ); 
@@ -136,7 +140,7 @@ error_code Processor::do_login_( Guest::pointer guest, const_buffer data ) {
 }
 
 /* ---------------------------------------------------------------------------------- */
-error_code Processor::do_create_channel_( const_buffer data ) {
+error_code Processor::do_create_channel_( Guest::pointer guest, const_buffer data ) {
 /* ---------------------------------------------------------------------------------- */
 	error_code 		ec;
 	const char *	channel;
@@ -149,14 +153,10 @@ error_code Processor::do_create_channel_( const_buffer data ) {
 		if ( result != channels_.end() ) {
 			ec.assign( boost::system::errc::file_exists, proc_errc_ );
 			return ec;
-		} else {
-			Channel new_channel;
-
-			auto new_session = boost::make_shared<Session>(std::move(socket_), new_channel);
-
-			new_channel.join(new_session);
-
-			channels_.insert( channel_t( channel, new_channel ));   // Create channel
+		}
+		auto new_ = channels_.insert( channel_t( channel, Channel() ));   // Create channel
+		if ( new_.second ) {
+			ios_.post( boost::bind( &Processor::do_connect_, this, guest, channel ));
 		}
 	}
 	ec.assign( boost::system::errc::success, proc_errc_ );
@@ -177,12 +177,6 @@ error_code Processor::do_join_channel_( const_buffer data ) {
 		if ( result == channels_.end() ) {
 			ec.assign( boost::system::errc::no_such_file_or_directory, proc_errc_ );
 			return ec;
-		}
-		else
-		{
-			auto new_session = boost::make_shared<Session>(std::move(socket_), channels_[channel]);
-			
-			channels_[channel].join(new_session);
 		}
 	}
 	ec.assign( boost::system::errc::success, proc_errc_ );
@@ -223,6 +217,7 @@ error_code Processor::do_leave_( Guest::pointer guest ) {
 		scoped_lock lk( guests_m_ );
 		std::cerr << guest->get_alias() << std::endl;
 		int result = guests_.erase( guest->get_alias() );
+		std::cerr << "erased: " << result << std::endl;
 		if ( result == 0 ) {
 			ec.assign( boost::system::errc::no_such_file_or_directory, proc_errc_ );
 			return ec;
@@ -268,6 +263,15 @@ void Processor::run_( void ) {
 	}
 }
 
+void Processor::do_connect_( Guest::pointer guest, std::string channel ) {
+	tcp::endpoint endpoint( guest->get_address().address(), port_ );
+	socket_.async_connect( endpoint, boost::bind( &Processor::on_connect_, this, _1 ));
+}
 
+void Processor::on_connect_( error_code ec ) {
+	if ( ! ec ) {
+		/* Create Session here */
+	}
+}
 
 

@@ -1,24 +1,28 @@
 #include "connection.hpp"
 
 /* Constructor */
-Connection::Connection( tcp::socket socket, tcp::endpoint client, Processor & handler ) : 
-/* The handler interacts with the connection via this guest object through virtual functions defined in this class */
-Guest(),
+Connection::Connection( tcp::socket socket, tcp::endpoint address, Processor & handler ) : 
+
+/* The handler needs to know this connection's alias; this object prevents cyclical dependencies */
+Guest( address ),
 
 /* The persistent connection with the user is through this socket */
 socket_( std::move( socket )),
 
 /* The clients ip (endpoint) */
-client_( client ),
+// client_( client ),
 
 /* This class sends messages to the handler for processing since every message will have a command. */
 handler_( handler )
-{ }
+{
+	std::cerr << "Connection # " << id_ << std::endl;
+	std::memset( read_buffer_, '\0', sizeof( read_buffer_ ));
+}
 
 Connection::~Connection( void ) {
 	socket_.shutdown( tcp::socket::shutdown_both );
 	socket_.close();
-	std::cerr << "Connection " << get_id() << "::" << client_ << " terminated." << std::endl;
+	std::cerr << "Connection " << get_id() << "::" << client_ << " (" << alias_ << ") terminated." << std::endl;
 }
 
 /* ------------------------------- */
@@ -49,11 +53,6 @@ void Connection::on_create_channel_( error_code ec ) {
 	std::cerr << client_ << "::CREATE_CHANNEL => " << ec << " [" << ec.message() << "]." << std::endl;
 	Messages data( "Server", ec.message(), time( NULL ), CREATE_CHANNEL );
 
-	/* Need a solution. Connection could send back "OK" if the channel name is available.
-	The client could then start listening on their listen port, and could then notify
-	the server. The server gets the message and tries to connect (the client would need
-	to pass the port number they are listening on in the message. This could also happen
-	during the initial connection ). */
 
 	do_write_header_( data );
 }
@@ -63,13 +62,11 @@ void Connection::on_join_channel_( error_code ec ) {
 	std::cerr << client_ << "::JOIN_CHANNEL => " << ec << " [" << ec.message() << "]." << std::endl;
 	Messages data( "Server", ec.message(), time( NULL ), JOIN_CHANNEL );
 
-	/* Need a solution. Connection could send back "OK" if the channel name is available.
-	The client could then start listening on their listen port, and could then notify
-	the server. The server gets the message and tries to connect (the client would need
-	to pass the port number they are listening on in the message. This could also happen
-	during the initial connection ). */
-
-	do_write_header_( data );
+	if ( ! ec ) {
+		std::string channel = msg_.get_body();
+	} else {
+		do_write_header_( data );
+	}
 }
 
 void Connection::on_close_channel_( error_code ec ) {
@@ -95,9 +92,6 @@ void Connection::on_leave_( error_code ec ) {
 /* ------------------------------- */
 
 void Connection::do_read_header_( void ) {
-
-	memset(read_buffer_, '\0', sizeof(char)*512);
-
 	socket_.async_receive(
 		boost::asio::buffer(
 			read_buffer_,
@@ -120,28 +114,23 @@ void Connection::on_read_header_( error_code error, size_t bytes ) {
 
 		do_read_body_();
 
-	} else {
-		if ( error.value() == boost::asio::error::eof ) {
-			std::cerr << client_ << " >> EOF." << std::endl;
-			handler_.async_leave(
+	} else if ( error.value() == boost::asio::error::eof ) {
+		std::cerr << client_ << " >> EOF." << std::endl;
+		handler_.async_leave(
+			shared_from_this(),
+			boost::bind(
+				&Connection::on_leave_,
 				shared_from_this(),
-				boost::bind(
-					&Connection::on_leave_,
-					shared_from_this(),
-					_1
-				)
-			);
+				_1
+			)
+		);
 
-		} else {
-			std::cerr << error << std::endl;
-		}
+	} else {
+		std::cerr << error << std::endl;
 	}
 }
 
 void Connection::do_read_body_( void ) {
-
-	memset(read_buffer_, '\0', sizeof(char)*512);
-	
 	socket_.async_receive( 
 		boost::asio::buffer( 
 			read_buffer_,
@@ -213,10 +202,6 @@ void Connection::on_read_body_( error_code error, size_t bytes ) {
 		std::cerr << client_ << " >> JOIN_CHANNEL." << std::endl;
 		break;
 /* ----------------------------------- */
-		case LISTENING:
-
-
-/* ----------------------------------- */
 		case LEAVE:
 
 		handler_.async_leave(
@@ -233,7 +218,8 @@ void Connection::on_read_body_( error_code error, size_t bytes ) {
 /* ----------------------------------- */
 		default:
 
-		do_write_header_( msg_ );	/* Echo Back Message */
+		/* Echo Back Message */
+		do_write_header_( msg_ );	
 		break;
 	}
 	
@@ -255,8 +241,7 @@ void Connection::do_write_header_( Messages msg ) {
 
 void Connection::on_write_header_( boost::system::error_code error, size_t bytes , Messages msg) {
 	if ( ! error ) {
-		// std::cerr << bytes << " bytes >> " << client_ << "." << std::endl;
-		do_write_body_(msg);
+		do_write_body_( msg );
 	} else {
 		std::cerr << "Connection Error: on_write_: " << error << std::endl;
 	}

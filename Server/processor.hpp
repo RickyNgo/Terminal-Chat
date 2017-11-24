@@ -5,11 +5,13 @@
 using boost::system::error_code;
 #include <boost/asio.hpp>
 using boost::asio::io_service;
+using boost::asio::ip::tcp;
 #include <boost/asio/buffer.hpp>
 #include <boost/bind.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/shared_array.hpp>
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/thread.hpp>
@@ -22,7 +24,6 @@ using boost::condition_variable;
 #include <map>
 #include "guest.hpp"
 #include "channel.hpp" 
-#include "session.hpp"
 
 class Connection;
 
@@ -36,25 +37,22 @@ public:
 	typedef boost::function<error_code( void )> 		do_async_op;
 	typedef boost::function<void( error_code )> 		on_async_op;
 
-	Processor( io_service & ios );
+	Processor( io_service & ios, const short port );
 	~Processor( void );
 
 	/* Commands */
 
 	void	async_login( Guest::pointer, const_buffer, on_async_op );
 	void	async_leave( Guest::pointer, on_async_op );
-	void	async_create_channel( const_buffer, on_async_op );
+	void	async_create_channel( Guest::pointer, const_buffer, on_async_op );
 	void	async_join_channel( const_buffer, on_async_op );
 	void	async_close_channel( const_buffer, on_async_op );
 
-
 private:
-
-
 	typedef boost::recursive_mutex::scoped_lock			scoped_lock;
 	typedef std::pair<const char *, Guest::pointer>		guest_t;
 	typedef std::pair<const char *, Channel>			channel_t;
-	tcp::socket 									socket_;
+
 	/* Start Error Code Category */
 
 #ifndef __ERROR__
@@ -110,6 +108,7 @@ public:
 
 	Error 													proc_errc_;
 	io_service &											ios_;
+	tcp::socket												socket_;
 	std::map<const char *, Guest::pointer, Equal>			guests_;
 	boost::recursive_mutex									guests_m_;
 	std::map<const char *, Channel, Equal>					channels_;
@@ -118,15 +117,18 @@ public:
 	boost::mutex 											ops_m_;
 	condition_variable 										cond_;
 	boost::thread_group										threads_;
-	const std::uint8_t  									num_t_;					
+	const std::uint8_t  									num_t_;
+	const short   											port_;					
 
 	void			add_( do_async_op, on_async_op );
 	void 			run_( void );
+	void			do_connect_( Guest::pointer, std::string );
+	void			on_connect_( error_code ec );
 
 	/* Command helpers */
 
 	error_code		do_login_( Guest::pointer, const_buffer );
-	error_code 		do_create_channel_( const_buffer );
+	error_code 		do_create_channel_( Guest::pointer, const_buffer );
 	error_code		do_join_channel_( const_buffer );
 	error_code		do_close_channel_( const_buffer );
 	error_code		do_leave_( Guest::pointer );

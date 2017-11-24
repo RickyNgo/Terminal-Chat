@@ -3,12 +3,12 @@
 /* Server Constructor */
 
 
-Server::Server( const char * host, const short & port ) :
+Server::Server( const char * host, const short & command, const short & session ) :
 /* Create the io_service */
 ios_(),
 
 /* Create the endpoint for the server ( localhost:port ) */
-address_( boost::asio::ip::address::from_string( host ), port ),
+address_( boost::asio::ip::address::from_string( host ), command ),
 
 /* Create the acceptor. The acceptor listens for incoming connections */
 acceptor_( ios_, address_ ),
@@ -20,7 +20,7 @@ socket_( ios_ ),
 signals_( ios_, SIGINT ),
 
 /* Handles Connections */
-handler_( ios_ )
+handler_( ios_, session )
 {
 	try {
 		acceptor_.set_option( tcp::acceptor::reuse_address( true ));
@@ -62,12 +62,12 @@ void Server::on_stop_( void ) {
   */
 
 void Server::accept_( void ) {
-	this->acceptor_.async_accept( this->socket_, this->client_,
+	this->acceptor_.async_accept( socket_, client_,
 		[ this ]( boost::system::error_code error ) {
 
 		/* If there is no error, call create connection to start receiving data */
 		if ( ! error ) {
-			std::cerr << "Hello " << this->client_ << "." << std::endl;
+			std::cerr << "Hello " << client_ << "." << std::endl;
 
 			/* It is recommended (Torjo, John. Boost.Asio C++ Network Programming. Packt Publishing, 2013. pp.31-33, 53-54 )
 			to create a connection class to handle asynchronous reads and writes with a socket. Alternatively, stack space
