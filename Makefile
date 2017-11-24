@@ -1,5 +1,5 @@
 CXX=g++
-CFLAGS=-std=c++14 
+CFLAGS=-std=c++11 
 LDFLAGS=-lncurses
 LDFLAGS+=-lboost_system
 LDFLAGS+=-lpthread

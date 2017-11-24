@@ -17,7 +17,7 @@ class Channel;
 class Session :
 public boost::enable_shared_from_this<Session> {
 public:
-	Session( tcp::socket socket, Channel &room);
+	Session( tcp::socket socket, Channel &room );
 	~Session( void );
 	typedef boost::shared_ptr<Session> pointer;
     

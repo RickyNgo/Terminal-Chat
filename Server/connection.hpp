@@ -9,14 +9,13 @@ using boost::asio::ip::tcp;
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
 #include <iostream>
+#include <string>
 #include <vector>
 #include <ctime>
 
 #include "processor.hpp"
 #include "messages.hpp"
 #include "guest.hpp"
-
-#define HEADER_LEN 2
 
 class Connection : 
 public Guest,
@@ -50,11 +49,11 @@ private:
 	void 	do_write_body_( Messages );
 	void 	on_write_body_( error_code, size_t );
 
-	Messages 				msg_;
-	char					read_buffer_[ 512 ];
-	tcp::socket				socket_;
-	tcp::endpoint			client_;
-	Processor		 		& handler_;
+	Messages 					msg_;
+	char						read_buffer_[ 512 ];
+	tcp::socket					socket_;
+	// tcp::endpoint				client_;
+	Processor		 			& handler_;
 };
 
 #endif  /* END CONNECTION */
