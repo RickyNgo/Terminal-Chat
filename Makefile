@@ -5,7 +5,7 @@ LDFLAGS+=-lboost_system
 LDFLAGS+=-lpthread
 LDFLAGS+=-lboost_thread
 
-LayoutSrc=layout.cpp layout.hpp
+LayoutSrc=layout.cpp
 ClientSrc=aux_functions.cpp client.cpp db_helper.cpp unified_main.cpp channel.cpp
 MessageSrc=messages.cpp
 ServerSrc=channel_utility.cpp channel.cpp connection.cpp daemon.cpp guest.cpp processor.cpp server.cpp session.cpp
@@ -22,7 +22,6 @@ ServerPath=$(addprefix $(ServerDir),$(ServerSrc))
 
 enki_client: $(ClientPath) $(MessagePath) $(LayoutPath)
 	$(CXX) $(CFLAGS) $(ClientPath) $(MessagePath) $(LayoutPath) -o enki_client $(LDFLAGS) 
-
 
 
 enki_server: $(ServerPath) $(MessagePath)

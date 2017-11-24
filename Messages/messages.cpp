@@ -135,7 +135,7 @@ std::string& Messages::get_body()
 	return this->msg_body;
 }
 
-int Messages::get_time()
+time_t Messages::get_time()
 {
 	return this->timestamp;
 }

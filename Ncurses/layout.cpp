@@ -207,6 +207,7 @@ std::string get_input()
     else
     {
         // The code below pretty much echos back what you type in
+        /*
         time(&ts);
 
         time_info = localtime(&ts);
@@ -229,6 +230,9 @@ std::string get_input()
 
         for_client.append("|");
         for_client.append(conv);
+        */
+
+        for_client.assign(buffer);
     }
     
     /////////////////////////////////////////////////////////
@@ -257,7 +261,7 @@ void display_chat()
 
     for (int i = chat_buffer.size(); i > 0; i--)
     {
-        color = rand() % 6+2;
+        color = 7;
 
         mvwprintw(chatWin, window_limit, 1, time_buffer[chat_buffer_pos].c_str());
 

@@ -43,7 +43,7 @@ class Messages
 
 		std::string get_sender();
 		std::string& get_body();
-		int get_time();
+		time_t get_time();
 		int get_command();
 		int& get_length();
 		std::string& get_header();
