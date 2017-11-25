@@ -133,7 +133,6 @@ error_code Processor::do_login_( Guest::pointer guest, const_buffer data ) {
 	/* Alias is OK */
 	char * new_ = new char [ 25 ]();
 	std::strcpy( new_, alias );
-	std::cerr << "copied to new_: " << new_ << std::endl;
 	guest->set_alias( new_ );
 	{
 		scoped_lock lk( guests_m_ );
