@@ -102,7 +102,8 @@ void draw_input()
 int win_init()
 {
     initscr();
-    cbreak();
+    //cbreak();
+    halfdelay(10);
     start_color();
     srand(NULL);
 
@@ -187,7 +188,12 @@ std::string get_input()
     wmove(inputWin, 0, 4);
     wrefresh(inputWin);
     
-    wgetnstr(inputWin, buffer, 280);
+    int result = wgetnstr(inputWin, buffer, 280);
+
+    if (result == ERR)
+    {
+        return "";
+    }
 
     if (buffer[0] == '\0')
     {

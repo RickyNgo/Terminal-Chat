@@ -24,6 +24,10 @@ Commands get_command(std::string input)
         {
             return CREATE_CHANNEL;
         }
+        else if (token == "/join_channel")
+        {
+            return JOIN_CHANNEL;
+        }
         else 
         {
             return MSG;
@@ -73,7 +77,7 @@ int main(int argc, char* argv[])
         wrefresh(channelWin);
         wrefresh(contactWinBox);
 
-        for (int i = 0; i < 20; i ++)
+        for (int i = 0; i < 30; i ++)
         {
             display_chat();
         }
@@ -84,10 +88,14 @@ int main(int argc, char* argv[])
         //Parse the input to determine what the command should be
         Commands cmd = get_command(input);
         Messages input_msg(alias, input, time(&current_time), cmd);
+        if (cmd == CREATE_CHANNEL)
+        {
+            c->create_channel(input_msg.get_body());
+        }
         c->send(input_msg);
         //display_chat();
         
-        for (int i = 0; i < 20; i ++)
+        for (int i = 0; i < 30; i ++)
         {
             display_chat();
         }

@@ -655,20 +655,34 @@ void Client::join(std::string){}
 
 void Client::add_mod(std::string){}
 
+void accept_handler(const boost::system::error_code& error)
+{
+    if (!error)
+    {
+
+    }
+    else
+    {
+        std::cout << "Could not accept" << std::endl;
+    }
+}
+
 void Client::create_channel(std::string channel_name){ //***
 	// set up listening connection
 	// on accept, move socket by reference to new channel object
 	// set this to currentChannel
 	tcp::acceptor a(ios, tcp::endpoint(tcp::v4(), connection_port_));
 
-	std::cout << "acceptor is open : " << a.is_open() << std::endl;
+	//std::cout << "acceptor is open : " << a.is_open() << std::endl;
 
 	tcp::socket sock(ios);
-	a.accept(sock);
+	a.async_accept(sock, accept_handler);
 
 	Channel newChat(channel_name, 1, sock);
 	set_current_channel(&newChat);
 }
+
+
 
 void Client::whisper(std::string){
 
