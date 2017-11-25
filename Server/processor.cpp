@@ -12,9 +12,9 @@ num_t_( 2 ) {
 
 Processor::~Processor( void ) {
 	std::cerr << "Closing Connections..." << std::endl;
-	for ( auto guest: guests_ ) {
-		delete [] guest.first;
-	}
+	// for ( auto guest: guests_ ) {
+	// 	delete [] guest.first;
+	// }
 	guests_.clear();
 
 	std::cerr << "Deleting processor..." << std::endl;
@@ -71,10 +71,7 @@ void Processor::Operation::run( void ) {
 /* ------------------------------ */
 
 bool Processor::Equal::operator() ( const char * lhs, const char * rhs ) const noexcept {
-	bool result = ( std::strcmp( lhs, rhs )) ? true : false;
-	std::cerr << std::boolalpha;
-	std::cerr << lhs << " " << rhs << " " << result << std::endl;
-	return result;
+	return ( std::strcmp( lhs, rhs )) ? true : false;
 }
 
 /* ------------------------------ */
@@ -118,6 +115,7 @@ error_code Processor::do_login_( Guest::pointer guest, const_buffer data ) {
 	const char * 	alias;
 
 	alias = boost::asio::buffer_cast<const char *>( data );
+	std::cerr << "Processor::do_login_(): users alias: " << alias << std::endl;
 	/* Check that the alias is OK first */
 	{
 		scoped_lock lk( guests_m_ );
@@ -125,19 +123,18 @@ error_code Processor::do_login_( Guest::pointer guest, const_buffer data ) {
 
 		/* If it's not, return */
 		if ( result != guests_.end() ) {
-			std::cerr << "Processor: found: " << alias << std::endl;
 			ec.assign( boost::system::errc::file_exists, proc_errc_ );
 			return ec;
 		}
 	}
 	/* Alias is OK */
-	char * new_ = new char [ 25 ]();
-	std::strcpy( new_, alias );
-	guest->set_alias( new_ );
+	// char * new_ = new char [ 25 ]();
+	guest->set_alias( alias );
+	// std::strcpy( new_, alias );
+
 	{
 		scoped_lock lk( guests_m_ );
-		std::cerr << "inserting " << new_ << std::endl;
-		guests_.insert( guest_t( new_, guest ));
+		guests_.insert( guest_t( guest->get_alias(), guest ));
 	}
  	ec.assign( boost::system::errc::success, proc_errc_ ); 
 	return ec;
@@ -240,23 +237,23 @@ error_code Processor::do_close_channel_( const_buffer data ) {
 error_code Processor::do_leave_( Guest::pointer guest ) {
 /* ---------------------------------------------------- */
 	error_code ec;
+
+	if ( ! guest->has_alias() ) {
+		ec.assign( boost::system::errc::success, proc_errc_ );
+		return ec;
+	}
+	/* Guest logged in, find alias in guests_ and remove it */
 	{
 		scoped_lock lk( guests_m_ );
 
-		std::cerr << "guests:" << std::endl;
 		for ( auto guest: guests_ ) {
 			std::cerr << guest.first << std::endl;
 		}
-		std::cerr << "end guests\nguests size: " << guests_.size() << std::endl;
-		std::cerr << "front: " << guests_.begin()->first << std::endl;
-		// auto result = guests_.find( guest->get_alias() );
 		auto it = guests_.begin();
 		while ( it != guests_.end() ) {
-			std::cerr << it->first << " " << guest->get_alias() << std::endl;
 			if ( std::strcmp( it->first, guest->get_alias() ) == 0 ) {
 				guests_.erase( it );
 				ec.assign( boost::system::errc::success, proc_errc_ );
-				
 				return ec;
 			} else {
 				it++;
@@ -295,7 +292,7 @@ void Processor::run_( void ) {
 			ops_.pop();
 			
 			/* Check that thread should continue with operation -- check interruption flag */
-			boost::this_thread::sleep( boost::posix_time::millisec(10));
+			boost::this_thread::sleep( boost::posix_time::millisec( 10 ));
 			op.run();
 		}
 	} catch ( boost::thread_interrupted& e ) {
@@ -311,6 +308,7 @@ void Processor::do_connect_( Guest::pointer guest, std::string channel ) {
 void Processor::on_connect_( error_code ec ) {
 	if ( ! ec ) {
 		/* Create Session here */
+		
 	}
 }
 

@@ -44,7 +44,7 @@ private:
 	void 	on_read_body_( error_code, size_t );
 
 	void 	do_write_header_( Messages );
-	void 	on_write_header_( error_code, size_t , Messages);
+	void 	on_write_header_( error_code, size_t, Messages );
 	
 	void 	do_write_body_( Messages );
 	void 	on_write_body_( error_code, size_t );

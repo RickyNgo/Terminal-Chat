@@ -16,12 +16,14 @@ public:
 	void						set_alias( const char * );
 	const unsigned int 			get_id( void ) const;
 	const tcp::endpoint			get_address( void ) const;
+	bool						has_alias( void ) const;
 
 protected:
 	tcp::endpoint			client_;
 	static unsigned int 	id;
 	const unsigned int 		id_;
 	char 	 				alias_[ 25 ];	
+	bool					alias_set;
 };
 
 #endif
