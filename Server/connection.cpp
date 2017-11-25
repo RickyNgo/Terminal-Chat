@@ -41,7 +41,6 @@ void Connection::start( void ) {
 void Connection::on_login_( error_code ec ) {
 
 	std::cerr << client_ << "::LOGIN => " << ec << " [" << ec.message() << "]." << std::endl;
-	std::cerr << "clients new alias: " << get_alias() << std::endl;
 	Messages data( "Server", ec.message(), time( NULL ), LOGIN );
 
 	/* Informs user if their alias is ok; if ok, the connection and name were stored */
@@ -83,7 +82,6 @@ void Connection::on_close_channel_( error_code ec ) {
 void Connection::on_leave_( error_code ec ) {
 
 	std::cerr << client_ << "::LEAVE => " << ec << " [" << ec.message() << "]." << std::endl;
-	std::cerr << shared_from_this().use_count() - 1 << std::endl;
 
 	/* Calls Destructor by leaving scope here! */
 }
@@ -112,7 +110,6 @@ void Connection::on_read_header_( error_code error, size_t bytes ) {
 
 		msg_.get_header() = std::move( read_buffer_ );
 		msg_.parse_header();
-		std::cerr << "in on_read_header_: " << msg_.get_length() << std::endl;
 		do_read_body_();
 
 	} else if ( error.value() == boost::asio::error::eof ) {
@@ -151,7 +148,6 @@ void Connection::on_read_body_( error_code error, size_t bytes ) {
 	switch( msg_.get_command() ) {
 /* ----------------------------------- */
 		case LOGIN:
-		std::cerr << "in on_read_body_: " << msg_.get_sender().data() << std::endl;
 		handler_.async_login(
 			shared_from_this(),
 			const_buffer(
@@ -223,7 +219,6 @@ void Connection::on_read_body_( error_code error, size_t bytes ) {
 		do_write_header_( msg_ );	
 		break;
 	}
-	
 }
 
 void Connection::do_write_header_( Messages msg ) {
@@ -262,6 +257,7 @@ void Connection::do_write_body_( Messages msg ) {
 			_1, _2
 		)
 	);
+	do_read_header_();
 }
 
 
@@ -272,5 +268,5 @@ void Connection::on_write_body_( boost::system::error_code error, size_t bytes )
 		std::cerr << "Connection Error: on_write_: " << error << std::endl;
 	}
 	
-	do_read_header_();
+	// do_read_header_();
 }
