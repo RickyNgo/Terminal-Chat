@@ -18,7 +18,7 @@ const char * Guest::get_alias( void ) const {
 }
 
 void Guest::set_alias( const char * alias ) {
-	std::memcpy( alias_, alias, strlen( alias ));
+	std::strcpy( alias_, alias );
 }
 const tcp::endpoint Guest::get_address( void ) const {
 	return client_;

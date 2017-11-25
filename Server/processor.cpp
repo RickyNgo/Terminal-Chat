@@ -71,7 +71,10 @@ void Processor::Operation::run( void ) {
 /* ------------------------------ */
 
 bool Processor::Equal::operator() ( const char * lhs, const char * rhs ) const noexcept {
-	return ( std::strcmp( lhs, rhs )) ? true : false;
+	bool result = ( std::strcmp( lhs, rhs )) ? true : false;
+	std::cerr << std::boolalpha;
+	std::cerr << lhs << " " << rhs << " " << result << std::endl;
+	return result;
 }
 
 /* ------------------------------ */
@@ -130,11 +133,13 @@ error_code Processor::do_login_( Guest::pointer guest, const_buffer data ) {
 	/* Alias is OK */
 	char * new_ = new char [ 25 ]();
 	std::strcpy( new_, alias );
+	std::cerr << "copied to new_: " << new_ << std::endl;
+	guest->set_alias( new_ );
 	{
 		scoped_lock lk( guests_m_ );
+		std::cerr << "inserting " << new_ << std::endl;
 		guests_.insert( guest_t( new_, guest ));
 	}
-	guest->set_alias( alias );
  	ec.assign( boost::system::errc::success, proc_errc_ ); 
 	return ec;
 }
@@ -215,15 +220,28 @@ error_code Processor::do_leave_( Guest::pointer guest ) {
 	error_code ec;
 	{
 		scoped_lock lk( guests_m_ );
-		std::cerr << guest->get_alias() << std::endl;
-		int result = guests_.erase( guest->get_alias() );
-		std::cerr << "erased: " << result << std::endl;
-		if ( result == 0 ) {
-			ec.assign( boost::system::errc::no_such_file_or_directory, proc_errc_ );
-			return ec;
+
+		std::cerr << "guests:" << std::endl;
+		for ( auto guest: guests_ ) {
+			std::cerr << guest.first << std::endl;
+		}
+		std::cerr << "end guests\nguests size: " << guests_.size() << std::endl;
+		std::cerr << "front: " << guests_.begin()->first << std::endl;
+		// auto result = guests_.find( guest->get_alias() );
+		auto it = guests_.begin();
+		while ( it != guests_.end() ) {
+			std::cerr << it->first << " " << guest->get_alias() << std::endl;
+			if ( std::strcmp( it->first, guest->get_alias() ) == 0 ) {
+				guests_.erase( it );
+				ec.assign( boost::system::errc::success, proc_errc_ );
+				
+				return ec;
+			} else {
+				it++;
+			}
 		}
 	}
-	ec.assign( boost::system::errc::success, proc_errc_ );
+	ec.assign( boost::system::errc::no_such_file_or_directory, proc_errc_ );
 	return ec;
 }
 
