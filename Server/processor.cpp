@@ -249,7 +249,6 @@ error_code Processor::do_leave_( Guest::pointer guest ) {
 		}
 		auto it = guests_.begin();
 		while ( it != guests_.end() ) {
-			std::cerr << it->first << " " << guest->get_alias() << std::endl;
 			if ( std::strcmp( it->first, guest->get_alias() ) == 0 ) {
 				guests_.erase( it );
 				ec.assign( boost::system::errc::success, proc_errc_ );

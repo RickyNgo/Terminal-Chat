@@ -257,7 +257,6 @@ void Connection::do_write_body_( Messages msg ) {
 			_1, _2
 		)
 	);
-	do_read_header_();
 }
 
 
@@ -268,5 +267,5 @@ void Connection::on_write_body_( boost::system::error_code error, size_t bytes )
 		std::cerr << "Connection Error: on_write_: " << error << std::endl;
 	}
 	
-	// do_read_header_();
+	do_read_header_();
 }
