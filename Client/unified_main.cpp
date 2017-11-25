@@ -13,6 +13,26 @@ int isRunning = 1;
 
 std::vector<std::string> test = {"Ricky", "OBIWAN"};
 
+/*****************/
+Commands get_command(std::string input)
+{
+    if (input[0] == '/')
+    {
+        std::string token = input.substr(0, input.find(" "));
+
+        if (token == "/create_channel")
+        {
+            return CREATE_CHANNEL;
+        }
+        else 
+        {
+            return MSG;
+        }
+
+    }
+}
+
+/****************/
 
 
 int main(int argc, char* argv[])
@@ -62,8 +82,8 @@ int main(int argc, char* argv[])
         input = get_input();
         
         //Parse the input to determine what the command should be
-        //int cmd = find_command(input);
-        Messages input_msg(alias, input, time(&current_time), CREATE_CHANNEL);
+        Commands cmd = get_command(input);
+        Messages input_msg(alias, input, time(&current_time), cmd);
         c->send(input_msg);
         //display_chat();
         

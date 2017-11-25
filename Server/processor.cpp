@@ -165,6 +165,8 @@ error_code Processor::do_create_channel_( Guest::pointer guest, const_buffer dat
 
 		new_channel.join(new_session);
 
+		//new_session.start();
+
 		auto new_result = channels_.insert( channel_t( channel, new_channel ));   // Create channel
 		
 		if ( new_result.second ) {
