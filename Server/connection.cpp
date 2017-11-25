@@ -150,7 +150,7 @@ void Connection::on_read_body_( error_code error, size_t bytes ) {
 		case LOGIN:
 		handler_.async_login(
 			shared_from_this(),
-			const_buffer(
+			boost::asio::buffer(
 				msg_.get_sender().data(),
 				msg_.get_length()
 			),
@@ -166,14 +166,14 @@ void Connection::on_read_body_( error_code error, size_t bytes ) {
 /* ----------------------------------- */
 		case CREATE_CHANNEL:
 
-		handler_.async_login(
+		handler_.async_create_channel(
 			shared_from_this(),
 			const_buffer(
-				msg_.get_sender().data(),
+				msg_.get_body().data(),
 				msg_.get_length()
 			),
 			boost::bind(
-				&Connection::on_login_,
+				&Connection::on_create_channel_,
 				shared_from_this(),
 				_1 
 			)
