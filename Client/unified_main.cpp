@@ -62,8 +62,8 @@ int main(int argc, char* argv[])
         input = get_input();
         
         //Parse the input to determine what the command should be
-        //int cmd = decipher_cmd(input);
-        Messages input_msg(alias, input, time(&current_time), MSG);
+        //int cmd = find_command(input);
+        Messages input_msg(alias, input, time(&current_time), CREATE_CHANNEL);
         c->send(input_msg);
         //display_chat();
         

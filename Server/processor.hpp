@@ -24,6 +24,7 @@ using boost::condition_variable;
 #include <map>
 #include "guest.hpp"
 #include "channel.hpp" 
+#include "session.hpp"
 
 class Connection;
 

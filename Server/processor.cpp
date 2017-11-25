@@ -158,12 +158,25 @@ error_code Processor::do_create_channel_( Guest::pointer guest, const_buffer dat
 			ec.assign( boost::system::errc::file_exists, proc_errc_ );
 			return ec;
 		}
-		auto new_ = channels_.insert( channel_t( channel, Channel() ));   // Create channel
-		if ( new_.second ) {
+
+		Channel new_channel;
+
+		auto new_session = boost::make_shared<Session>(std::move(socket_), new_channel);
+
+		new_channel.join(new_session);
+
+		auto new_result = channels_.insert( channel_t( channel, new_channel ));   // Create channel
+		
+		if ( new_result.second ) {
 			ios_.post( boost::bind( &Processor::do_connect_, this, guest, channel ));
 		}
+		/*
+		auto new_ = channels_.insert( channel_t( channel, Channel() ));   // Create channel*/
+		
 	}
 	ec.assign( boost::system::errc::success, proc_errc_ );
+
+	std::cout << "CHANNEL: " << channel << " CREATED" << std::endl;
 	return ec;
 }
 
@@ -181,6 +194,12 @@ error_code Processor::do_join_channel_( const_buffer data ) {
 		if ( result == channels_.end() ) {
 			ec.assign( boost::system::errc::no_such_file_or_directory, proc_errc_ );
 			return ec;
+		}
+		else
+		{
+			auto new_session = boost::make_shared<Session>(std::move(socket_), channels_[channel]);
+			
+			channels_[channel].join(new_session);
 		}
 	}
 	ec.assign( boost::system::errc::success, proc_errc_ );
