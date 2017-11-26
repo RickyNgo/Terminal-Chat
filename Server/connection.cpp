@@ -91,6 +91,7 @@ void Connection::on_leave_( error_code ec ) {
 /* ------------------------------- */
 
 void Connection::do_read_header_( void ) {
+	memset(read_buffer_, '\0', sizeof(char)*512);
 	socket_.async_receive(
 		boost::asio::buffer(
 			read_buffer_,
@@ -129,6 +130,7 @@ void Connection::on_read_header_( error_code error, size_t bytes ) {
 }
 
 void Connection::do_read_body_( void ) {
+	memset(read_buffer_, '\0', sizeof(char)*512);
 	socket_.async_receive( 
 		boost::asio::buffer( 
 			read_buffer_,

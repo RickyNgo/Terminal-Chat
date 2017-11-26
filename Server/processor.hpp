@@ -112,7 +112,8 @@ public:
 	tcp::socket												socket_;
 	std::map<const char *, Guest::pointer, Equal>			guests_;
 	boost::recursive_mutex									guests_m_;
-	std::map<const char *, Channel, Equal>					channels_;
+	//std::map<const char *, Channel, Equal>					channels_;
+	std::vector<std::pair<const char *, Channel>>			channels_;
 	boost::recursive_mutex									channels_m_;
 	std::queue<Processor::Operation> 						ops_;
 	boost::mutex 											ops_m_;
