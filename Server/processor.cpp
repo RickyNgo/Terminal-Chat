@@ -211,6 +211,8 @@ error_code Processor::do_join_channel_( const_buffer data ) {
 		for (int i = 0; i < channels_.size(); i++)
 		{
 			std::cout << channels_[i].first << " / " << channel << std::endl;
+			
+			// This cleans the bits somehow?
 			std::cout << strlen(channels_[i].first) << " / " << strlen(channel) << std::endl;
 			if (channels_[i].first == channel)
 			{

@@ -103,6 +103,7 @@ int main(int argc, char* argv[])
     }
     c->close();
     del_wins();
+    t.detach();
 
     return 0;
 }
