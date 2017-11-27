@@ -117,6 +117,8 @@ public:
     //or displays error if not allowed
     void server_command(int, std::string);
 
+    void parse_server_command(int);
+
     // MSG, - don't need
     // KICK_USER, ** can package with leave s
     // ADD_MOD, ** s
