@@ -102,8 +102,8 @@ void draw_input()
 int win_init()
 {
     initscr();
-    //cbreak();
-    halfdelay(10);
+    timeout(0);
+    //halfdelay(10);
     start_color();
     srand(NULL);
 
