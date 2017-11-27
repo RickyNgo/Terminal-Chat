@@ -187,6 +187,7 @@ void Connection::on_read_body_( error_code error, size_t bytes ) {
 		case JOIN_CHANNEL:
 
 		handler_.async_join_channel(
+			shared_from_this(),
 			const_buffer(
 				msg_.get_body().data(),
 				msg_.get_body().length()
