@@ -11,14 +11,14 @@ using boost::asio::ip::tcp;
 
 #include "channel.hpp"
 
-Channel::Channel(std::string name, int id, tcp::socket& sock):
-    channel_socket_(sock),
+Channel::Channel(std::string name, int id, boost::asio::io_service& ios):
     channel_name(name), 
     channel_id(id), 
     role(NO_ROLE), 
     type(NO_TYPE)
     {
-    
+        tcp::socket sock(ios);
+        channel_socket_ = sock;
     }
 
 Channel::~Channel(){}
