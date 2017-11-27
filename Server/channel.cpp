@@ -1,7 +1,13 @@
 #include "channel.hpp"
 
 
-Channel::Channel( void ) { }
+Channel::Channel( const char * name ) {
+	std::strcpy( name_, name );
+}
+
+const char * Channel::name( void ) const {
+	return name_;
+}
 
 Channel::~Channel( void ) { }
 

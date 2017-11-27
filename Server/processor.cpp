@@ -167,27 +167,11 @@ error_code Processor::do_create_channel_( Guest::pointer guest, const_buffer dat
 		}
 		*/
 
-		Channel new_channel;
 
-		auto new_session = boost::make_shared<Session>(std::move(socket_), new_channel);
-
-		new_channel.join(new_session);
-
-		//new_session.start();
-
-		//auto new_result = channels_.insert( channel_t( channel, new_channel ));   // Create channel
+		auto new_channel = boost::make_shared<Channel>( channel );
+		auto new_session = boost::make_shared<Session>( guest, std::move( socket_ ), port_, new_channel );
 		
-		std::pair<const char*, Channel> new_pair = std::make_pair(channel, new_channel);
-
-		channels_.push_back(new_pair);
-
-		/* UNCOMMENT LATER
-		if ( new_result.second ) {
-			ios_.post( boost::bind( &Processor::do_connect_, this, guest, channel ));
-		}
-		*/
-		/*
-		auto new_ = channels_.insert( channel_t( channel, Channel() ));   // Create channel*/
+		channels_.push_back( std::make_pair( new_channel->name(), new_channel ));
 		
 	}
 	ec.assign( boost::system::errc::success, proc_errc_ );
@@ -204,48 +188,48 @@ error_code Processor::do_join_channel_( const_buffer data ) {
 
 	channel = boost::asio::buffer_cast<const char *>( data );
 	{
-		scoped_lock lk( channels_m_ );
-		//auto result = channels_.find( channel );
+		// scoped_lock lk( channels_m_ );
+		// //auto result = channels_.find( channel );
 
-		int channel_idx = -1;
-		for (int i = 0; i < channels_.size(); i++)
-		{
-			std::cout << channels_[i].first << " / " << channel << std::endl;
+		// int channel_idx = -1;
+		// for (int i = 0; i < channels_.size(); i++)
+		// {
+		// 	std::cout << channels_[i].first << " / " << channel << std::endl;
 			
-			// This cleans the bits somehow?
-			std::cout << strlen(channels_[i].first) << " / " << strlen(channel) << std::endl;
-			if (channels_[i].first == channel)
-			{
+		// 	// This cleans the bits somehow?
+		// 	std::cout << strlen(channels_[i].first) << " / " << strlen(channel) << std::endl;
+		// 	if (channels_[i].first == channel)
+		// 	{
 				
-				channel_idx = i;
-				/*
-				ec.assign( boost::system::errc::file_exists, proc_errc_ );
-				return ec;
-				*/
-			}
-		}
+		// 		channel_idx = i;
+		// 		/*
+		// 		ec.assign( boost::system::errc::file_exists, proc_errc_ );
+		// 		return ec;
+		// 		*/
+		// 	}
+		// }
 
-		if (channel_idx == -1)
-		{	
-			std::cout << "HELP!" << std::endl;
-			ec.assign( boost::system::errc::file_exists, proc_errc_ );
-				return ec;
-		}
+		// if (channel_idx == -1)
+		// {	
+		// 	std::cout << "HELP!" << std::endl;
+		// 	ec.assign( boost::system::errc::file_exists, proc_errc_ );
+		// 		return ec;
+		// }
 
-		/*
-		if ( result == channels_.end() ) {
-			ec.assign( boost::system::errc::no_such_file_or_directory, proc_errc_ );
-			return ec;
-		}
-		*/
-		else
-		{
-			auto new_session = boost::make_shared<Session>(std::move(socket_), channels_[channel_idx].second);
+		// /*
+		// if ( result == channels_.end() ) {
+		// 	ec.assign( boost::system::errc::no_such_file_or_directory, proc_errc_ );
+		// 	return ec;
+		// }
+		// */
+		// else
+		// {
+		// 	auto new_session = boost::make_shared<Session>(std::move(socket_), channels_[channel_idx].second);
 			
-			channels_[channel_idx].second.join(new_session);
+		// 	channels_[channel_idx].second.join(new_session);
 
-			std::cout << "JOINED!! " << channel << std::endl;
-		}
+		// 	std::cout << "JOINED!! " << channel << std::endl;
+		// }
 	}
 	ec.assign( boost::system::errc::success, proc_errc_ );
 	return ec;
@@ -344,16 +328,5 @@ void Processor::run_( void ) {
 	}
 }
 
-void Processor::do_connect_( Guest::pointer guest, std::string channel ) {
-	tcp::endpoint endpoint( guest->get_address().address(), port_ );
-	socket_.async_connect( endpoint, boost::bind( &Processor::on_connect_, this, _1 ));
-}
-
-void Processor::on_connect_( error_code ec ) {
-	if ( ! ec ) {
-		/* Create Session here */
-		
-	}
-}
 
 

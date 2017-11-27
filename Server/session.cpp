@@ -1,18 +1,34 @@
 #include "session.hpp"
 #include "channel.hpp"
 
-Session::Session( tcp::socket socket, Channel &room)
-    : socket_(std::move(socket)), room_(room)
+Session::Session( Guest::pointer guest, tcp::socket socket, const short port, Channel::pointer channel )
+    : socket_( std::move( socket )), room_( channel ), port_( port ), guest_( guest )
 {
 	this->read_msg.clear();
+	// do_connect_();
 } 
 
 
 Session::~Session( void ) { }
 
-void Session::start( void ) { 
-	this->room_.join( shared_from_this() );
-	
+void Session::do_connect_( void ) {
+	socket_.async_connect(
+		tcp::endpoint(
+			guest_->get_address().address(),
+			port_
+		),
+		boost::bind(
+			&Session::on_connect_,
+			shared_from_this(),
+			_1
+		)
+	);
+}
+
+void Session::on_connect_( error_code ec ) {
+	if ( ! ec ) {
+		room_->join( shared_from_this() );
+	}
 }
 
 /*
@@ -61,7 +77,7 @@ void Session::on_read_body( const boost::system::error_code error, size_t bytes 
 
 		//this->relay_msg();
 
-		room_.deliver(write_msg.front());
+		room_->deliver( write_msg.front() );
 	}
 }
 

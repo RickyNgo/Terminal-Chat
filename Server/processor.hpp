@@ -113,7 +113,7 @@ public:
 	std::map<const char *, Guest::pointer, Equal>			guests_;
 	boost::recursive_mutex									guests_m_;
 	//std::map<const char *, Channel, Equal>					channels_;
-	std::vector<std::pair<const char *, Channel>>			channels_;
+	std::vector<std::pair<const char *, Channel::pointer>>	channels_;
 	boost::recursive_mutex									channels_m_;
 	std::queue<Processor::Operation> 						ops_;
 	boost::mutex 											ops_m_;
@@ -124,8 +124,6 @@ public:
 
 	void			add_( do_async_op, on_async_op );
 	void 			run_( void );
-	void			do_connect_( Guest::pointer, std::string );
-	void			on_connect_( error_code ec );
 
 	/* Command helpers */
 

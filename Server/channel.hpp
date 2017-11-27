@@ -15,10 +15,11 @@ class Channel :
 public boost::enable_shared_from_this<Channel> {
 public:
 	// typedef boost::shared_ptr<Channel> pointer;
-	typedef boost::shared_ptr<Session> pointer;
+	typedef boost::shared_ptr<Channel> pointer;
 	static const unsigned log_max = 100;
-	Channel( void );
+	Channel( const char * );
 	~Channel( void );
+	const char * name( void ) const;
 
 	void join( boost::shared_ptr<Session> );
 	void leave( boost::shared_ptr<Session> );
@@ -27,7 +28,8 @@ public:
 	
 private:
 	std::set<boost::shared_ptr<Session>>		connections_;
-	std::deque<Messages> 	 		log_;
+	std::deque<Messages> 	 					log_;
+	char 										name_[ 25 ];
 };
 
 #endif
