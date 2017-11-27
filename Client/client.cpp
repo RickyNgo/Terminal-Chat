@@ -52,11 +52,12 @@ void Client::on_read_header( boost::system::error_code ec, std::size_t bytes ) {
 
         body_length_ = read_msg.get_length();
         command_ = read_msg.get_command();
+
+        parse_server_command(command_);
         
         //std::cout << "header body length: " << read_msg.get_length() << "by member: " << body_length_ << std::endl;
         //std::cout << "header command: " << read_msg.get_command() << "by member: " << command_ << std::endl;
-        
-        
+               
         do_read_body();
     } else {
         //std::cout << "Read error in on_read_header: " << ec << std::endl;
@@ -236,16 +237,6 @@ void Client::choose_alias(){
             valid_name = true;
 
             do_write_header(alias_req);
-//            
-//            // update valid_name to true depending on response
-//            if(alias_decode.get_body() == "OK"){
-//                c.set_user_alias(alias);
-//                std::cout << "Success! Here is the message body: " << alias_decode.get_body() << std::endl;
-//                valid_name = true;
-//            }
-//            else{
-//                std::cout << "Alias is taken. Choose another." << std::endl;
-//            }
         }
         
     } while (!valid_name);
@@ -642,6 +633,42 @@ void Client::server_command(int command, std::string message){
 	}
 }
 
+void Client::parse_server_command(int comamnd){
+	switch(command){
+		case 0: //msg
+
+			break;
+		case 1: //kick_user
+			break;
+		case 2: //add
+			break;
+		case 3:
+			break;
+		case 4:
+			break;
+		case 5:
+			break;
+		case 6:
+			break;
+		case 7:
+			break;
+		case 8:
+			break;
+		case 9:
+			break;
+		case 10:
+			break;
+		case 11:
+			break;
+		case 12:
+			break;
+		case 13:
+			break;
+		case 14:
+			break;
+	}
+}
+
 void Client::exit_enki(){//***
 	//leave channels
 
@@ -651,7 +678,13 @@ void Client::exit_enki(){//***
 
 } 
 
-void Client::join(std::string){}
+void Client::join(std::string){
+
+}
+
+void s_join_channel(std::string){
+
+}
 
 void Client::add_mod(std::string){}
 
@@ -674,12 +707,11 @@ void Client::create_channel(std::string channel_name){ //***
 	tcp::acceptor a(ios, tcp::endpoint(tcp::v4(), connection_port_));
 
 	//std::cout << "acceptor is open : " << a.is_open() << std::endl;
-
-	tcp::socket sock(ios);
-	a.async_accept(sock, accept_handler);
-
-	Channel newChat(channel_name, 1, sock);
+	
+	Channel newChat(channel_name, 1);
 	set_current_channel(&newChat);
+
+	a.async_accept(newChat->get_channel_socket(), accept_handler);
 }
 
 

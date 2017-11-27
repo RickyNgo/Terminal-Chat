@@ -20,7 +20,7 @@ public boost::enable_shared_from_this<Channel>
 private:
     std::string channel_name;
     int channel_id;
-    tcp::socket& channel_socket_;
+    tcp::socket channel_socket_;
     ChannelRole role;
     ChannelType type;
 
@@ -41,7 +41,7 @@ private:
     char read_buffer_[512];
     
 public:
-    Channel(std::string, int, tcp::socket&);
+    Channel(std::string, int, boost::asio::io_service&);
     ~Channel();
     
     void set_channel_name(std::string);
