@@ -14,26 +14,31 @@ int isRunning = 1;
 std::vector<std::string> test = {"Ricky", "OBIWAN"};
 
 /*****************/
-Commands get_command(std::string input)
+Commands get_command(std::string &input)
 {
+    Commands user_cmd;
+    std::string token;
     if (input[0] == '/')
     {
-        std::string token = input.substr(0, input.find(" "));
+        token = input.substr(0, input.find(" "));
 
         if (token == "/create_channel")
         {
-            return CREATE_CHANNEL;
+            user_cmd = CREATE_CHANNEL;
+            input = input.substr(token.length(), std::string::npos);
         }
         else if (token == "/join_channel")
         {
-            return JOIN_CHANNEL;
+            user_cmd = JOIN_CHANNEL;
+            input = input.substr(token.length(), std::string::npos);
         }
         else 
         {
-            return MSG;
+            user_cmd = MSG;
         }
-
     }
+
+    return user_cmd;
 }
 
 /****************/
@@ -50,9 +55,6 @@ int main(int argc, char* argv[])
 
     signal(SIGWINCH, resize_handler);
 
-    win_init();
-    splash_display();
-
     boost::asio::io_service io_service;
     
     tcp::resolver resolver(io_service);
@@ -61,6 +63,9 @@ int main(int argc, char* argv[])
     
     boost::shared_ptr<Client> c = boost::make_shared<Client>(io_service, iterator, atoi(argv[2]));
     std::thread t([&io_service](){ io_service.run(); });
+
+    win_init();
+    splash_display();
 
     std::string alias = retrieve_alias();
     std::string input = "";
