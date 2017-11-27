@@ -16,7 +16,7 @@ std::vector<std::string> test = {"Ricky", "OBIWAN"};
 /*****************/
 Commands get_command(std::string &input)
 {
-    Commands user_cmd;
+    Commands user_cmd = MSG;
     std::string token;
     if (input[0] == '/')
     {
