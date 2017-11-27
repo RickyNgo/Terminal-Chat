@@ -74,28 +74,37 @@ bool Processor::Equal::operator() ( const char * lhs, const char * rhs ) const n
 /* ------------------------------ */
 /*   Public Interface (Commands)  */
 /* ------------------------------ */
-
+/* -------------------------------------------------------------------------------------- */
 void Processor::async_login( Guest::pointer guest, const_buffer alias, on_async_op comp ) {
+/* -------------------------------------------------------------------------------------- */
 	do_async_op fn = boost::bind( &Processor::do_login_, this, guest, alias );
 	ios_.post( boost::bind( &Processor::add_, this, fn, comp ));
 }
 
+/* -------------------------------------------------------------------------------------------------- */
 void Processor::async_create_channel( Guest::pointer guest, const_buffer channel, on_async_op comp ) {
+/* -------------------------------------------------------------------------------------------------- */
 	do_async_op fn = boost::bind( &Processor::do_create_channel_, this, guest, channel );
 	ios_.post( boost::bind( &Processor::add_, this, fn, comp ));
 }
 
+/* ----------------------------------------------------------------------------------------------- */
 void Processor::async_join_channel( Guest::pointer guest, const_buffer channel, on_async_op comp ) {
+/* ----------------------------------------------------------------------------------------------- */
 	do_async_op fn = boost::bind( &Processor::do_join_channel_, this, guest, channel );
 	ios_.post( boost::bind( &Processor::add_, this, fn, comp ));
 }
 
+/* -------------------------------------------------------------------------- */
 void Processor::async_close_channel( const_buffer channel, on_async_op comp ) {
+/* -------------------------------------------------------------------------- */
 	do_async_op fn = boost::bind( &Processor::do_close_channel_, this, channel );
 	ios_.post( boost::bind( &Processor::add_, this, fn, comp ));
 }
 
+/* ------------------------------------------------------------------ */
 void Processor::async_leave( Guest::pointer guest, on_async_op comp ) {
+/* ------------------------------------------------------------------ */
 	do_async_op fn = boost::bind( &Processor::do_leave_, this, guest );
 	ios_.post( boost::bind( &Processor::add_, this, fn, comp ));
 }

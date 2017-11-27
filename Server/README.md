@@ -1,9 +1,5 @@
 # SERVER
 
-### To Compile:
-> make all</br>
-> ./server
-
 ### Change Log:
 
 #### 11.9
