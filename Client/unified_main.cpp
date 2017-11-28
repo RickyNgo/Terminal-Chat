@@ -94,17 +94,19 @@ int main(int argc, char* argv[])
         
         //Parse the input to determine what the command should be
         Commands cmd = get_command(input);
-        Messages input_msg(alias, input, time(&current_time), cmd);
         
+        Messages input_msg(alias, input, time(&current_time), cmd);
+        if (cmd == CREATE_CHANNEL)
+        {
+            c->create_channel(input_msg.get_body());
+        }
         
 
         //c->decide_socket(cmd);
         c->send(input_msg);
 
-        if (cmd == CREATE_CHANNEL)
-        {
-            c->create_channel(input_msg.get_body());
-        }
+    
+        
 
         //display_chat();
         

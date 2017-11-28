@@ -29,6 +29,7 @@ private:
 
     boost::shared_ptr<tcp::socket> main_socket_;
     boost::shared_ptr<tcp::socket> connection_socket_;
+    boost::shared_ptr<tcp::socket> current_socket_;
 
 	std::string user_alias_;
 	int user_id_;
@@ -172,7 +173,7 @@ public:
     void s_channel_close();
     void s_leave();
 
-    
+    void set_connection();
 
     void decide_socket(Commands cmd);
 };

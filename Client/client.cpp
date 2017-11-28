@@ -7,6 +7,7 @@
 #include <map>
 #include <iostream>
 #include <thread>
+#include <fstream>
 
 
 #include "client.hpp"
@@ -709,14 +710,21 @@ void Client::add_mod(std::string){}
 
 void Client::accept_handler(const boost::system::error_code& error)
 {
+    std::ofstream log;
+    log.open("log.txt");
+
     if (!error)
     {
-
+        this->set_connection();
+        log << "I accepted a session\n";
     }
     else
     {
-        std::cout << "Could not accept: " << error.message() << std::endl;
+        log << "DECLINED: " <<  error.message() << "\n";
+        log << client_channels_[1]->get_channel_name() << "\n";
     }
+
+    log.close();
 }
 
 void Client::create_channel(std::string channel_name){ //***
@@ -736,12 +744,15 @@ void Client::create_channel(std::string channel_name){ //***
 
     auto new_channel = boost::make_shared<Channel>(channel_name, 1, ios);
 
+    //new_channel->get_channel_socket()->open(boost::asio::ip::tcp::v4());
+
     client_channels_.insert(std::make_pair(new_channel->get_channel_id(), new_channel));
 
     boost::shared_ptr<tcp::socket> test = new_channel->get_channel_socket();
+
     a.async_accept(*test, boost::bind(&Client::accept_handler, shared_from_this(), _1));
 
-    connection_socket_.reset(new_channel->get_channel_socket().get());
+    std::cout << std::boolalpha << test->is_open() << std::endl;
 }
 
 void Client::decide_socket(Commands cmd)
@@ -761,6 +772,12 @@ void Client::decide_socket(Commands cmd)
     
 }
 
+void Client::set_connection()
+{
+    //connection_socket_ = new_channel->get_channel_socket();
+
+    connection_socket_ = client_channels_[1]->get_channel_socket();
+}
 
 
 
