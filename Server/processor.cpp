@@ -186,7 +186,6 @@ error_code Processor::do_join_channel_( Guest::pointer guest, const_buffer data 
 	channel = boost::asio::buffer_cast<const char *>( data );
 	{
 		scoped_lock lk( channels_m_ );
-		//auto result = channels_.find( channel );
 
 		int channel_idx = -1;
 		for (int i = 0; i < channels_.size(); i++)
@@ -194,31 +193,18 @@ error_code Processor::do_join_channel_( Guest::pointer guest, const_buffer data 
 			std::cout << channels_[i].first << " / " << channel << std::endl;
 			
 			// This cleans the bits somehow?
-			std::cout << strlen(channels_[i].first) << " / " << strlen(channel) << std::endl;
+			// std::cout << strlen(channels_[i].first) << " / " << strlen(channel) << std::endl;
 			if ( std::strcmp( channels_[i].first, channel ) == 0 )
-			{
-				
+			{				
 				channel_idx = i;
-				/*
-				ec.assign( boost::system::errc::file_exists, proc_errc_ );
-				return ec;
-				*/
 			}
 		}
 
 		if (channel_idx == -1)
 		{	
-			std::cout << "HELP!" << std::endl;
-			ec.assign( boost::system::errc::file_exists, proc_errc_ );
-				return ec;
-		}
-
-		/*
-		if ( result == channels_.end() ) {
 			ec.assign( boost::system::errc::no_such_file_or_directory, proc_errc_ );
 			return ec;
 		}
-		*/
 		else
 		{
 			auto new_session = boost::make_shared<Session>( guest, std::move( socket_ ), port_, channels_[ channel_idx ].second );
@@ -246,7 +232,7 @@ error_code Processor::do_close_channel_( const_buffer data ) {
 		// auto result = channels_.find( channel );
 
 		// if ( result != channels_.end() ) {
-		// 	ec.assign( boost::system::errc::file_exists, proc_errc_ );
+		// 	ec.assign( boost::system::errc::no_such_file_or_directory, proc_errc_ );
 		// 	return ec;
 		// } else {
 		// 	channels_.erase( );   // Create channel

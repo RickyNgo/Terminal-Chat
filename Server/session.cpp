@@ -35,20 +35,9 @@ void Session::on_connect_( error_code ec ) {
 	if ( ! ec ) {
 		room_->join( shared_from_this() );
 	} else if ( ec.value() == 111 ) {
-		std::cerr << "on_connect_(): " << ec.message() << std::endl;
+		std::cerr << "Session::on_connect_(): " << ec.message() << std::endl;
 	}
 }
-
-/*
-void Session::deliver( const std::string & msg ) {
-	bool writing = ! write_msg.empty();
-	write_msg.push( msg );
-	if ( ! writing ) {
-		this->do_write();
-	}
-}
-*/
-
 
 void Session::do_read_header() {
 	this->socket_.async_receive( boost::asio::buffer(this->read_buffer, MAX_MSG_LENGTH), 
