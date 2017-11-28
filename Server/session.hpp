@@ -25,6 +25,8 @@ public:
 
     
     void deliver( const std::string & );
+    void start( void );
+
 	void do_connect_( void );
 	void on_connect_( error_code );
 
@@ -40,9 +42,7 @@ public:
 	void do_write_body();
 	void on_write_body(const boost::system::error_code error, size_t bytes);
 	
-	
-
-private: 
+private:
 	std::vector<char> read_buffer;
 	Messages read_msg;
 	std::queue <Messages> write_msg;

@@ -166,6 +166,7 @@ error_code Processor::do_create_channel_( Guest::pointer guest, const_buffer dat
 
 		auto new_channel = boost::make_shared<Channel>( channel );
 		auto new_session = boost::make_shared<Session>( guest, std::move( socket_ ), port_, new_channel );
+		new_session->start();
 		
 		channels_.push_back( std::make_pair( new_channel->name(), new_channel ));
 		std::cerr << "Processor: do_create_channel_: " << new_channel->name() << std::endl;

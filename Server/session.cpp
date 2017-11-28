@@ -6,11 +6,14 @@ Session::Session( Guest::pointer guest, tcp::socket socket, const short port, Ch
 {
 	std::cerr << "Session: In Constructor" << std::endl;
 	this->read_msg.clear();
-	// do_connect_();
 } 
 
 
 Session::~Session( void ) { }
+
+void Session::start() {
+	do_connect_();
+}
 
 void Session::do_connect_( void ) {
 	std::cerr << "Session: In do_connect_" << std::endl;
@@ -28,8 +31,11 @@ void Session::do_connect_( void ) {
 }
 
 void Session::on_connect_( error_code ec ) {
+	std::cerr << "Session: In on_connect_" << std::endl;
 	if ( ! ec ) {
 		room_->join( shared_from_this() );
+	} else if ( ec.value() == 111 ) {
+		std::cerr << "on_connect_(): " << ec.message() << std::endl;
 	}
 }
 
