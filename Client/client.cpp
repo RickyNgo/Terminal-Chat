@@ -24,12 +24,14 @@ constructor
  ***************************************/
 Client::Client(boost::asio::io_service& io_serv, tcp::resolver::iterator endpoint_iterator, int secondPort) : 
 ios(io_serv),
+acceptor_( ios, tcp::endpoint( boost::asio::ip::tcp::v4(), secondPort )),
 user_alias_(""),
 main_socket_(boost::make_shared<tcp::socket>(ios)),
 user_id_(-1),
 current_channel_(0),
 connection_port_(secondPort)
 {
+    acceptor_.listen(); 
     do_connect_(endpoint_iterator);
     //main_socket_ = boost::make_shared<tcp::socket>(ios);
     connection_socket_ = main_socket_;
@@ -731,7 +733,6 @@ void Client::create_channel(std::string channel_name){ //***
 	// set up listening connection
 	// on accept, move socket by reference to new channel object
 	// set this to currentChannel
-	tcp::acceptor a(ios, tcp::endpoint(tcp::v4(), connection_port_));
 
 	//std::cout << "acceptor is open : " << a.is_open() << std::endl;
 	
@@ -750,9 +751,9 @@ void Client::create_channel(std::string channel_name){ //***
 
     boost::shared_ptr<tcp::socket> test = new_channel->get_channel_socket();
 
-    a.async_accept(*test, boost::bind(&Client::accept_handler, shared_from_this(), _1));
+    acceptor_.async_accept(*test, boost::bind(&Client::accept_handler, shared_from_this(), _1));
 
-    std::cout << std::boolalpha << test->is_open() << std::endl;
+    // std::cout << std::boolalpha << test->is_open() << std::endl;
 }
 
 void Client::decide_socket(Commands cmd)

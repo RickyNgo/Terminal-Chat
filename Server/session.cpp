@@ -2,7 +2,7 @@
 #include "channel.hpp"
 
 Session::Session( Guest::pointer guest, tcp::socket socket, const short port, Channel::pointer channel )
-    : socket_( std::move( socket )), room_( channel ), port_( port ), guest_( guest )
+    : socket_( std::move( socket )), room_( channel ), port_( port ), guest_( guest ), address_( guest->get_address().address(), port_ ) 
 {
 	std::cerr << "Session: In Constructor" << std::endl;
 	this->read_msg.clear();
@@ -17,26 +17,25 @@ void Session::start() {
 
 void Session::do_connect_( void ) {
 	std::cerr << "Session: In do_connect_" << std::endl;
-	std::cerr << guest_->get_address().address() << ":" << port_ << std::endl;
-	tcp::endpoint endpoint = tcp::endpoint( guest_->get_address().address(), port_ );
-	std::cerr << endpoint << std::endl;
+	// std::cerr << guest_->get_address().address() << ":" << port_ << std::endl;
+	// address_ = tcp::endpoint( guest_->get_address().address(), port_ );
+	// std::cerr << endpoint << std::endl;
 	socket_.async_connect(
-		endpoint,
+		address_,
 		boost::bind(
 			&Session::on_connect_,
 			shared_from_this(),
 			_1
 		)
 	);
-	std::cerr << std::boolalpha;
-	std::cerr << socket_.is_open() << std::endl;
 }
 
 void Session::on_connect_( error_code ec ) {
-	std::cerr << "Session: In on_connect_" << std::endl;
+	std::cerr << "Connected to " << address_ << std::endl;
 	if ( ! ec ) {
 		room_->join( shared_from_this() );
-	} else if ( ec.value() == 111 ) {
+		do_read_header();
+	} else {
 		std::cerr << "Session::on_connect_(): " << ec.message() << std::endl;
 	}
 }

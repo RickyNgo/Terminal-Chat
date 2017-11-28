@@ -31,10 +31,11 @@ private:
     boost::shared_ptr<tcp::socket> connection_socket_;
     boost::shared_ptr<tcp::socket> current_socket_;
 
-	std::string user_alias_;
-	int user_id_;
-    int connection_port_;
-    Channel* current_channel_;
+    tcp::acceptor   acceptor_;
+	std::string     user_alias_;
+	int             user_id_;
+    int             connection_port_;
+    Channel*        current_channel_;
 	std::map<int, boost::shared_ptr<Channel>> client_channels_;
 	std::map<int,std::string> friend_list_;
    

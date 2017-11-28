@@ -49,6 +49,7 @@ private:
 	Channel::pointer room_;
 	const short 	port_;
 	Guest::pointer	 guest_;
+	tcp::endpoint 	address_;
 };
 
 #endif
