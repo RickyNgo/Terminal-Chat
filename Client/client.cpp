@@ -730,18 +730,6 @@ void Client::accept_handler(const boost::system::error_code& error)
 }
 
 void Client::create_channel(std::string channel_name){ //***
-	// set up listening connection
-	// on accept, move socket by reference to new channel object
-	// set this to currentChannel
-
-	//std::cout << "acceptor is open : " << a.is_open() << std::endl;
-	
-    /*
-	Channel newChat(channel_name, 1);
-	set_current_channel(&newChat);
-
-	a.async_accept(newChat->get_channel_socket(), accept_handler);
-    */
 
     auto new_channel = boost::make_shared<Channel>(channel_name, 1, ios);
 

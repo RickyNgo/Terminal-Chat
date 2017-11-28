@@ -16,10 +16,7 @@ void Session::start() {
 }
 
 void Session::do_connect_( void ) {
-	std::cerr << "Session: In do_connect_" << std::endl;
-	// std::cerr << guest_->get_address().address() << ":" << port_ << std::endl;
-	// address_ = tcp::endpoint( guest_->get_address().address(), port_ );
-	// std::cerr << endpoint << std::endl;
+
 	socket_.async_connect(
 		address_,
 		boost::bind(
@@ -41,13 +38,14 @@ void Session::on_connect_( error_code ec ) {
 }
 
 void Session::do_read_header() {
-	this->socket_.async_receive( boost::asio::buffer(this->read_buffer, MAX_MSG_LENGTH), 
+	this->socket_.async_receive( boost::asio::buffer( read_buffer, MAX_HEADER_LENGTH ), 
 	boost::bind( &Session::on_read_header, shared_from_this(), _1, _2));
 }
 
 void Session::on_read_header( const boost::system::error_code error, size_t bytes ) {
 	if ( ! error ) {
         std::string temp(read_buffer.begin(), read_buffer.end());
+        std::cerr << "Session::on_read_header(): " << temp << std::endl;
         this->read_msg.get_header() = std::move(temp);
 		this->read_msg.parse_header();
 		this->do_read_body();
