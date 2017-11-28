@@ -11,10 +11,8 @@ num_t_( 2 ) {
 }
 
 Processor::~Processor( void ) {
-	std::cerr << "Closing Connections..." << std::endl;
-	guests_.clear();
-
 	std::cerr << "Deleting processor..." << std::endl;
+	guests_.clear();
 	threads_.interrupt_all();
 	boost::this_thread::sleep( boost::posix_time::millisec(1000));
 }
@@ -166,19 +164,11 @@ error_code Processor::do_create_channel_( Guest::pointer guest, const_buffer dat
 			}
 		}
 
-		/*
-		if ( result != channels_.end() ) {
-			ec.assign( boost::system::errc::file_exists, proc_errc_ );
-			return ec;
-		}
-		*/
-
-
 		auto new_channel = boost::make_shared<Channel>( channel );
 		auto new_session = boost::make_shared<Session>( guest, std::move( socket_ ), port_, new_channel );
 		
 		channels_.push_back( std::make_pair( new_channel->name(), new_channel ));
-		
+		std::cerr << "Processor: do_create_channel_: " << new_channel->name() << std::endl;
 	}
 	ec.assign( boost::system::errc::success, proc_errc_ );
 
@@ -204,7 +194,7 @@ error_code Processor::do_join_channel_( Guest::pointer guest, const_buffer data 
 			
 			// This cleans the bits somehow?
 			std::cout << strlen(channels_[i].first) << " / " << strlen(channel) << std::endl;
-			if (channels_[i].first == channel)
+			if ( std::strcmp( channels_[i].first, channel ) == 0 )
 			{
 				
 				channel_idx = i;

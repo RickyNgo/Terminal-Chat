@@ -2,6 +2,7 @@
 
 
 Channel::Channel( const char * name ) {
+	std::memset( name_, '\0', sizeof( name_ ));
 	std::strcpy( name_, name );
 }
 

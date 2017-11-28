@@ -4,6 +4,7 @@
 Session::Session( Guest::pointer guest, tcp::socket socket, const short port, Channel::pointer channel )
     : socket_( std::move( socket )), room_( channel ), port_( port ), guest_( guest )
 {
+	std::cerr << "Session: In Constructor" << std::endl;
 	this->read_msg.clear();
 	// do_connect_();
 } 
@@ -12,6 +13,7 @@ Session::Session( Guest::pointer guest, tcp::socket socket, const short port, Ch
 Session::~Session( void ) { }
 
 void Session::do_connect_( void ) {
+	std::cerr << "Session: In do_connect_" << std::endl;
 	socket_.async_connect(
 		tcp::endpoint(
 			guest_->get_address().address(),
