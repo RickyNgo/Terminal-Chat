@@ -53,7 +53,6 @@ void Connection::on_create_channel_( error_code ec ) {
 	std::cerr << client_ << "::CREATE_CHANNEL => " << ec << " [" << ec.message() << "]." << std::endl;
 	Messages data( "Server", ec.message(), time( NULL ), CREATE_CHANNEL );
 
-
 	do_write_header_( data );
 }
 
@@ -61,12 +60,8 @@ void Connection::on_join_channel_( error_code ec ) {
 
 	std::cerr << client_ << "::JOIN_CHANNEL => " << ec << " [" << ec.message() << "]." << std::endl;
 	Messages data( "Server", ec.message(), time( NULL ), JOIN_CHANNEL );
-
-	if ( ! ec ) {
-		std::string channel = msg_.get_body();
-	} else {
-		do_write_header_( data );
-	}
+	
+	do_write_header_( data );
 }
 
 void Connection::on_close_channel_( error_code ec ) {
