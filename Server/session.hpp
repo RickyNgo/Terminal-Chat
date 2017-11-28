@@ -23,7 +23,6 @@ public:
 	typedef boost::shared_ptr<Session> pointer;
 	typedef boost::system::error_code error_code;
 
-    
     void deliver( const std::string & );
     void start( void );
 

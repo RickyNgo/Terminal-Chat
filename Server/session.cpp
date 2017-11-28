@@ -17,17 +17,19 @@ void Session::start() {
 
 void Session::do_connect_( void ) {
 	std::cerr << "Session: In do_connect_" << std::endl;
+	std::cerr << guest_->get_address().address() << ":" << port_ << std::endl;
+	tcp::endpoint endpoint = tcp::endpoint( guest_->get_address().address(), port_ );
+	std::cerr << endpoint << std::endl;
 	socket_.async_connect(
-		tcp::endpoint(
-			guest_->get_address().address(),
-			port_
-		),
+		endpoint,
 		boost::bind(
 			&Session::on_connect_,
 			shared_from_this(),
 			_1
 		)
 	);
+	std::cerr << std::boolalpha;
+	std::cerr << socket_.is_open() << std::endl;
 }
 
 void Session::on_connect_( error_code ec ) {
