@@ -16,7 +16,7 @@ Channel::Channel(std::string name, int id, boost::asio::io_service& ios):
     channel_id(id), 
     role(NO_ROLE), 
     type(NO_TYPE),
-    channel_socket_(ios)
+    channel_socket_(boost::make_shared<tcp::socket>(ios))
     {
     }
 
@@ -80,7 +80,7 @@ void Channel::on_read_body( boost::system::error_code ec, std::size_t bytes ) {
 void Channel::do_read_header() {
     read_msg.clear();
     memset(read_buffer_, '\0', sizeof(char)*512);
-    channel_socket_.async_receive(
+    channel_socket_->async_receive(
                                boost::asio::buffer(
                                                    read_buffer_,
                                                    MAX_HEADER_LENGTH),
@@ -99,7 +99,7 @@ void Channel::do_read_header() {
  ***************************************/
 void Channel::do_read_body() {
     memset(read_buffer_, '\0', sizeof(char)*512);
-    channel_socket_.async_receive(
+    channel_socket_->async_receive(
                                boost::asio::buffer(
                                                    read_buffer_,
                                                    read_msg.get_length()),
@@ -139,7 +139,7 @@ int Channel::get_channel_id(){
     return channel_id;
 }
 
-tcp::socket& Channel::get_channel_socket(){
+boost::shared_ptr<tcp::socket> Channel::get_channel_socket(){
     return channel_socket_;
 }
 

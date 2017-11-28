@@ -25,10 +25,10 @@ public boost::enable_shared_from_this<Client>
 {
 private:
 	boost::asio::io_service& ios;
-	tcp::socket main_socket_;
+	//tcp::socket main_socket_;
 
+    boost::shared_ptr<tcp::socket> main_socket_;
     boost::shared_ptr<tcp::socket> connection_socket_;
-
 
 	std::string user_alias_;
 	int user_id_;
@@ -71,7 +71,7 @@ public:
 	int get_user_id();
 	std::vector<std::string> get_friend_list();
     int get_channel_list_size();
-    tcp::socket* get_main_socket();
+    boost::shared_ptr<tcp::socket> get_main_socket();
     int get_current_channel_id();
     Channel* get_current_channel();
 
@@ -149,6 +149,7 @@ public:
     void exit_enki(); //***
     void join(std::string); //*** send channel name and port #, and then if ok, listen
     void add_mod(std::string);
+    void accept_handler(const boost::system::error_code&);
     void create_channel(std::string); //***
     void whisper(std::string);
     void invite_user(std::string);
@@ -171,6 +172,7 @@ public:
     void s_channel_close();
     void s_leave();
 
+    
 
     void decide_socket(Commands cmd);
 };

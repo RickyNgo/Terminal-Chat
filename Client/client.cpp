@@ -23,14 +23,15 @@ constructor
  ***************************************/
 Client::Client(boost::asio::io_service& io_serv, tcp::resolver::iterator endpoint_iterator, int secondPort) : 
 ios(io_serv),
-main_socket_(io_serv),
 user_alias_(""),
+main_socket_(boost::make_shared<tcp::socket>(ios)),
 user_id_(-1),
 current_channel_(0),
 connection_port_(secondPort)
 {
     do_connect_(endpoint_iterator);
-    connection_socket_.reset(&main_socket_);
+    //main_socket_ = boost::make_shared<tcp::socket>(ios);
+    connection_socket_ = main_socket_;
 }
 
 /***************************************
@@ -103,7 +104,7 @@ void Client::on_read_body( boost::system::error_code ec, std::size_t bytes ) {
 void Client::do_read_header() {
     read_msg.clear();
     memset(read_buffer_, '\0', sizeof(char)*512);
-    main_socket_.async_receive(
+    connection_socket_->async_receive(
                                boost::asio::buffer(
                                                    read_buffer_,
                                                    MAX_HEADER_LENGTH),
@@ -122,7 +123,7 @@ void Client::do_read_header() {
  ***************************************/
 void Client::do_read_body() { //get_current_socket().async_receive
     memset(read_buffer_, '\0', sizeof(char)*512);
-    main_socket_.async_receive(
+    connection_socket_->async_receive(
                                boost::asio::buffer(
                                                    read_buffer_,
                                                    read_msg.get_length()),
@@ -265,7 +266,7 @@ close
 ***************************************/
 void Client::close(){
 	ios.post([this](){ 
-		main_socket_.close();
+		main_socket_->close();
 	});
 }
 
@@ -306,7 +307,7 @@ std::vector<std::string> Client::get_friend_list(){
 
 int Client::get_channel_list_size(){return client_channels_.size();}
 
-tcp::socket* Client::get_main_socket(){return &main_socket_;}
+boost::shared_ptr<tcp::socket> Client::get_main_socket(){return main_socket_;}
 
 int Client::get_current_channel_id(){return current_channel_->get_channel_id();}
 
@@ -388,7 +389,7 @@ void Client::setup_client(std::string name, int id){
  custom connect for testing using handler
  ***************************************/
 void Client::do_connect_(tcp::resolver::iterator endpoint_iterator){
-	boost::asio::async_connect(main_socket_, endpoint_iterator,
+	boost::asio::async_connect(*main_socket_, endpoint_iterator,
         [this](boost::system::error_code ec, tcp::resolver::iterator){
             if (!ec){
             	do_read_header();
@@ -706,7 +707,7 @@ void s_join_channel(std::string){
 
 void Client::add_mod(std::string){}
 
-void accept_handler(const boost::system::error_code& error)
+void Client::accept_handler(const boost::system::error_code& error)
 {
     if (!error)
     {
@@ -714,7 +715,7 @@ void accept_handler(const boost::system::error_code& error)
     }
     else
     {
-        std::cout << "Could not accept" << std::endl;
+        std::cout << "Could not accept: " << error.value() << std::endl;
     }
 }
 
@@ -738,7 +739,9 @@ void Client::create_channel(std::string channel_name){ //***
     client_channels_.insert(std::make_pair(new_channel->get_channel_id(), new_channel));
 
     //tcp::socket test = new_channel->get_channel_socket();
-    a.async_accept(new_channel->get_channel_socket(), accept_handler);
+    a.async_accept(client_channels_[1]->get_channel_socket(), boost::bind(&Client::accept_handler, shared_from_this(), _1));
+
+    connection_socket_.reset(new_channel->get_channel_socket().get());
 }
 
 void Client::decide_socket(Commands cmd)
@@ -747,7 +750,8 @@ void Client::decide_socket(Commands cmd)
     if (cmd == MSG)
     {
         std::cout << "HERE1" << std::endl;
-        connection_socket_.reset(&(client_channels_[1]->get_channel_socket()));
+        
+        connection_socket_ = client_channels_[1]->get_channel_socket();
     }
     else
     {

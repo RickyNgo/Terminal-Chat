@@ -5,6 +5,7 @@
 #include <boost/asio.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
 #include <cstdlib>
 #include <string>
 #include "../Messages/messages.hpp"
@@ -20,7 +21,7 @@ public boost::enable_shared_from_this<Channel>
 private:
     std::string channel_name;
     int channel_id;
-    tcp::socket channel_socket_;
+    boost::shared_ptr<tcp::socket> channel_socket_;
     ChannelRole role;
     ChannelType type;
 
@@ -52,7 +53,7 @@ public:
     
     std::string get_channel_name();
     int get_channel_id();
-    tcp::socket& get_channel_socket();
+    boost::shared_ptr<tcp::socket> get_channel_socket();
     ChannelType get_channel_type();
     ChannelRole get_channel_role();
     

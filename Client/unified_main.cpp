@@ -101,7 +101,7 @@ int main(int argc, char* argv[])
             c->create_channel(input_msg.get_body());
         }
 
-        c->decide_socket(cmd);
+        //c->decide_socket(cmd);
         c->send(input_msg);
         //display_chat();
         
