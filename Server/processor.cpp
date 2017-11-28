@@ -222,6 +222,7 @@ error_code Processor::do_join_channel_( Guest::pointer guest, const_buffer data 
 		else
 		{
 			auto new_session = boost::make_shared<Session>( guest, std::move( socket_ ), port_, channels_[ channel_idx ].second );
+			new_session->start();
 			std::cout << "JOINED!! " << channel << std::endl;
 		}
 	}
