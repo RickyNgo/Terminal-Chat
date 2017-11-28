@@ -715,7 +715,7 @@ void Client::accept_handler(const boost::system::error_code& error)
     }
     else
     {
-        std::cout << "Could not accept: " << error.value() << std::endl;
+        std::cout << "Could not accept: " << error.message() << std::endl;
     }
 }
 
@@ -738,8 +738,8 @@ void Client::create_channel(std::string channel_name){ //***
 
     client_channels_.insert(std::make_pair(new_channel->get_channel_id(), new_channel));
 
-    //tcp::socket test = new_channel->get_channel_socket();
-    a.async_accept(client_channels_[1]->get_channel_socket(), boost::bind(&Client::accept_handler, shared_from_this(), _1));
+    boost::shared_ptr<tcp::socket> test = new_channel->get_channel_socket();
+    a.async_accept(*test, boost::bind(&Client::accept_handler, shared_from_this(), _1));
 
     connection_socket_.reset(new_channel->get_channel_socket().get());
 }

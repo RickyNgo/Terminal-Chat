@@ -96,13 +96,16 @@ int main(int argc, char* argv[])
         Commands cmd = get_command(input);
         Messages input_msg(alias, input, time(&current_time), cmd);
         
+        
+
+        //c->decide_socket(cmd);
+        c->send(input_msg);
+
         if (cmd == CREATE_CHANNEL)
         {
             c->create_channel(input_msg.get_body());
         }
 
-        //c->decide_socket(cmd);
-        c->send(input_msg);
         //display_chat();
         
         /*
