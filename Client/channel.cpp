@@ -15,10 +15,9 @@ Channel::Channel(std::string name, int id, boost::asio::io_service& ios):
     channel_name(name), 
     channel_id(id), 
     role(NO_ROLE), 
-    type(NO_TYPE)
+    type(NO_TYPE),
+    channel_socket_(ios)
     {
-        tcp::socket sock(ios);
-        channel_socket_ = sock;
     }
 
 Channel::~Channel(){}
@@ -140,8 +139,8 @@ int Channel::get_channel_id(){
     return channel_id;
 }
 
-tcp::socket* Channel::get_channel_socket(){
-    //return channel_socket_;
+tcp::socket& Channel::get_channel_socket(){
+    return channel_socket_;
 }
 
 ChannelType Channel::get_channel_type(){

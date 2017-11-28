@@ -11,8 +11,9 @@
 #include <thread>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
 #include "channel.hpp"
-#include "messages.hpp"
+#include "../Messages/messages.hpp"
 
 
 using boost::asio::ip::tcp;
@@ -26,11 +27,14 @@ private:
 	boost::asio::io_service& ios;
 	tcp::socket main_socket_;
 
+    boost::shared_ptr<tcp::socket> connection_socket_;
+
+
 	std::string user_alias_;
 	int user_id_;
     int connection_port_;
     Channel* current_channel_;
-	std::map<int, Channel*> client_channels_;
+	std::map<int, boost::shared_ptr<Channel>> client_channels_;
 	std::map<int,std::string> friend_list_;
    
     uint8_t command_;
@@ -167,6 +171,8 @@ public:
     void s_channel_close();
     void s_leave();
 
+
+    void decide_socket(Commands cmd);
 };
 
 #endif

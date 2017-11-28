@@ -1,4 +1,3 @@
-#include "layout.hpp"
 #include <unistd.h>
 #include <signal.h>
 #include <iostream>
@@ -7,6 +6,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
 #include "client.hpp"
+#include "../Ncurses/layout.hpp"
 
 WINDOW *chatWin, *chatWinBox, *channelWin, *channelWinBox, *inputWin, *inputWinBox, *contactWin, *contactWinBox, *loginWin, *loginWinBox;
 int isRunning = 1;
@@ -82,10 +82,12 @@ int main(int argc, char* argv[])
         wrefresh(channelWin);
         wrefresh(contactWinBox);
 
+        /*
         for (int i = 0; i < 30; i ++)
         {
             display_chat();
         }
+        */
         
         //input = get_input();
         input = get_input();
@@ -93,17 +95,22 @@ int main(int argc, char* argv[])
         //Parse the input to determine what the command should be
         Commands cmd = get_command(input);
         Messages input_msg(alias, input, time(&current_time), cmd);
+        
         if (cmd == CREATE_CHANNEL)
         {
             c->create_channel(input_msg.get_body());
         }
+
+        c->decide_socket(cmd);
         c->send(input_msg);
         //display_chat();
         
+        /*
         for (int i = 0; i < 30; i ++)
         {
             display_chat();
         }
+        */
     
     }
     c->close();

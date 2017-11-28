@@ -11,7 +11,7 @@
 
 #include "client.hpp"
 #include "aux_functions.hpp"
-#include "layout.hpp"
+#include "../Ncurses/layout.hpp"
 
 #define MIN_ALIAS 5
 #define MAX_ALIAS 15
@@ -30,6 +30,7 @@ current_channel_(0),
 connection_port_(secondPort)
 {
     do_connect_(endpoint_iterator);
+    connection_socket_.reset(&main_socket_);
 }
 
 /***************************************
@@ -88,6 +89,8 @@ void Client::on_read_body( boost::system::error_code ec, std::size_t bytes ) {
         update_buffers(fmtd_time, read_msg.get_sender(), read_msg.get_body());
 
         do_read_header();
+
+        display_chat();
     } else {
         //std::cout << "Read error: " << ec << std::endl;
     }
@@ -181,13 +184,20 @@ void Client::on_write_body( boost::system::error_code error, size_t bytes) {
 void Client::do_write_header(Messages msg){
     // send to server
     //std::cout << "do write header" <<std::endl;
-    
+    /*
     boost::asio::async_write(main_socket_,
                              boost::asio::buffer(msg.get_header(),
                                                  MAX_HEADER_LENGTH),
                              boost::bind( &Client::on_write_header,
                                          shared_from_this(),
-                                         _1, _2, msg));
+                                         _1, _2, msg));*/
+
+    boost::asio::async_write(*connection_socket_,
+                             boost::asio::buffer(msg.get_header(),
+                                                 MAX_HEADER_LENGTH),
+                             boost::bind( &Client::on_write_header,
+                                         shared_from_this(),
+                                         _1, _2, msg));                                     
 }
 
 /***************************************
@@ -197,13 +207,20 @@ void Client::do_write_header(Messages msg){
 void Client::do_write_body(Messages msg){
     // send to server
     //std::cout << "do write body" << std::endl;
-    
+    /*
     boost::asio::async_write(main_socket_,
                              boost::asio::buffer(msg.get_body(),
                                                  msg.get_length()),
                              boost::bind( &Client::on_write_body,
                                          shared_from_this(),
-                                         _1, _2));
+                                         _1, _2));*/
+
+    boost::asio::async_write(*connection_socket_,
+                             boost::asio::buffer(msg.get_body(),
+                                                 msg.get_length()),
+                             boost::bind( &Client::on_write_body,
+                                         shared_from_this(),
+                                         _1, _2));                                     
 }
 
 
@@ -337,7 +354,8 @@ add_room
 // replace parameter with ChatRoom
 void Client::add_channel(Channel* chan, int id){
 	std::pair<std::map<int,Channel*>::iterator,bool> ret;
-	ret = client_channels_.insert (std::pair<int,Channel*>(id,chan));
+    //UNCOMMENT
+	//ret = client_channels_.insert (std::pair<int,Channel*>(id,chan));
 	if (ret.second==false) {
 		std::cout << "That channel already exists." << std::endl;
 	}
@@ -633,7 +651,7 @@ void Client::server_command(int command, std::string message){
 	}
 }
 
-void Client::parse_server_command(int comamnd){
+void Client::parse_server_command(int command){
 	switch(command){
 		case 0: //msg
 
@@ -708,14 +726,41 @@ void Client::create_channel(std::string channel_name){ //***
 
 	//std::cout << "acceptor is open : " << a.is_open() << std::endl;
 	
+    /*
 	Channel newChat(channel_name, 1);
 	set_current_channel(&newChat);
 
 	a.async_accept(newChat->get_channel_socket(), accept_handler);
+    */
+
+    auto new_channel = boost::make_shared<Channel>(channel_name, 1, ios);
+
+    client_channels_.insert(std::make_pair(new_channel->get_channel_id(), new_channel));
+
+    //tcp::socket test = new_channel->get_channel_socket();
+    a.async_accept(new_channel->get_channel_socket(), accept_handler);
+}
+
+void Client::decide_socket(Commands cmd)
+{
+    std::cout << "HERE" << std::endl;
+    if (cmd == MSG)
+    {
+        std::cout << "HERE1" << std::endl;
+        connection_socket_.reset(&(client_channels_[1]->get_channel_socket()));
+    }
+    else
+    {
+        std::cout << "HERE2" << std::endl;
+        //connection_socket_.reset(&main_socket_);
+    }
+    
 }
 
 
 
+
+/****************************************************************/
 void Client::whisper(std::string){
 
 }

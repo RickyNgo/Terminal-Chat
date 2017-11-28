@@ -7,7 +7,7 @@
 #include <boost/shared_ptr.hpp>
 #include <cstdlib>
 #include <string>
-#include "messages.hpp"
+#include "../Messages/messages.hpp"
 
 using boost::asio::ip::tcp;
 
@@ -52,7 +52,7 @@ public:
     
     std::string get_channel_name();
     int get_channel_id();
-    tcp::socket* get_channel_socket();
+    tcp::socket& get_channel_socket();
     ChannelType get_channel_type();
     ChannelRole get_channel_role();
     
