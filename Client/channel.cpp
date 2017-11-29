@@ -7,6 +7,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include "../Ncurses/layout.hpp"
 
 
 using boost::asio::ip::tcp;
@@ -101,8 +102,17 @@ void Channel::on_read_body( boost::system::error_code ec, std::size_t bytes ) {
         //memset(read_buffer_, '\0', sizeof(char)*512);
         
         // UNCOMMENT THIS!!
-        //update_buffers(std::to_string(read_msg.get_time()), read_msg.get_sender(), read_msg.get_body());
+        time_t temp = read_msg.get_time();
+
+        struct tm *time_info = localtime(&temp);
+        char *raw_time = new char[12];
+
+        sprintf(raw_time, "%02d:%02d:%02d|", time_info->tm_hour, time_info->tm_min, time_info->tm_sec);
+
+        std::string fmtd_time(raw_time);
+        update_buffers(fmtd_time, read_msg.get_sender(), read_msg.get_body());
         do_read_header();
+        display_chat();
     } else {
         //std::cout << "Read error: " << ec << std::endl;
     }
@@ -129,7 +139,6 @@ void Channel::do_read_header() {
 
 /***************************************
  do_read_body
- 
  
  ***************************************/
 void Channel::do_read_body() {
@@ -164,11 +173,6 @@ void Channel::on_write_header( boost::system::error_code ec, std::size_t bytes )
     }
 }
 
-/***************************************
- on_read_body
- 
- read handler
- ***************************************/
 void Channel::on_write_body( boost::system::error_code ec, std::size_t bytes ) {
     if (!ec) {
 
@@ -191,10 +195,6 @@ void Channel::on_write_body( boost::system::error_code ec, std::size_t bytes ) {
     }
 }
 
-/***************************************
- do_read_header
- 
- ***************************************/
 void Channel::do_write_header() {
 
     boost::asio::async_write(channel_socket_,
@@ -206,14 +206,8 @@ void Channel::do_write_header() {
                                            _1, _2 ));
     
     //std::cerr << "called handler on_read_header" << std::endl;
-    
 }
 
-/***************************************
- do_read_body
- 
- 
- ***************************************/
 void Channel::do_write_body() {
 
     std::ofstream log;
@@ -230,17 +224,7 @@ void Channel::do_write_body() {
                                            _1, _2 ));
     
     //std::cerr << "called handler on_read_body" << std::endl;
-    
 }
-
-
-
-
-
-
-
-
-
 
 void Channel::set_channel_name(std::string name){
     channel_name = name;

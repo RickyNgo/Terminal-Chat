@@ -72,6 +72,7 @@ void Session::on_read_header( const boost::system::error_code error, size_t byte
 
 void Session::do_read_body(void)
 {
+	memset(read_buffer_, '\0', sizeof(char)*512);
 	this->socket_.async_receive( boost::asio::buffer(read_buffer_, MAX_MSG_LENGTH), 
 	boost::bind(&Session::on_read_body, shared_from_this(), _1, _2));
 }
@@ -80,10 +81,10 @@ void Session::on_read_body( const boost::system::error_code error, size_t bytes 
 	if ( ! error ) {
 
         std::string temp(read_buffer_);
+
+		std::cerr << "Session::on_read_body(): " << temp << std::endl;
         this->read_msg.get_body() = std::move(temp);
 		this->write_msg.push(this->read_msg);
-
-		//this->relay_msg();
 
 		room_->deliver( write_msg.front() );
 		do_read_header();
@@ -92,7 +93,6 @@ void Session::on_read_body( const boost::system::error_code error, size_t bytes 
 
 /* Instead of string, should be message class */
 void Session::do_write_header( void ) {
-    //std::strcpy( write_buffer_, message_queue_.front().c_str());
     std::string to_send = write_msg.front().get_header();
 	std::cout << to_send << std::endl;
 	socket_.async_send( boost::asio::buffer( to_send, to_send.length()), boost::bind( &Session::on_write_header, shared_from_this(), _1, _2 ));
