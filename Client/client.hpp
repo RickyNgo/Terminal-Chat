@@ -50,6 +50,17 @@ private:
 	
     void on_read_header( boost::system::error_code, std::size_t);
     void on_read_body( boost::system::error_code, std::size_t);
+
+    /* Reading from channel */
+    void do_read_header_c();
+    void do_read_body_c();
+	
+    void on_read_header_c( boost::system::error_code, std::size_t);
+    void on_read_body_c( boost::system::error_code, std::size_t);
+
+
+    /***********************/
+
 	
     void do_write_header(Messages);
     void do_write_body(Messages);
