@@ -35,6 +35,7 @@ connection_port_(secondPort)
     do_connect_(endpoint_iterator);
     //main_socket_ = boost::make_shared<tcp::socket>(ios);
     current_socket_ = main_socket_;
+    current_channel_ = NULL;
 }
 
 /***************************************
@@ -314,7 +315,7 @@ boost::shared_ptr<tcp::socket> Client::get_main_socket(){return main_socket_;}
 
 int Client::get_current_channel_id(){return current_channel_->get_channel_id();}
 
-Channel* Client::get_current_channel(){
+boost::shared_ptr<Channel> Client::get_current_channel(){
 	return current_channel_;
 }
 
@@ -338,7 +339,7 @@ void Client::set_friend_list(std::map<int, std::string> friends){friend_list_ = 
 /***************************************
 set current channel
 ***************************************/
-void Client::set_current_channel(Channel* chan){current_channel_ = chan;}
+void Client::set_current_channel(boost::shared_ptr<Channel> chan){current_channel_ = chan;}
 
 /***************************************
 add_friend
@@ -356,7 +357,7 @@ void Client::add_friend(int id, std::string name){ //http://www.cplusplus.com/re
 add_room
 ***************************************/
 // replace parameter with ChatRoom
-void Client::add_channel(Channel* chan, int id){
+void Client::add_channel(boost::shared_ptr<Channel> chan, int id){
 	std::pair<std::map<int,Channel*>::iterator,bool> ret;
     //UNCOMMENT
 	//ret = client_channels_.insert (std::pair<int,Channel*>(id,chan));
@@ -740,6 +741,8 @@ void Client::create_channel(std::string channel_name){ //***
     client_channels_.insert(std::make_pair(new_channel->get_channel_id(), new_channel));
 
     client_channels_[1]->start();
+
+    current_channel_ = client_channels_[1];
 }
 
 void Client::decide_socket(Commands cmd)

@@ -64,6 +64,8 @@ public:
     void set_channel_socket(tcp::socket*);
     void set_channel_type(ChannelType);
     void set_channel_role(ChannelRole);
+
+    void send(Messages msg);
     
     std::string get_channel_name();
     int get_channel_id();

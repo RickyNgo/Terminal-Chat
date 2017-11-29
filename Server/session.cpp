@@ -17,9 +17,9 @@ void Session::start() {
 
 void Session::deliver( Messages & msg ) {
 	std::cerr << "Session::deliver(): " << msg.get_body() << std::endl;
-	bool work = write_msg.empty();
+	//bool work = write_msg.empty();
 	write_msg.push( msg );
-	if ( ! work ) {
+	{
 		std::cerr << "writing" << std::endl;
 		do_write_header_();
 	}
@@ -44,7 +44,9 @@ void Session::on_connect_( error_code ec ) {
 
 		time_t current_time;
 		Messages test("CHANNEL", "YOU HAVE JOINED", time(&current_time), MSG);
-		room_->deliver( test );
+
+		write_msg.push(test);
+	
 		do_read_header_();
 	} else {
 		std::cerr << "Session::on_connect_(): " << ec.message() << std::endl;
@@ -53,6 +55,7 @@ void Session::on_connect_( error_code ec ) {
 
 void Session::do_read_header_() {
 	memset(read_buffer_, '\0', sizeof(char)*512);
+	
 	socket_.async_receive( boost::asio::buffer( read_buffer_, MAX_HEADER_LENGTH ), 
 	boost::bind( &Session::on_read_header_, shared_from_this(), _1, _2));
 }
@@ -83,6 +86,7 @@ void Session::on_read_header_( const boost::system::error_code error, size_t byt
 void Session::do_read_body_(void)
 {
 	memset(read_buffer_, '\0', sizeof(char)*512);
+
 	this->socket_.async_receive( boost::asio::buffer(read_buffer_, MAX_MSG_LENGTH), 
 	boost::bind(&Session::on_read_body_, shared_from_this(), _1, _2));
 }
@@ -96,7 +100,8 @@ void Session::on_read_body_( const boost::system::error_code error, size_t bytes
         this->read_msg.get_body() = std::move(temp);
 		this->write_msg.push( this->read_msg );
 
-		room_->deliver( write_msg.front() );
+		do_write_header_();
+		//room_->deliver( read_msg );
 		do_read_header_();
 	}
 }
@@ -104,12 +109,15 @@ void Session::on_read_body_( const boost::system::error_code error, size_t bytes
 /* Instead of string, should be message class */
 void Session::do_write_header_( void ) {
     std::string to_send = write_msg.front().get_header();
-	std::cout << to_send << std::endl;
-	socket_.async_send( boost::asio::buffer( to_send, to_send.length()), boost::bind( &Session::on_write_header_, shared_from_this(), _1, _2 ));
+	std::cout << "HEADER TO SEND " << to_send << std::endl;
+	
+	boost::asio::async_write(socket_, boost::asio::buffer( to_send, to_send.length()), boost::bind( &Session::on_write_header_, shared_from_this(), _1, _2 ));
 }
 
 void Session::on_write_header_( const boost::system::error_code error, size_t bytes ) {
 	if ( ! error ) {
+		std::string to_send = write_msg.front().get_header();
+		std::cout << "HEADER ON SEND " << to_send << std::endl;
 		do_write_body_();
 	}
 }
@@ -117,14 +125,24 @@ void Session::on_write_header_( const boost::system::error_code error, size_t by
 void Session::do_write_body_()
 {
 	std::string to_send = write_msg.front().get_body();
-	std::cout << to_send << std::endl;
-	socket_.async_send( boost::asio::buffer( to_send, to_send.length()), boost::bind( &Session::on_write_body_, shared_from_this(), _1, _2 ));
+	std::cout << "BODY TO SEND " << to_send << std::endl;
+
+	boost::asio::async_write(socket_, boost::asio::buffer( to_send, to_send.length()), boost::bind( &Session::on_write_body_, shared_from_this(), _1, _2 ));
+	
 }
 
 void Session::on_write_body_( const boost::system::error_code error, size_t bytes ) {
+	std::string to_send = write_msg.front().get_body();
+		std::cout << "BODY ON SEND " << to_send << std::endl;
 	write_msg.pop();
-	if ( ! error && ! write_msg.empty() ) {
-		do_write_header_();
+
+	if ( ! error ) 
+	{
+		if(!write_msg.empty())
+		{
+			std::cout << "STILL MORE MESSAGES" << std::endl;
+			do_write_header_();
+		}	
 	}
 }
 

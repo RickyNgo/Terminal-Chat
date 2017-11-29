@@ -94,7 +94,19 @@ int main(int argc, char* argv[])
             c->create_channel(input_msg.get_body());
         }
 
-        c->send(input_msg);
+        if (cmd == MSG)
+        {
+            if (c->get_current_channel() == NULL)
+            {
+                continue;
+            }
+            c->get_current_channel()->send(input_msg);
+        }
+        else
+        {
+            c->send(input_msg);
+        }
+        
     
     }
     c->close();

@@ -39,14 +39,11 @@ void Channel::accept_handler(const boost::system::error_code& error)
 	if (!error)
 	{
         std::ofstream log;
-        log.open("log.txt");
+        log.open("log.txt", std::fstream::out | std::fstream::app);
 
 		log << "The channel has accepted a session" << channel_socket_.is_open() << std::endl;
-		time_t current_time;
-		Messages test("Client", "I have joined", time(&current_time), MSG);
-		
-		write_queue.push(test); 
-		do_write_header();
+
+        do_read_header();
 
         log.close();
 	}
@@ -66,19 +63,13 @@ void Channel::accept_handler(const boost::system::error_code& error)
  ***************************************/
 void Channel::on_read_header( boost::system::error_code ec, std::size_t bytes ) {
     if (!ec) {
+        std::ofstream log;
+        log.open("log.txt", std::fstream::out | std::fstream::app);
+        log << "ON READ HEADER " << read_buffer_ << std::endl;
+        log.close();
+
         read_msg.get_header() = read_buffer_;
         read_msg.parse_header();
-        /*
-        Messages msg;
-        msg.get_header() = read_buffer_;
-        
-        msg.parse_header();
-        body_length_ = msg.get_length();
-        command_ = msg.get_command();
-        */
-
-        body_length_ = read_msg.get_length();
-        command_ = read_msg.get_command();
         
         //std::cout << "header body length: " << read_msg.get_length() << "by member: " << body_length_ << std::endl;
         //std::cout << "header command: " << read_msg.get_command() << "by member: " << command_ << std::endl;
@@ -96,10 +87,15 @@ void Channel::on_read_header( boost::system::error_code ec, std::size_t bytes ) 
  ***************************************/
 void Channel::on_read_body( boost::system::error_code ec, std::size_t bytes ) {
     if (!ec) {
+
+        std::ofstream log;
+        log.open("log.txt", std::fstream::out | std::fstream::app);
+        log << "ON READ BODY " << read_buffer_ << std::endl;
+        log.close();
+
         //std::cout << "read_buffer_: " << this->read_buffer_ << std::endl;
         read_msg.get_body() = read_buffer_;
         //std::cout << "Read body: " << read_msg.get_body() << std::endl;
-        //memset(read_buffer_, '\0', sizeof(char)*512);
         
         // UNCOMMENT THIS!!
         time_t temp = read_msg.get_time();
@@ -113,8 +109,12 @@ void Channel::on_read_body( boost::system::error_code ec, std::size_t bytes ) {
         update_buffers(fmtd_time, read_msg.get_sender(), read_msg.get_body());
         do_read_header();
         display_chat();
+
     } else {
-        //std::cout << "Read error: " << ec << std::endl;
+        std::ofstream log;
+        log.open("log.txt", std::fstream::out | std::fstream::app);
+        log << "ON READ BODY " << ec.message() << std::endl;
+        log.close();
     }
 }
 
@@ -134,7 +134,6 @@ void Channel::do_read_header() {
                                            _1, _2 ));
     
     //std::cerr << "called handler on_read_header" << std::endl;
-    
 }
 
 /***************************************
@@ -151,7 +150,10 @@ void Channel::do_read_body() {
                                            shared_from_this(),
                                            _1, _2 ));
     
-    //std::cerr << "called handler on_read_body" << std::endl;
+    std::ofstream log;
+        log.open("log.txt", std::fstream::out | std::fstream::app);
+        log << "DO READ BODY " << std::endl;
+        log.close();
     
 }
 
@@ -160,8 +162,8 @@ void Channel::do_read_body() {
 void Channel::on_write_header( boost::system::error_code ec, std::size_t bytes ) {
     if (!ec) {       
         std::ofstream log;
-        log.open("log.txt");
-		log << "ON WRITE HEADER " << ec.message() << std::endl;
+        log.open("log.txt", std::fstream::out | std::fstream::app);
+		log << "ON WRITE HEADER " << write_queue.front().get_header() << std::endl;
         log.close();
         do_write_body();
     } else {
@@ -175,20 +177,11 @@ void Channel::on_write_header( boost::system::error_code ec, std::size_t bytes )
 
 void Channel::on_write_body( boost::system::error_code ec, std::size_t bytes ) {
     if (!ec) {
-
-        write_queue.pop();
-        if (write_queue.empty())
-        {
             std::ofstream log;
-            log.open("log.txt");
-		    log << "ON WRITE BODY " << ec.message() << std::endl;
+            log.open("log.txt", std::fstream::out | std::fstream::app);
+		    log << "ON WRITE BODY " << write_queue.front().get_body() << std::endl;
             log.close();
-            do_read_header();
-        }
-        else
-        {
-            do_write_header();
-        }
+        write_queue.pop();
         
     } else {
         //std::cout << "Read error: " << ec << std::endl;
@@ -196,6 +189,10 @@ void Channel::on_write_body( boost::system::error_code ec, std::size_t bytes ) {
 }
 
 void Channel::do_write_header() {
+    std::ofstream log;
+    log.open("log.txt", std::fstream::out | std::fstream::app);
+	log << "DO WRITE HEADER " << write_queue.front().get_header() << std::endl;
+    log.close();
 
     boost::asio::async_write(channel_socket_,
                                boost::asio::buffer(
@@ -211,8 +208,8 @@ void Channel::do_write_header() {
 void Channel::do_write_body() {
 
     std::ofstream log;
-    log.open("log.txt");
-	log << "DO WRITE BODY " << std::endl;
+    log.open("log.txt", std::fstream::out | std::fstream::app);
+	log << "DO WRITE BODY " << write_queue.front().get_body() << std::endl;
     log.close();
 
     boost::asio::async_write(channel_socket_,
@@ -224,6 +221,12 @@ void Channel::do_write_body() {
                                            _1, _2 ));
     
     //std::cerr << "called handler on_read_body" << std::endl;
+}
+
+void Channel::send(Messages msg)
+{
+    write_queue.push(msg);
+    do_write_header();
 }
 
 void Channel::set_channel_name(std::string name){
