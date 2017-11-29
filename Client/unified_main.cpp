@@ -81,13 +81,6 @@ int main(int argc, char* argv[])
         wrefresh(inputWin);
         wrefresh(channelWin);
         wrefresh(contactWinBox);
-
-        /*
-        for (int i = 0; i < 30; i ++)
-        {
-            display_chat();
-        }
-        */
         
         //input = get_input();
         input = get_input();
@@ -100,22 +93,8 @@ int main(int argc, char* argv[])
         {
             c->create_channel(input_msg.get_body());
         }
-        
 
-        //c->decide_socket(cmd);
         c->send(input_msg);
-
-    
-        
-
-        //display_chat();
-        
-        /*
-        for (int i = 0; i < 30; i ++)
-        {
-            display_chat();
-        }
-        */
     
     }
     c->close();

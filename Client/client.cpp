@@ -715,18 +715,9 @@ void Client::accept_handler(const boost::system::error_code& error)
     std::ofstream log;
     log.open("log.txt");
 
-    boost::asio::socket_base::keep_alive option(true);
-    client_channels_[1]->get_channel_socket()->set_option(option);
-    connection_socket_ = client_channels_[1]->get_channel_socket();
+    client_channels_[1]->start();
 
-    //do_read_header_c();
-
-    time_t current_time;
-	Messages test("CLIENT", "I HAVE JOINED", time(&current_time), MSG);
-
-    current_socket_ = client_channels_[1]->get_channel_socket();
-
-    do_write_header(test);
+    do_read_header();
 
     if (!error)
     {
@@ -749,8 +740,6 @@ void Client::create_channel(std::string channel_name){ //***
     client_channels_.insert(std::make_pair(new_channel->get_channel_id(), new_channel));
 
     client_channels_[1]->start();
-    /*acceptor_.async_accept(*(new_channel->get_channel_socket()), boost::bind(&Client::accept_handler, shared_from_this(), _1));
-*/
 }
 
 void Client::decide_socket(Commands cmd)
@@ -760,7 +749,7 @@ void Client::decide_socket(Commands cmd)
     {
         std::cout << "HERE1" << std::endl;
         
-        connection_socket_ = client_channels_[1]->get_channel_socket();
+        //connection_socket_ = client_channels_[1]->get_channel_socket();
     }
     else
     {

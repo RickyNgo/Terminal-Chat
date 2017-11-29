@@ -42,13 +42,14 @@ void Session::on_connect_( error_code ec ) {
 }
 
 void Session::do_read_header() {
-	this->socket_.async_receive( boost::asio::buffer( read_buffer, MAX_HEADER_LENGTH ), 
+	memset(read_buffer_, '\0', sizeof(char)*512);
+	socket_.async_receive( boost::asio::buffer( read_buffer_, MAX_HEADER_LENGTH ), 
 	boost::bind( &Session::on_read_header, shared_from_this(), _1, _2));
 }
 
 void Session::on_read_header( const boost::system::error_code error, size_t bytes ) {
 	if ( ! error ) {
-        std::string temp(read_buffer.begin(), read_buffer.end());
+        std::string temp(read_buffer_);
 
 		if (temp.length() == 0)
 		{
@@ -71,14 +72,14 @@ void Session::on_read_header( const boost::system::error_code error, size_t byte
 
 void Session::do_read_body(void)
 {
-	this->socket_.async_receive( boost::asio::buffer(this->read_buffer, MAX_MSG_LENGTH), 
+	this->socket_.async_receive( boost::asio::buffer(read_buffer_, MAX_MSG_LENGTH), 
 	boost::bind(&Session::on_read_body, shared_from_this(), _1, _2));
 }
 // MSG
 void Session::on_read_body( const boost::system::error_code error, size_t bytes ) {
 	if ( ! error ) {
 
-        std::string temp(read_buffer.begin(), read_buffer.end());
+        std::string temp(read_buffer_);
         this->read_msg.get_body() = std::move(temp);
 		this->write_msg.push(this->read_msg);
 

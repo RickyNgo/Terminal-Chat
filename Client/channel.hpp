@@ -8,6 +8,7 @@
 #include <boost/make_shared.hpp>
 #include <cstdlib>
 #include <string>
+#include <queue>
 #include "../Messages/messages.hpp"
 
 using boost::asio::ip::tcp;
@@ -22,13 +23,18 @@ private:
     std::string channel_name;
     int channel_id;
     int port;
-    boost::shared_ptr<tcp::socket> channel_socket_;
+    tcp::socket channel_socket_;
     ChannelRole role;
     ChannelType type;
 tcp::acceptor acceptor;
 
     uint8_t command_;
     uint8_t body_length_;
+
+    char read_buffer_[512];
+    Messages read_msg;
+
+    std::queue<Messages> write_queue;
 
 private:
     void do_connect_(tcp::resolver::iterator);
@@ -40,13 +46,14 @@ private:
     void on_read_body( boost::system::error_code, std::size_t);
 	
     void do_write_header();
-    void do_read_body();
-    void on_read_header(boost::system::error_code, std::size_t);
-    void on_read_body( boost::system::error_code, std::size_t);
+    void do_write_body();
 
-    Messages read_msg;
+    void on_write_header( boost::system::error_code, std::size_t);
+    void on_write_body( boost::system::error_code, std::size_t);
+
+    
     void accept_handler(const boost::system::error_code&);
-    char read_buffer_[512];
+
     
 public:
     Channel(std::string, int, boost::asio::io_service&, int);
@@ -60,9 +67,11 @@ public:
     
     std::string get_channel_name();
     int get_channel_id();
-    boost::shared_ptr<tcp::socket> get_channel_socket();
+    tcp::socket& get_channel_socket();
     ChannelType get_channel_type();
     ChannelRole get_channel_role();
+
+    void add_msg(Messages);
     
 };
 

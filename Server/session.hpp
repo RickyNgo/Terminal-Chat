@@ -42,7 +42,7 @@ public:
 	void on_write_body(const boost::system::error_code error, size_t bytes);
 	
 private:
-	std::vector<char> read_buffer;
+	char read_buffer_[512];
 	Messages read_msg;
 	std::queue <Messages> write_msg;
 	tcp::socket socket_;
