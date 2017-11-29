@@ -13,7 +13,6 @@ class ChannelUtility
 {
 public:
     void send_msg(boost::shared_ptr<Session> recipient, Messages msg);
-private:
     
 };
 
