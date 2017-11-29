@@ -31,7 +31,7 @@ private:
     boost::shared_ptr<tcp::socket> connection_socket_;
     boost::shared_ptr<tcp::socket> current_socket_;
 
-    tcp::acceptor   acceptor_;
+    //tcp::acceptor   acceptor_;
 	std::string     user_alias_;
 	int             user_id_;
     int             connection_port_;
@@ -51,17 +51,6 @@ private:
     void on_read_header( boost::system::error_code, std::size_t);
     void on_read_body( boost::system::error_code, std::size_t);
 
-    /* Reading from channel */
-    void do_read_header_c();
-    void do_read_body_c();
-	
-    void on_read_header_c( boost::system::error_code, std::size_t);
-    void on_read_body_c( boost::system::error_code, std::size_t);
-
-
-    /***********************/
-
-	
     void do_write_header(Messages);
     void do_write_body(Messages);
 	

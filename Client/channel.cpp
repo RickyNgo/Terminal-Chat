@@ -11,17 +11,43 @@ using boost::asio::ip::tcp;
 
 #include "channel.hpp"
 
-Channel::Channel(std::string name, int id, boost::asio::io_service& ios):
+Channel::Channel(std::string name, int id, boost::asio::io_service& ios, int port):
     channel_name(name), 
     channel_id(id), 
     role(NO_ROLE), 
     type(NO_TYPE),
-    channel_socket_(boost::make_shared<tcp::socket>(ios))
+    port(port),
+    channel_socket_(boost::make_shared<tcp::socket>(ios)),
+    acceptor(ios, tcp::endpoint(tcp::v4(), port)) 
     {
     }
 
 Channel::~Channel(){}
 
+void Channel::start()
+{
+	acceptor.listen();
+	
+	acceptor.async_accept(*channel_socket_, boost::bind(&Channel::accept_handler, shared_from_this(), _1));
+}
+
+void Channel::accept_handler(const boost::system::error_code& error)
+{
+	if (!error)
+	{
+		std::cout << "The channel has accepted a session" << std::endl;
+		time_t current_time;
+		Messages test("Client", "I have joined", time(&current_time), MSG);
+		
+		write_msg.push(test); 
+		do_write_header();
+	}
+	else
+	{
+		std::cout << error.message() << std::endl;
+		channel_socket_->close();
+	}
+}
 
 /***************************************
  on_read_header

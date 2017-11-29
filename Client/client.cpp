@@ -24,14 +24,14 @@ constructor
  ***************************************/
 Client::Client(boost::asio::io_service& io_serv, tcp::resolver::iterator endpoint_iterator, int secondPort) : 
 ios(io_serv),
-acceptor_( ios, tcp::endpoint( boost::asio::ip::tcp::v4(), secondPort )),
+//acceptor_( ios, tcp::endpoint( boost::asio::ip::tcp::v4(), secondPort )),
 user_alias_(""),
 main_socket_(boost::make_shared<tcp::socket>(ios)),
 user_id_(-1),
 current_channel_(0),
 connection_port_(secondPort)
 {
-    acceptor_.listen(); 
+//    acceptor_.listen(); 
     do_connect_(endpoint_iterator);
     //main_socket_ = boost::make_shared<tcp::socket>(ios);
     current_socket_ = main_socket_;
@@ -137,104 +137,6 @@ void Client::do_read_body() { //get_current_socket().async_receive
     //std::cerr << "called handler on_read_body" << std::endl;
     
 }
-
-/*****READING FROM CHANNEL***********************************************************************/
-void Client::on_read_header_c( boost::system::error_code ec, std::size_t bytes ) {
-    if (!ec) {
-        read_msg.get_header() = read_buffer_;
-        read_msg.parse_header();
-        /*
-        Messages msg;
-        msg.get_header() = read_buffer_;
-        
-        msg.parse_header();
-        body_length_ = msg.get_length();
-        command_ = msg.get_command();
-        */
-
-        body_length_ = read_msg.get_length();
-        command_ = read_msg.get_command();
-
-        parse_server_command(command_);
-        
-        //std::cout << "header body length: " << read_msg.get_length() << "by member: " << body_length_ << std::endl;
-        //std::cout << "header command: " << read_msg.get_command() << "by member: " << command_ << std::endl;
-               
-        do_read_body_c();
-    } else {
-        //std::cout << "Read error in on_read_header: " << ec << std::endl;
-    }
-}
-
-/***************************************
- on_read_body
- 
- read handler
- ***************************************/
-void Client::on_read_body_c( boost::system::error_code ec, std::size_t bytes ) {
-    if (!ec) {
-        //std::cout << "read_buffer_: " << this->read_buffer_ << std::endl;
-        read_msg.get_body() = read_buffer_;
-        //std::cout << "Read body: " << read_msg.get_body() << std::endl;
-        //memset(read_buffer_, '\0', sizeof(char)*512);
-        
-        time_t temp = read_msg.get_time();
-
-        struct tm *time_info = localtime(&temp);
-        char *raw_time = new char[12];
-
-        sprintf(raw_time, "%02d:%02d:%02d|", time_info->tm_hour, time_info->tm_min, time_info->tm_sec);
-
-        std::string fmtd_time(raw_time);
-
-        update_buffers(fmtd_time, read_msg.get_sender(), read_msg.get_body());
-
-        do_read_header_c();
-
-        display_chat();
-    } else {
-        //std::cout << "Read error: " << ec << std::endl;
-    }
-}
-
-/***************************************
- do_read_header
- 
- ***************************************/
-void Client::do_read_header_c() {
-    read_msg.clear();
-    memset(read_buffer_, '\0', sizeof(char)*512);
-    connection_socket_->async_receive(
-                               boost::asio::buffer(
-                                                   read_buffer_,
-                                                   MAX_HEADER_LENGTH),
-                               boost::bind(&Client::on_read_header_c,
-                                           shared_from_this(),
-                                           _1, _2 ));
-    
-    //std::cerr << "called handler on_read_header" << std::endl;
-    
-}
-
-/***************************************
- do_read_body
- 
- 
- ***************************************/
-void Client::do_read_body_c() { //get_current_socket().async_receive
-    memset(read_buffer_, '\0', sizeof(char)*512);
-    connection_socket_->async_receive(
-                               boost::asio::buffer(
-                                                   read_buffer_,
-                                                   read_msg.get_length()),
-                               boost::bind(&Client::on_read_body_c,
-                                           shared_from_this(),
-                                           _1, _2 ));
-    
-    //std::cerr << "called handler on_read_body" << std::endl;
-    
-}
-/*****READING FROM CHANNEL***********************************************************************/
 
 /***************************************
  send
@@ -842,19 +744,13 @@ void Client::accept_handler(const boost::system::error_code& error)
 
 void Client::create_channel(std::string channel_name){ //***
 
-    auto new_channel = boost::make_shared<Channel>(channel_name, 1, ios);
-
-    //new_channel->get_channel_socket()->open(boost::asio::ip::tcp::v4());
+    auto new_channel = boost::make_shared<Channel>(channel_name, 1, ios, connection_port_);
 
     client_channels_.insert(std::make_pair(new_channel->get_channel_id(), new_channel));
 
-    //boost::shared_ptr<tcp::socket> test = new_channel->get_channel_socket();
-
-    acceptor_.async_accept(*(new_channel->get_channel_socket()), boost::bind(&Client::accept_handler, shared_from_this(), _1));
-
-    //acceptor_.async_accept(*test, boost::bind(&Client::accept_handler, shared_from_this(), _1));
-    
-    // std::cout << std::boolalpha << test->is_open() << std::endl;
+    client_channels_[1]->start();
+    /*acceptor_.async_accept(*(new_channel->get_channel_socket()), boost::bind(&Client::accept_handler, shared_from_this(), _1));
+*/
 }
 
 void Client::decide_socket(Commands cmd)
@@ -869,7 +765,6 @@ void Client::decide_socket(Commands cmd)
     else
     {
         std::cout << "HERE2" << std::endl;
-        //connection_socket_.reset(&main_socket_);
     }
     
 }
@@ -881,7 +776,6 @@ void Client::set_connection()
     //connection_socket_ = client_channels_[1]->get_channel_socket();
 
     //current_socket_ = connection_socket_;
-    do_read_header_c();
 }
 
 
