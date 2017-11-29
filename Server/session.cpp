@@ -35,8 +35,7 @@ void Session::on_connect_( error_code ec ) {
 		time_t current_time;
 		Messages test("CHANNEL", "YOU HAVE JOINED", time(&current_time), MSG);
 		write_msg.push(test);
-		//do_read_header();
-		do_write_header();
+		do_read_header();
 	} else {
 		std::cerr << "Session::on_connect_(): " << ec.message() << std::endl;
 	}

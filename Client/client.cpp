@@ -817,11 +817,18 @@ void Client::accept_handler(const boost::system::error_code& error)
     client_channels_[1]->get_channel_socket()->set_option(option);
     connection_socket_ = client_channels_[1]->get_channel_socket();
 
-    do_read_header_c();
+    //do_read_header_c();
+
+    time_t current_time;
+	Messages test("CLIENT", "I HAVE JOINED", time(&current_time), MSG);
+
+    current_socket_ = client_channels_[1]->get_channel_socket();
+
+    do_write_header(test);
 
     if (!error)
     {
-        set_connection();
+        //set_connection();
         log << "I accepted a session " << connection_socket_->is_open() << "\n";
     }
     else
@@ -841,9 +848,10 @@ void Client::create_channel(std::string channel_name){ //***
 
     client_channels_.insert(std::make_pair(new_channel->get_channel_id(), new_channel));
 
-    boost::shared_ptr<tcp::socket> test = new_channel->get_channel_socket();
+    //boost::shared_ptr<tcp::socket> test = new_channel->get_channel_socket();
 
     acceptor_.async_accept(*(new_channel->get_channel_socket()), boost::bind(&Client::accept_handler, shared_from_this(), _1));
+
     //acceptor_.async_accept(*test, boost::bind(&Client::accept_handler, shared_from_this(), _1));
     
     // std::cout << std::boolalpha << test->is_open() << std::endl;
