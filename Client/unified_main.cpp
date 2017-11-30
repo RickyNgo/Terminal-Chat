@@ -103,28 +103,14 @@ int main(int argc, char* argv[])
             c->create_channel(input_msg.get_body());
             c->send(input_msg);
 
-        } else {
-            Messages input_msg( alias, input, time( &current_time ), cmd );
-            c->send(input_msg);
-        }
-
-<<<<<<< HEAD
-=======
-        if (cmd == MSG)
-        {
-            if (c->get_current_channel() == NULL)
+        } else if ( cmd == MSG ) {
+            if (c->get_current_channel() != NULL)
             {
-                continue;
+                Messages input_msg( alias, input, time( &current_time ), cmd );
+                c->get_current_channel()->send(input_msg);
             }
-            c->get_current_channel()->send(input_msg);
-        }
-        else
-        {
-            c->send(input_msg);
-        }
-        
->>>>>>> 34802ef53cb4493f6d97404c6d98c9efb099694f
-    
+
+        }            
     }
     c->close();
     del_wins();
