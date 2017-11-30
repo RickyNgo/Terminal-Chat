@@ -108,6 +108,22 @@ int main(int argc, char* argv[])
             c->send(input_msg);
         }
 
+<<<<<<< HEAD
+=======
+        if (cmd == MSG)
+        {
+            if (c->get_current_channel() == NULL)
+            {
+                continue;
+            }
+            c->get_current_channel()->send(input_msg);
+        }
+        else
+        {
+            c->send(input_msg);
+        }
+        
+>>>>>>> 34802ef53cb4493f6d97404c6d98c9efb099694f
     
     }
     c->close();

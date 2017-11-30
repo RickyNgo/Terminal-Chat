@@ -24,6 +24,12 @@ void Session::deliver( Messages & msg ) {
 		write_msg.push( msg );
 	}
 	if ( idle ) {
+=======
+	//bool work = write_msg.empty();
+	write_msg.push( msg );
+	{
+		std::cerr << "writing" << std::endl;
+>>>>>>> 34802ef53cb4493f6d97404c6d98c9efb099694f
 		do_write_header_();
 	}
 }
@@ -48,6 +54,12 @@ void Session::on_connect_( error_code ec ) {
 		time_t current_time;
 		Messages test( "CHANNEL", "YOU HAVE JOINED", time(&current_time), MSG );
 		room_->deliver( test );
+=======
+		Messages test("CHANNEL", "YOU HAVE JOINED", time(&current_time), MSG);
+
+		write_msg.push(test);
+	
+>>>>>>> 34802ef53cb4493f6d97404c6d98c9efb099694f
 		do_read_header_();
 	} else {
 		std::cerr << "Session::on_connect_(): " << ec.message() << std::endl;
@@ -86,6 +98,10 @@ void Session::on_read_header_( const boost::system::error_code error, size_t byt
 void Session::do_read_body_(void)
 {
 	memset(read_buffer_, '\0', sizeof(char) * 512);
+=======
+	memset(read_buffer_, '\0', sizeof(char)*512);
+
+>>>>>>> 34802ef53cb4493f6d97404c6d98c9efb099694f
 	this->socket_.async_receive( boost::asio::buffer(read_buffer_, MAX_MSG_LENGTH), 
 	boost::bind(&Session::on_read_body_, shared_from_this(), _1, _2));
 }
@@ -98,6 +114,7 @@ void Session::on_read_body_( const boost::system::error_code error, size_t bytes
 		std::cerr << "Session::on_read_body(): " << temp << std::endl;
         this->read_msg.get_body() = std::move(temp);
 
+<<<<<<< HEAD
 		room_->deliver( read_msg );
 		do_read_header_();
 	}
@@ -108,11 +125,20 @@ void Session::do_write_header_( void ) {
     std::string to_send = write_msg.front().get_header();
 	std::cout << "Session::do_write_header_(): " << to_send << std::endl;
 	socket_.async_send( boost::asio::buffer( to_send, to_send.length()), boost::bind( &Session::on_write_header_, shared_from_this(), _1, _2 ));
+=======
+	std::cout << "HEADER TO SEND " << to_send << std::endl;
+	
+	boost::asio::async_write(socket_, boost::asio::buffer( to_send, to_send.length()), boost::bind( &Session::on_write_header_, shared_from_this(), _1, _2 ));
+>>>>>>> 34802ef53cb4493f6d97404c6d98c9efb099694f
 }
 
 void Session::on_write_header_( const boost::system::error_code error, size_t bytes ) {
 	if ( ! error ) {
 		std::cerr << "Session::on_write_header_(): " << bytes << " bytes" << std::endl;
+=======
+		std::string to_send = write_msg.front().get_header();
+		std::cout << "HEADER ON SEND " << to_send << std::endl;
+>>>>>>> 34802ef53cb4493f6d97404c6d98c9efb099694f
 		do_write_body_();
 	}
 }
@@ -134,6 +160,26 @@ void Session::on_write_body_( const boost::system::error_code error, size_t byte
 	if ( ! error && work ) {
 		std::cerr << "Session::on_write_body_(): work to do" << std::endl;
 		do_write_header_();
+=======
+	std::cout << "BODY TO SEND " << to_send << std::endl;
+
+	boost::asio::async_write(socket_, boost::asio::buffer( to_send, to_send.length()), boost::bind( &Session::on_write_body_, shared_from_this(), _1, _2 ));
+	
+}
+
+void Session::on_write_body_( const boost::system::error_code error, size_t bytes ) {
+	std::string to_send = write_msg.front().get_body();
+		std::cout << "BODY ON SEND " << to_send << std::endl;
+	write_msg.pop();
+
+	if ( ! error ) 
+	{
+		if(!write_msg.empty())
+		{
+			std::cout << "STILL MORE MESSAGES" << std::endl;
+			do_write_header_();
+		}	
+>>>>>>> 34802ef53cb4493f6d97404c6d98c9efb099694f
 	}
 }
 

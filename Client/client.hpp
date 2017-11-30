@@ -35,7 +35,7 @@ private:
 	std::string     user_alias_;
 	int             user_id_;
     int             connection_port_;
-    Channel*        current_channel_;
+    boost::shared_ptr<Channel>        current_channel_;
 	std::map<int, boost::shared_ptr<Channel>> client_channels_;
 	std::map<int,std::string> friend_list_;
    
@@ -75,17 +75,17 @@ public:
     int get_channel_list_size();
     boost::shared_ptr<tcp::socket> get_main_socket();
     int get_current_channel_id();
-    Channel* get_current_channel();
+    boost::shared_ptr<Channel> get_current_channel();
 
 	void set_user_alias(std::string);	
 	void set_user_id(int);
 	void set_friend_list(std::map<int, std::string>);
-    void set_current_channel(Channel*);
+    void set_current_channel(boost::shared_ptr<Channel>);
 
 	//add reading/writing functions, integrate with other classes
 
     void add_friend(int, std::string);
-	void add_channel(Channel*, int);
+	void add_channel(boost::shared_ptr<Channel>, int);
 	
 	void remove_channel(int);
 
