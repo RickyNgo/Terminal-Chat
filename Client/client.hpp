@@ -35,6 +35,7 @@ private:
 	std::string     user_alias_;
 	int             user_id_;
     int             connection_port_;
+    int channel_id_tracker_;
     boost::shared_ptr<Channel>        current_channel_;
 	std::map<int, boost::shared_ptr<Channel>> client_channels_;
 	std::map<int,std::string> friend_list_;

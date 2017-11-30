@@ -35,6 +35,7 @@ connection_port_(secondPort)
     //main_socket_ = boost::make_shared<tcp::socket>(ios);
     current_socket_ = main_socket_;
     current_channel_ = NULL;
+    channel_id_tracker_ = 0;
 }
 
 /***************************************
@@ -735,13 +736,23 @@ void Client::accept_handler(const boost::system::error_code& error)
 
 void Client::create_channel(std::string channel_name){ //***
 
-    auto new_channel = boost::make_shared<Channel>(channel_name, 1, ios, connection_port_);
+    for (std::map<int, boost::shared_ptr<Channel>>::iterator it=client_channels_.begin(); it!=client_channels_.end(); ++it)
+    {
+        if (it->second->get_channel_name() == channel_name)
+        {
+            return;
+        }
+    }
+
+    auto new_channel = boost::make_shared<Channel>(channel_name, channel_id_tracker_, ios, connection_port_);
 
     client_channels_.insert(std::make_pair(new_channel->get_channel_id(), new_channel));
 
-    client_channels_[1]->start();
+    client_channels_[channel_id_tracker_]->start();
 
-    current_channel_ = client_channels_[1];
+    current_channel_ = client_channels_[channel_id_tracker_];
+
+    channel_id_tracker_++;
 }
 
 void Client::decide_socket(Commands cmd)

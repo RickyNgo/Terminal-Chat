@@ -14,6 +14,8 @@ using boost::asio::ip::tcp;
 
 #include "channel.hpp"
 
+typedef boost::asio::detail::socket_option::boolean<SOL_SOCKET, SO_REUSEPORT> reuse_port;
+
 Channel::Channel(std::string name, int id, boost::asio::io_service& ios, int port):
     channel_name(name), 
     channel_id(id), 
@@ -23,7 +25,8 @@ Channel::Channel(std::string name, int id, boost::asio::io_service& ios, int por
     channel_socket_(ios),
     acceptor(ios, tcp::endpoint(tcp::v4(), port)) 
     {
-        acceptor.set_option( tcp::acceptor::reuse_address( true ));
+        //acceptor.set_option( tcp::acceptor::reuse_address( true ));
+        acceptor.set_option( reuse_port( true ));
     }
 
 Channel::~Channel(){}
@@ -55,6 +58,8 @@ void Channel::accept_handler(const boost::system::error_code& error)
 		log << error.message() << std::endl;
         log.close();
 	}
+
+    acceptor.close();
 }
 
 /***************************************

@@ -94,6 +94,7 @@ int main(int argc, char* argv[])
             Messages input_msg( alias, input, time( &current_time ), cmd );
             c->create_channel(input_msg.get_body());
             c->send(input_msg);
+            
         } else if ( cmd == MSG ) {
             if (c->get_current_channel() != NULL)
             {
