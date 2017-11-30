@@ -51,7 +51,7 @@ void Connection::on_login_( error_code ec ) {
 void Connection::on_create_channel_( error_code ec ) {
 	
 	std::cerr << client_ << "::CREATE_CHANNEL => " << ec << " [" << ec.message() << "]." << std::endl;
-	Messages data( "Server", ec.message(), time( NULL ), CREATE_CHANNEL );
+	Messages data( "Server", ec.message(), time( NULL ), JOIN );
 
 	do_write_header_( data );
 }
@@ -59,7 +59,7 @@ void Connection::on_create_channel_( error_code ec ) {
 void Connection::on_join_channel_( error_code ec ) {
 
 	std::cerr << client_ << "::JOIN_CHANNEL => " << ec << " [" << ec.message() << "]." << std::endl;
-	Messages data( "Server", ec.message(), time( NULL ), JOIN_CHANNEL );
+	Messages data( "Server", ec.message(), time( NULL ), JOIN );
 	
 	do_write_header_( data );
 }
@@ -161,7 +161,7 @@ void Connection::on_read_body_( error_code error, size_t bytes ) {
 		std::cerr << client_ << " >> LOGIN." << std::endl;
 		break;
 /* ----------------------------------- */
-		case CREATE_CHANNEL:
+		case JOIN:
 
 		handler_.async_create_channel(
 			shared_from_this(),
@@ -179,7 +179,8 @@ void Connection::on_read_body_( error_code error, size_t bytes ) {
 		std::cerr << client_ << " >> CREATE_CHANNEL." << std::endl;
 		break;
 /* ----------------------------------- */
-		case JOIN_CHANNEL:
+/*
+		case JOIN:
 
 		handler_.async_join_channel(
 			shared_from_this(),
@@ -196,6 +197,7 @@ void Connection::on_read_body_( error_code error, size_t bytes ) {
 
 		std::cerr << client_ << " >> JOIN_CHANNEL." << std::endl;
 		break;
+		*/
 /* ----------------------------------- */
 		case LEAVE:
 

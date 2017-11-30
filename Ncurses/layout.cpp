@@ -34,7 +34,12 @@ char *alias = new char[28];
 std::vector<std::string> time_buffer;
 std::vector<std::string> alias_buffer;
 std::vector<std::string> chat_buffer;
+std::vector<std::string> contacts_buffer;
 
+std::string current_channel = "None";
+
+
+/* Implement in a later time. 
 void draw_channels()
 {
     channelWinBox = newwin(parent_y, channel_width, 0, 0);
@@ -50,15 +55,20 @@ void draw_channels()
     wrefresh(channelWinBox);
     wrefresh(channelWin);
 }
+*/
 
 void draw_chat()
 {
+    chatWinBox = newwin(parent_y-chat_box_height, parent_x - contact_width, 0, 0);
+    chatWin = newwin(parent_y - chat_box_height - 2, parent_x - contact_width-2, 1, 0+1);
+
+    /* Revert back to this whenever the Channel Window is added back in.
     chatWinBox = newwin(parent_y-chat_box_height, parent_x - channel_width - contact_width, 0, contact_width);
     chatWin = newwin(parent_y - chat_box_height - 2, parent_x - channel_width - contact_width-2, 1, contact_width+1);
-    
+    */
     box(chatWinBox, 124, 45);
     
-    mvwprintw(chatWin, 0, 1, "CURRENT BUFFER: ");
+    mvwprintw(chatWin, 0, 1, "CURRENT CHANNEL: %s", current_channel.c_str());
     
     scrollok(chatWinBox, TRUE);
     scrollok(chatWin, TRUE);
@@ -76,8 +86,10 @@ void draw_contacts()
 
     mvwprintw(contactWin, 0, 1, "Contacts");
 
+    /*
     scrollok(contactWinBox, TRUE);
     scrollok(contactWin, TRUE);
+    */
 
     wrefresh(contactWinBox);
     wrefresh(contactWin);
@@ -85,15 +97,21 @@ void draw_contacts()
 
 void draw_input()
 {
+    inputWinBox = newwin(chat_box_height, parent_x - contact_width, parent_y - chat_box_height, 0);
+    inputWin = newwin(chat_box_height-2, parent_x - contact_width -2,  parent_y - chat_box_height + 1, 0 + 1);
+    
+    /* Shorten it when Channel Window is added back
     inputWinBox = newwin(chat_box_height, parent_x - channel_width - contact_width, parent_y - chat_box_height, channel_width);
     inputWin = newwin(chat_box_height-2, parent_x - channel_width - contact_width -2,  parent_y - chat_box_height + 1, channel_width + 1);
-
+    */
     box(inputWinBox, 124, 45);
     
     mvwprintw(inputWin, 0, 1, ">:");
 
+    /*
     scrollok(inputWinBox, TRUE);
     scrollok(inputWin, TRUE);
+    */
     
     wrefresh(inputWinBox);
     wrefresh(inputWin);
@@ -119,7 +137,7 @@ int win_init()
     getmaxyx(stdscr, parent_y, parent_x);
 
     draw_login();
-    draw_channels();
+    //draw_channels();
     draw_chat();
     draw_contacts();
     draw_input();
@@ -129,8 +147,8 @@ int win_init()
 
 void del_wins()
 {
-    delwin(channelWinBox);
-    delwin(channelWin);
+    //delwin(channelWinBox);
+    //delwin(channelWin);
     delwin(chatWinBox);
     delwin(chatWin);
     delwin(contactWinBox);
@@ -155,7 +173,7 @@ void resize_handler(int sig)
         parent_y = new_y;
     }
 
-    draw_channels();
+    //draw_channels();
     draw_contacts();
     draw_chat();
     draw_input();
@@ -167,10 +185,10 @@ void resize_handler(int sig)
     wclear(inputWinBox);
     box(inputWinBox, 124, 45);
     mvwprintw(inputWinBox, 1, 1, ">:");
-    mvwprintw(chatWinBox, 1, 1, "Enki");
+    mvwprintw(chatWinBox, 1, 1, "CURRENT CHANNEL: ");
 
     wcursyncup(inputWinBox);
-    wrefresh(channelWinBox);
+    //wrefresh(channelWinBox);
     wrefresh(chatWinBox);
     wrefresh(contactWinBox);
     wrefresh(inputWinBox);
@@ -285,7 +303,7 @@ void display_chat()
         }
     }
 
-    mvwprintw(chatWin, 0, 1, "CURRENT BUFFER: %s", buffer);
+    mvwprintw(chatWin, 0, 1, "CURRENT CHANNEL: %s", current_channel.c_str());
     wrefresh(chatWin);
 }
 
@@ -312,18 +330,9 @@ void show_help()
     
     std::string help = "\n"
                         " Commands are:\n"
-                        " /help - Displays help commands and syntax\n"
-                        " /exit - Exits the Enki chat program\n"
-                        " /join [room] - Joins the chosen channel if available\n"
-                        " /create [room] - Creates the chosen channel\n"
-                        " /whisper [user] - Sends a direct message to another user\n"
-                        " /invite [user] - Invites another user to your current channel\n"
-                        " /mods - Displays the moderators for the current channel\n"
-                        " /kick [user] - (MODS/ADMINS ONLY) Kicks the selected user from the channel\n"
-                        " /add_mod [user] - (ADMINS ONLY) Adds the selected user to the channel's mod team\n"
-                        " /channel_close - (ADMINS ONLY) Closes the current channel\n"
-                        " /online [user] - See if the user is currently online\n"
-                        " /show [room] - Displays all the rooms you are connected to\n"
+                        " /help - Displays help commands and syntax.\n"
+                        " /exit - Exits the Enki chat program.\n"
+                        " /join [room] - Joins the chosen channel if available and creates it if it isn't there.\n"
                         " PRESS ANY KEY TO CLOSE THIS WINDOW";
 
     mvwprintw(helpWin, 0, 0, help.c_str());
@@ -333,13 +342,15 @@ void show_help()
     
     while(!wgetch(helpWin))
     {
-        return;
+        break;
     }
 
     delwin(helpWin);
     delwin(inputWin);
     delwin(inputWinBox);
     draw_input();
+    draw_chat();
+    display_chat();
 }
 
 void show_friends(std::vector<std::string> friends)
@@ -350,6 +361,7 @@ void show_friends(std::vector<std::string> friends)
     }
 }
 
+/*
 void show_channels(std::vector<std::string> channels)
 {
     for (int i = 0; i < channels.size(); i++)
@@ -357,6 +369,7 @@ void show_channels(std::vector<std::string> channels)
         mvwprintw(channelWinBox, 1, 2, channels[i].c_str());
     }
 }
+*/
 
 int invite_notification(std::vector<std::string> inviter)
 {
@@ -415,6 +428,15 @@ void draw_login()
     loginWinBox = newwin(0, 0, 0, 0);
     box(loginWinBox, 124, 45);
 
+    mvwprintw(loginWinBox, parent_y/4, parent_x/2-18, " _______ .__   __.  __  ___  __ ");
+    mvwprintw(loginWinBox, parent_y/4+1, parent_x/2-18, "|   ____||  \\ |  | |  |/  / |  |");
+    mvwprintw(loginWinBox, parent_y/4+2, parent_x/2-18, "|  |__   |   \\|  | |  '  /  |  |");
+    mvwprintw(loginWinBox, parent_y/4+3, parent_x/2-18, "|   __|  |  . `  | |    <   |  |");
+    mvwprintw(loginWinBox, parent_y/4+4, parent_x/2-18, "|  |____ |  |\\   | |  .  \\  |  |");
+    mvwprintw(loginWinBox, parent_y/4+5, parent_x/2-18, "|_______||__| \\__| |__|\\__\\ |__|");
+
+
+
     mvwprintw(loginWinBox, parent_y/2, parent_x/2-18, "LOGIN" );
     mvwprintw(loginWinBox, parent_y/2+1, parent_x/2-18, "Please enter an alias 5-15 characters long");
     mvwprintw(loginWinBox, parent_y/2+3, parent_x/2-18, ": ");
@@ -436,4 +458,21 @@ void update_buffers(std::string time, std::string alias, std::string chat)
     time_buffer.push_back(time);
     alias_buffer.push_back(alias);
     chat_buffer.push_back(chat);
+}
+
+void update_contacts(std::string list)
+{
+    std::string delimiter = "|";
+    std::string token;
+
+    int pos = 0;
+
+    while((pos = list.find(delimiter)) != std::string::npos)
+    {
+        token = list.substr(0, pos);
+        contacts_buffer.push_back(token);
+        list.erase(0, pos + delimiter.length());
+    }
+
+    contacts_buffer.push_back(token);
 }

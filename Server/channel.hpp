@@ -7,7 +7,7 @@
 #include <boost/thread/recursive_mutex.hpp>
 #include <deque>
 
-#include "messages.hpp"
+#include "../Messages/messages.hpp"
 #include "channel_utility.hpp"
 
 class Session;

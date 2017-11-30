@@ -9,7 +9,7 @@
 #include <string>
 
 #include "channel.hpp"
-#include "messages.hpp"
+#include "../Messages/messages.hpp"
 #include "guest.hpp"
 #include <queue>
 

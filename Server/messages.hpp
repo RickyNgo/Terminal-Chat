@@ -5,13 +5,7 @@
 #include <cstring>
 #include <vector>
 
-/*
-enum Commands {MSG = 0, EXIT = 1, KICK_MOD = 2, KICK_USER = 3, ADD_MOD = 4, MESSAGE_DELETE = 5, SHOW = 6, JOIN = 16, CREATE = 17,
-WHISPER = 18, INVITE = 19, FRIEND_LIST = 20, BLOCK = 21, ADD_FRIEND = 22, CREATE_CHANNEL = 23, ONLINE = 24, HELP = 25, LOGIN = 26,
-INVITE_YES = 27, INVITE_NO = 28, INVITE_REQUEST = 29, CHANNEL_UPDATE = 30, CHANNEL_CLOSE = 31, LEAVE = 32};*/
-
-enum Commands {MSG, KICK_USER, ADD_MOD, JOIN_CHANNEL, 
-				CREATE_CHANNEL, WHISPER, INVITE_USER, ONLINE, LOGIN, 
+enum Commands {MSG, KICK_USER, ADD_MOD, JOIN, WHISPER, INVITE_USER, ONLINE, LOGIN, 
 				INVITE_YES, INVITE_NO, CHANNEL_UPDATE, CHANNEL_CLOSE, LEAVE};
 
 
@@ -30,7 +24,7 @@ class Messages
 		Messages();
 
 		// Client must parse info before passing into Message constructor
-		Messages(std::string sender, std::string msg_body, time_t t, int command);
+		Messages(std::string sender, std::string msg_body, time_t t, Commands command);
 
 		// Parses strings from the server
 		//Messages(const char * server_msg);
@@ -43,7 +37,7 @@ class Messages
 
 		std::string get_sender();
 		std::string& get_body();
-		int get_time();
+		time_t get_time();
 		int get_command();
 		int& get_length();
 		std::string& get_header();

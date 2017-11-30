@@ -5,6 +5,8 @@
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
+#include <fstream>
+
 #include "client.hpp"
 #include "../Ncurses/layout.hpp"
 
@@ -56,21 +58,27 @@ int main(int argc, char* argv[])
     std::thread t([&io_service](){ io_service.run(); });
 
     win_init();
-    splash_display();
+    //splash_display();
 
     std::string alias = retrieve_alias();
     std::string input = "";
 
     time_t current_time;
-    time(&current_time);
-    Messages msg(alias, input, current_time, LOGIN);
+    Messages msg(alias, alias, time(&current_time), LOGIN);
     c->send(msg);
+
+    std::ofstream log;
+    log.open("log.txt", std::fstream::out | std::fstream::app);
+    log << alias << std::endl;
+    log << input << std::endl; 
+    log << current_time << std::endl;
+    log << msg.get_command() << std::endl;
 
     while(isRunning)
     {
         wrefresh(chatWin);
         wrefresh(inputWin);
-        wrefresh(channelWin);
+        //wrefresh(channelWin);
         wrefresh(contactWinBox);
         
         //input = get_input();

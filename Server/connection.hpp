@@ -14,7 +14,7 @@ using boost::asio::ip::tcp;
 #include <ctime>
 
 #include "processor.hpp"
-#include "messages.hpp"
+#include "../Messages/messages.hpp"
 #include "guest.hpp"
 
 class Connection : 

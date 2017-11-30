@@ -5,7 +5,7 @@
 #include <boost/shared_ptr.hpp>
 
 //#include "session.hpp"
-#include "messages.hpp"
+#include "../Messages/messages.hpp"
 
 class Session;
 
