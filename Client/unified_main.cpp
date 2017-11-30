@@ -21,19 +21,10 @@ Commands get_command(std::string &input)
     if (input[0] == '/')
     {
         token = input.substr(0, input.find(" "));
-
-        if (token == "/create_channel")
-        {
-            user_cmd = CREATE_CHANNEL;
-            input = input.substr(token.length(), std::string::npos);
-        }
-        else if (token == "/join_channel")
-        {
-            user_cmd = JOIN_CHANNEL;
-            input = input.substr(token.length(), std::string::npos);
-        }
-        else 
-        {
+        if (token == "/join") {
+            user_cmd = JOIN;
+            input = input.substr( token.length(), std::string::npos );
+        } else {
             user_cmd = MSG;
         }
     }
@@ -88,21 +79,13 @@ int main(int argc, char* argv[])
         //Parse the input to determine what the command should be
         Commands cmd = get_command( input );
 
-        if (cmd == CREATE_CHANNEL )
+        if (cmd == JOIN )
         {
             std::string port( argv[ 2 ] );
             input += " " + port;
             Messages input_msg( alias, input, time( &current_time ), cmd );
             c->create_channel(input_msg.get_body());
             c->send(input_msg);
-        }
-        else if ( cmd == JOIN_CHANNEL ) {
-            std::string port( argv[ 2 ] );
-            input += " " + port;
-            Messages input_msg( alias, input, time( &current_time ), cmd );
-            c->create_channel(input_msg.get_body());
-            c->send(input_msg);
-
         } else if ( cmd == MSG ) {
             if (c->get_current_channel() != NULL)
             {
