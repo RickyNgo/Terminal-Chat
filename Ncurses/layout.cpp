@@ -409,17 +409,28 @@ void get_alias()
             {
                 break;
             }
-            else 
-            {
-                count++;
-            }
-
         }       
         
-        if (count == temp.length())
+        if (temp.length() > 4)
         {
-            return;
+            break;
         }
+
+        wmove(loginWinBox, parent_y/2+3, parent_x/2-15);
+        mvwprintw(loginWinBox, parent_y/2+3, parent_x/2-17, "    ");
+        wrefresh(loginWinBox);
+    
+
+        wmove(loginWinBox, parent_y/2+3, parent_x/2-15);
+        wrefresh(loginWinBox);
+
+        int color = 2;
+
+        wattron(loginWinBox, COLOR_PAIR(color));
+        mvwprintw(loginWinBox, parent_y/2+2, parent_x/2-17, "INVALID LOGIN");
+        wattroff(loginWinBox, COLOR_PAIR(color));
+        
+        wrefresh(loginWinBox);
     }
 }
 
@@ -475,4 +486,19 @@ void update_contacts(std::string list)
     }
 
     contacts_buffer.push_back(token);
+}
+
+void update_current_channel(std::string channel)
+{   
+    std::string delimiter = " ";
+    std::string token;
+
+    token = channel.substr(0, channel.find(delimiter));
+
+    if (token == " ")
+    {
+        token = channel.substr(0, channel.find(delimiter));
+    }
+
+    current_channel.assign(token);
 }

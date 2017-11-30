@@ -753,6 +753,8 @@ void Client::create_channel(std::string channel_name){ //***
     current_channel_ = client_channels_[channel_id_tracker_];
 
     channel_id_tracker_++;
+
+    update_current_channel(channel_name);
 }
 
 void Client::decide_socket(Commands cmd)

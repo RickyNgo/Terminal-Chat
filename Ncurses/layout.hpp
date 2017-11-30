@@ -25,6 +25,6 @@ void get_alias();
 std::string retrieve_alias();
 void update_buffers(std::string time, std::string alias, std::string chat);
 void update_contacts(std::string list);
-
+void update_current_channel(std::string channel);
 
 #endif

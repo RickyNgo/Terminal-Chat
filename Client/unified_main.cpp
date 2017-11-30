@@ -25,7 +25,7 @@ Commands get_command(std::string &input)
         token = input.substr(0, input.find(" "));
         if (token == "/join") {
             user_cmd = JOIN;
-            input = input.substr( token.length(), std::string::npos );
+            input = input.substr( token.length()+1, std::string::npos );
         } else {
             user_cmd = MSG;
         }
@@ -101,7 +101,6 @@ int main(int argc, char* argv[])
                 Messages input_msg( alias, input, time( &current_time ), cmd );
                 c->get_current_channel()->send(input_msg);
             }
-
         }            
     }
     c->close();
