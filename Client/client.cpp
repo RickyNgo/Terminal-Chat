@@ -31,7 +31,6 @@ user_id_(-1),
 current_channel_(0),
 connection_port_(secondPort)
 {
-//    acceptor_.listen(); 
     do_connect_(endpoint_iterator);
     //main_socket_ = boost::make_shared<tcp::socket>(ios);
     current_socket_ = main_socket_;

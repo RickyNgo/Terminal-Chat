@@ -25,7 +25,7 @@ handler_( ios_, session )
 	try {
 		acceptor_.set_option( tcp::acceptor::reuse_address( true ));
 		std::cerr << "Enki listening on " << boost::asio::ip::host_name();
-		std::cerr << " [" << this->address_ << "], press ctrl-c to terminate." << std::endl;
+		std::cerr << " [" << address_ << "], press ctrl-c to terminate." << std::endl;
 		acceptor_.listen();
 		do_stop_();
 

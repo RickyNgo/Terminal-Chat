@@ -148,24 +148,26 @@ error_code Processor::do_login_( Guest::pointer guest, const_buffer data ) {
 error_code Processor::do_create_channel_( Guest::pointer guest, const_buffer data ) {
 /* ---------------------------------------------------------------------------------- */
 	error_code 		ec;
-	const char *	channel;
+	const char * 	buffer;
+	const char * 	port;
+	char			channel[ 25 ];
 
-	channel = boost::asio::buffer_cast<const char *>( data );
+	buffer = boost::asio::buffer_cast<const char *>( data );
+	port = std::strrchr( buffer, ' ' ) + 1;
+	std::memset( channel, '\0', sizeof( channel ));
+	std::strncpy( channel, buffer, std::strrchr( buffer, ' ' ) - buffer );
 	{
 		scoped_lock lk( channels_m_ );
-		//auto result = channels_.find( channel );
-
 		for (int i = 0; i < channels_.size(); i++)
 		{
-			if (channels_[i].first == channel)
+			if ( std::strcmp( channels_[i].first, channel ) == 0 )
 			{
 				ec.assign( boost::system::errc::file_exists, proc_errc_ );
 				return ec;
 			}
 		}
-
 		auto new_channel = boost::make_shared<Channel>( channel );
-		auto new_session = boost::make_shared<Session>( guest, std::move( socket_ ), port_, new_channel );
+		auto new_session = boost::make_shared<Session>( guest, std::move( socket_ ), std::atoi( port ), new_channel );
 
 		new_session->start();
 		
@@ -182,19 +184,19 @@ error_code Processor::do_create_channel_( Guest::pointer guest, const_buffer dat
 error_code Processor::do_join_channel_( Guest::pointer guest, const_buffer data ) {
 /* ---------------------------------------------------------------------------------- */
 	error_code 		ec;
-	const char *	channel;
+	const char * 	buffer;
+	const char * 	port;
+	char			channel[ 25 ];
 
-	channel = boost::asio::buffer_cast<const char *>( data );
+	buffer = boost::asio::buffer_cast<const char *>( data );
+	port = std::strrchr( buffer, ' ' ) + 1;
+	std::memset( channel, '\0', sizeof( channel ));
+	std::strncpy( channel, buffer, std::strrchr( buffer, ' ' ) - buffer );
 	{
 		scoped_lock lk( channels_m_ );
-
 		int channel_idx = -1;
 		for (int i = 0; i < channels_.size(); i++)
-		{
-			std::cout << channels_[i].first << " / " << channel << std::endl;
-			
-			// This cleans the bits somehow?
-			// std::cout << strlen(channels_[i].first) << " / " << strlen(channel) << std::endl;
+		{					
 			if ( std::strcmp( channels_[i].first, channel ) == 0 )
 			{				
 				channel_idx = i;
@@ -208,7 +210,7 @@ error_code Processor::do_join_channel_( Guest::pointer guest, const_buffer data 
 		}
 		else
 		{
-			auto new_session = boost::make_shared<Session>( guest, std::move( socket_ ), port_, channels_[ channel_idx ].second );
+			auto new_session = boost::make_shared<Session>( guest, std::move( socket_ ), std::atoi( port ), channels_[ channel_idx ].second );
 			new_session->start();
 			std::cout << "JOINED!! " << channel << std::endl;
 		}

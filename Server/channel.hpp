@@ -4,6 +4,7 @@
 #include <set>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/thread/recursive_mutex.hpp>
 #include <deque>
 
 #include "messages.hpp"
@@ -28,7 +29,9 @@ public:
 	
 private:
 	std::set<boost::shared_ptr<Session>>		connections_;
+	boost::recursive_mutex						connections_m_;
 	std::deque<Messages> 	 					log_;
+	boost::recursive_mutex						log_m_;
 	char 										name_[ 25 ];
 };
 

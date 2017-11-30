@@ -5,6 +5,7 @@
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
+#include <boost/thread/recursive_mutex.hpp>
 #include <string>
 
 #include "channel.hpp"
@@ -42,9 +43,11 @@ private:
 	void do_write_body_();
 	void on_write_body_(const boost::system::error_code error, size_t bytes);
 
-	char read_buffer_[512];
+	char read_buffer_[ 512 ];
 	Messages read_msg;
 	std::queue <Messages> write_msg;
+	boost::recursive_mutex write_msg_m_;
+
 	tcp::socket socket_;
 	Channel::pointer room_;
 	const short 	port_;

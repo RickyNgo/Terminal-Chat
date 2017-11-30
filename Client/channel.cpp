@@ -23,6 +23,7 @@ Channel::Channel(std::string name, int id, boost::asio::io_service& ios, int por
     channel_socket_(ios),
     acceptor(ios, tcp::endpoint(tcp::v4(), port)) 
     {
+        acceptor.set_option( tcp::acceptor::reuse_address( true ));
     }
 
 Channel::~Channel(){}

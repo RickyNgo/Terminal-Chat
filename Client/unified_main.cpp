@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
     //    immediately check command arguments
     if (argc != 3)
     {
-        std::cerr << "Usage: <port> <port>\n" << "argc == " << argc;
+        std::cerr << "Usage: <Command-Port> <Session-Port>\n" << "argc == " << argc;
         return 1;
     }
 
@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
     boost::asio::io_service io_service;
     
     tcp::resolver resolver(io_service);
-    tcp::resolver::query query("localhost", argv[1], tcp::resolver::query::canonical_name);
+    tcp::resolver::query query("localhost", argv[ 1 ], tcp::resolver::query::canonical_name);
     tcp::resolver::iterator iterator = resolver.resolve(query);
     
     boost::shared_ptr<Client> c = boost::make_shared<Client>(io_service, iterator, atoi(argv[2]));
@@ -86,15 +86,28 @@ int main(int argc, char* argv[])
         input = get_input();
         
         //Parse the input to determine what the command should be
-        Commands cmd = get_command(input);
-        
-        Messages input_msg(alias, input, time(&current_time), cmd);
-        if (cmd == CREATE_CHANNEL)
+        Commands cmd = get_command( input );
+
+        if (cmd == CREATE_CHANNEL )
         {
+            std::string port( argv[ 2 ] );
+            input += " " + port;
+            Messages input_msg( alias, input, time( &current_time ), cmd );
             c->create_channel(input_msg.get_body());
+            c->send(input_msg);
+        }
+        else if ( cmd == JOIN_CHANNEL ) {
+            std::string port( argv[ 2 ] );
+            input += " " + port;
+            Messages input_msg( alias, input, time( &current_time ), cmd );
+            c->create_channel(input_msg.get_body());
+            c->send(input_msg);
+
+        } else {
+            Messages input_msg( alias, input, time( &current_time ), cmd );
+            c->send(input_msg);
         }
 
-        c->send(input_msg);
     
     }
     c->close();
