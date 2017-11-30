@@ -17,6 +17,7 @@ void Session::start() {
 
 void Session::deliver( Messages & msg ) {
 	std::cerr << "Session::deliver(): " << msg.get_body() << std::endl;
+<<<<<<< HEAD
 	bool idle;
 	{
 		boost::recursive_mutex::scoped_lock lock( write_msg_m_ );
@@ -52,6 +53,7 @@ void Session::on_connect_( error_code ec ) {
 		room_->join( shared_from_this() );
 
 		time_t current_time;
+<<<<<<< HEAD
 		Messages test( "CHANNEL", "YOU HAVE JOINED", time(&current_time), MSG );
 		room_->deliver( test );
 =======
@@ -68,6 +70,7 @@ void Session::on_connect_( error_code ec ) {
 
 void Session::do_read_header_() {
 	memset(read_buffer_, '\0', sizeof(char)*512);
+	
 	socket_.async_receive( boost::asio::buffer( read_buffer_, MAX_HEADER_LENGTH ), 
 	boost::bind( &Session::on_read_header_, shared_from_this(), _1, _2));
 }
@@ -97,6 +100,7 @@ void Session::on_read_header_( const boost::system::error_code error, size_t byt
 
 void Session::do_read_body_(void)
 {
+<<<<<<< HEAD
 	memset(read_buffer_, '\0', sizeof(char) * 512);
 =======
 	memset(read_buffer_, '\0', sizeof(char)*512);
@@ -116,6 +120,10 @@ void Session::on_read_body_( const boost::system::error_code error, size_t bytes
 
 <<<<<<< HEAD
 		room_->deliver( read_msg );
+=======
+		do_write_header_();
+		//room_->deliver( read_msg );
+>>>>>>> 34802ef53cb4493f6d97404c6d98c9efb099694f
 		do_read_header_();
 	}
 }
@@ -123,6 +131,7 @@ void Session::on_read_body_( const boost::system::error_code error, size_t bytes
 /* Instead of string, should be message class */
 void Session::do_write_header_( void ) {
     std::string to_send = write_msg.front().get_header();
+<<<<<<< HEAD
 	std::cout << "Session::do_write_header_(): " << to_send << std::endl;
 	socket_.async_send( boost::asio::buffer( to_send, to_send.length()), boost::bind( &Session::on_write_header_, shared_from_this(), _1, _2 ));
 =======
@@ -134,6 +143,7 @@ void Session::do_write_header_( void ) {
 
 void Session::on_write_header_( const boost::system::error_code error, size_t bytes ) {
 	if ( ! error ) {
+<<<<<<< HEAD
 		std::cerr << "Session::on_write_header_(): " << bytes << " bytes" << std::endl;
 =======
 		std::string to_send = write_msg.front().get_header();
@@ -146,6 +156,7 @@ void Session::on_write_header_( const boost::system::error_code error, size_t by
 void Session::do_write_body_()
 {
 	std::string to_send = write_msg.front().get_body();
+<<<<<<< HEAD
 	std::cout << "Session::do_write_body_(): " << to_send << std::endl;
 	socket_.async_send( boost::asio::buffer( to_send, to_send.length()), boost::bind( &Session::on_write_body_, shared_from_this(), _1, _2 ));
 }
