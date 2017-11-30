@@ -45,9 +45,9 @@ public:
 
 	void	async_login( Guest::pointer, const_buffer, on_async_op );
 	void	async_leave( Guest::pointer, on_async_op );
-	void	async_create_channel( Guest::pointer, const_buffer, on_async_op );
-	void	async_join_channel( Guest::pointer, const_buffer, on_async_op );
-	void	async_close_channel( const_buffer, on_async_op );
+	// void	async_create_channel( Guest::pointer, const_buffer, on_async_op );
+	void	async_join( Guest::pointer, const_buffer, on_async_op );
+	void	async_close( const_buffer, on_async_op );
 
 private:
 	typedef boost::recursive_mutex::scoped_lock			scoped_lock;
@@ -128,9 +128,9 @@ public:
 	/* Command helpers */
 
 	error_code		do_login_( Guest::pointer, const_buffer );
-	error_code 		do_create_channel_( Guest::pointer, const_buffer );
-	error_code		do_join_channel_( Guest::pointer, const_buffer );
-	error_code		do_close_channel_( const_buffer );
+	// error_code 		do_create_channel_( Guest::pointer, const_buffer );
+	error_code		do_join_( Guest::pointer, const_buffer );
+	error_code		do_close_( const_buffer );
 	error_code		do_leave_( Guest::pointer );
 };
 

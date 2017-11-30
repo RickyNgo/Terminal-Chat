@@ -79,24 +79,18 @@ void Processor::async_login( Guest::pointer guest, const_buffer alias, on_async_
 	ios_.post( boost::bind( &Processor::add_, this, fn, comp ));
 }
 
-/* -------------------------------------------------------------------------------------------------- */
-void Processor::async_create_channel( Guest::pointer guest, const_buffer channel, on_async_op comp ) {
-/* -------------------------------------------------------------------------------------------------- */
-	do_async_op fn = boost::bind( &Processor::do_create_channel_, this, guest, channel );
-	ios_.post( boost::bind( &Processor::add_, this, fn, comp ));
-}
 
 /* ----------------------------------------------------------------------------------------------- */
-void Processor::async_join_channel( Guest::pointer guest, const_buffer channel, on_async_op comp ) {
+void Processor::async_join( Guest::pointer guest, const_buffer channel, on_async_op comp ) {
 /* ----------------------------------------------------------------------------------------------- */
-	do_async_op fn = boost::bind( &Processor::do_join_channel_, this, guest, channel );
+	do_async_op fn = boost::bind( &Processor::do_join_, this, guest, channel );
 	ios_.post( boost::bind( &Processor::add_, this, fn, comp ));
 }
 
 /* -------------------------------------------------------------------------- */
-void Processor::async_close_channel( const_buffer channel, on_async_op comp ) {
+void Processor::async_close( const_buffer channel, on_async_op comp ) {
 /* -------------------------------------------------------------------------- */
-	do_async_op fn = boost::bind( &Processor::do_close_channel_, this, channel );
+	do_async_op fn = boost::bind( &Processor::do_close_, this, channel );
 	ios_.post( boost::bind( &Processor::add_, this, fn, comp ));
 }
 
@@ -144,44 +138,44 @@ error_code Processor::do_login_( Guest::pointer guest, const_buffer data ) {
 	return ec;
 }
 
-/* ---------------------------------------------------------------------------------- */
-error_code Processor::do_create_channel_( Guest::pointer guest, const_buffer data ) {
-/* ---------------------------------------------------------------------------------- */
-	error_code 		ec;
-	const char * 	buffer;
-	const char * 	port;
-	char			channel[ 25 ];
+// /* ---------------------------------------------------------------------------------- */
+// error_code Processor::do_create_channel_( Guest::pointer guest, const_buffer data ) {
+// /* ---------------------------------------------------------------------------------- */
+// 	error_code 		ec;
+// 	const char * 	buffer;
+// 	const char * 	port;
+// 	char			channel[ 25 ];
 
-	buffer = boost::asio::buffer_cast<const char *>( data );
-	port = std::strrchr( buffer, ' ' ) + 1;
-	std::memset( channel, '\0', sizeof( channel ));
-	std::strncpy( channel, buffer, std::strrchr( buffer, ' ' ) - buffer );
-	{
-		scoped_lock lk( channels_m_ );
-		for (int i = 0; i < channels_.size(); i++)
-		{
-			if ( std::strcmp( channels_[i].first, channel ) == 0 )
-			{
-				ec.assign( boost::system::errc::file_exists, proc_errc_ );
-				return ec;
-			}
-		}
-		auto new_channel = boost::make_shared<Channel>( channel );
-		auto new_session = boost::make_shared<Session>( guest, std::move( socket_ ), std::atoi( port ), new_channel );
+// 	buffer = boost::asio::buffer_cast<const char *>( data );
+// 	port = std::strrchr( buffer, ' ' ) + 1;
+// 	std::memset( channel, '\0', sizeof( channel ));
+// 	std::strncpy( channel, buffer, std::strrchr( buffer, ' ' ) - buffer );
+// 	{
+// 		scoped_lock lk( channels_m_ );
+// 		for (int i = 0; i < channels_.size(); i++)
+// 		{
+// 			if ( std::strcmp( channels_[i].first, channel ) == 0 )
+// 			{
+// 				ec.assign( boost::system::errc::file_exists, proc_errc_ );
+// 				return ec;
+// 			}
+// 		}
+// 		auto new_channel = boost::make_shared<Channel>( channel );
+// 		auto new_session = boost::make_shared<Session>( guest, std::move( socket_ ), std::atoi( port ), new_channel );
 
-		new_session->start();
+// 		new_session->start();
 		
-		channels_.push_back( std::make_pair( new_channel->name(), new_channel ));
-		std::cerr << "Processor: do_create_channel_: " << new_channel->name() << std::endl;
-	}
-	ec.assign( boost::system::errc::success, proc_errc_ );
+// 		channels_.push_back( std::make_pair( new_channel->name(), new_channel ));
+// 		std::cerr << "Processor: do_create_channel_: " << new_channel->name() << std::endl;
+// 	}
+// 	ec.assign( boost::system::errc::success, proc_errc_ );
 
-	std::cout << "CHANNEL: " << channel << " CREATED" << std::endl;
-	return ec;
-}
+// 	std::cout << "CHANNEL: " << channel << " CREATED" << std::endl;
+// 	return ec;
+// }
 
 /* ---------------------------------------------------------------------------------- */
-error_code Processor::do_join_channel_( Guest::pointer guest, const_buffer data ) {
+error_code Processor::do_join_( Guest::pointer guest, const_buffer data ) {
 /* ---------------------------------------------------------------------------------- */
 	error_code 		ec;
 	const char * 	buffer;
@@ -203,24 +197,21 @@ error_code Processor::do_join_channel_( Guest::pointer guest, const_buffer data 
 			}
 		}
 
-		if (channel_idx == -1)
-		{	
-			ec.assign( boost::system::errc::no_such_file_or_directory, proc_errc_ );
-			return ec;
-		}
-		else
-		{
+		if (channel_idx == -1) {	
+			auto new_channel = boost::make_shared<Channel>( channel );
+			auto new_session = boost::make_shared<Session>( guest, std::move( socket_ ), std::atoi( port ), new_channel );
+			new_session->start();
+		} else {
 			auto new_session = boost::make_shared<Session>( guest, std::move( socket_ ), std::atoi( port ), channels_[ channel_idx ].second );
 			new_session->start();
-			std::cout << "JOINED!! " << channel << std::endl;
-		}
+		}	
 	}
 	ec.assign( boost::system::errc::success, proc_errc_ );
 	return ec;
 }
 
 /* ---------------------------------------------------------------------------------- */
-error_code Processor::do_close_channel_( const_buffer data ) {
+error_code Processor::do_close_( const_buffer data ) {
 /* ---------------------------------------------------------------------------------- */
 	error_code 		ec;
 	const char *	channel;

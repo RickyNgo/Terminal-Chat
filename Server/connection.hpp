@@ -32,9 +32,9 @@ public:
 
 private:
 	void 	on_login_( error_code );
-	void 	on_create_channel_( error_code );
-	void 	on_join_channel_( error_code );
-	void 	on_close_channel_( error_code );
+	// void 	on_create_( error_code );
+	void 	on_join_( error_code );
+	void 	on_close_( error_code );
 	void 	on_leave_( error_code );
 
 	void 	do_read_header_( void );
