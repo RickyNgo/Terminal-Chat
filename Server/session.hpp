@@ -8,6 +8,7 @@
 #include <boost/thread/recursive_mutex.hpp>
 #include <string>
 
+#include "participant.hpp"
 #include "channel.hpp"
 #include "../Messages/messages.hpp"
 #include "guest.hpp"
@@ -17,6 +18,7 @@
 using boost::asio::ip::tcp;
 
 class Session :
+public Participant,
 public boost::enable_shared_from_this<Session> {
 public:
 	Session( Guest::pointer guest, tcp::socket socket, const short, Channel::pointer channel );
@@ -24,7 +26,7 @@ public:
 	typedef boost::shared_ptr<Session> pointer;
 	typedef boost::system::error_code error_code;
 
-    void deliver( Messages & msg );
+    virtual void deliver( Messages & msg );
     void start( void );
 
 private:
@@ -43,16 +45,16 @@ private:
 	void do_write_body_();
 	void on_write_body_(const boost::system::error_code error, size_t bytes);
 
-	char read_buffer_[ 512 ];
-	Messages read_msg;
-	std::queue <Messages> write_msg;
-	boost::recursive_mutex write_msg_m_;
+	char 						read_buffer_[ 512 ];
+	Messages 					read_msg;
+	std::queue <Messages> 		write_msg;
+	boost::recursive_mutex 		write_msg_m_;
 
-	tcp::socket socket_;
-	Channel::pointer room_;
-	const short 	port_;
-	Guest::pointer	 guest_;
-	tcp::endpoint 	address_;
+	tcp::socket 				socket_;
+	Channel::pointer 			room_;
+	const short 				port_;
+	Guest::pointer	 			guest_;
+	tcp::endpoint 				address_;
 };
 
 #endif

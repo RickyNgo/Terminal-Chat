@@ -2,7 +2,7 @@
 #include "channel.hpp"
 
 Session::Session( Guest::pointer guest, tcp::socket socket, const short port, Channel::pointer channel )
-    : socket_( std::move( socket )), room_( channel ), port_( port ), guest_( guest ), address_( guest->get_address().address(), port_ )
+    : Participant( guest->get_alias()), socket_( std::move( socket )), room_( channel ), port_( port ), guest_( guest ), address_( guest->get_address().address(), port_ )
 {
 	std::cerr << "Session: In Constructor: PORT: " << port_ << std::endl;
 	this->read_msg.clear();
@@ -19,7 +19,6 @@ void Session::start() {
 }
 
 void Session::deliver( Messages & msg ) {
-	std::cerr << "Session::deliver(): " << msg.get_body() << std::endl;
 	bool idle;
 	{
 		boost::recursive_mutex::scoped_lock lock( write_msg_m_ );
@@ -47,8 +46,6 @@ void Session::on_connect_( error_code ec ) {
 	std::cerr << "Connected to " << address_ << std::endl;
 	if ( ! ec ) {
 		room_->join( shared_from_this() );
-
-		std::cerr << room_->get_connections_().size() << std::endl;
 		time_t current_time;
 		Messages test( "CHANNEL", "YOU HAVE JOINED", time(&current_time), MSG );
 		room_->deliver( test );
@@ -75,13 +72,12 @@ void Session::on_read_header_( const boost::system::error_code error, size_t byt
 			//do_read_header();
 			return;
 		}
-        this->read_msg.get_header() = std::move(temp);
-		this->read_msg.parse_header();
-		this->do_read_body_();
-	}
-	else
-	{
-		//room.leave(shared_from_this());
+        read_msg.get_header() = std::move(temp);
+		read_msg.parse_header();
+		do_read_body_();
+	} else if ( error.value() == boost::asio::error::eof ) {
+		std::cerr << address_ << " >> EOF." << std::endl;
+		room_->leave( shared_from_this() );
 	}
 }
 
@@ -90,8 +86,7 @@ void Session::on_read_header_( const boost::system::error_code error, size_t byt
 void Session::do_read_body_(void)
 {
 	memset( read_buffer_, '\0', sizeof( char ) * 512 );
-
-	this->socket_.async_receive( boost::asio::buffer(read_buffer_, MAX_MSG_LENGTH), 
+	socket_.async_receive( boost::asio::buffer(read_buffer_, MAX_MSG_LENGTH), 
 	boost::bind(&Session::on_read_body_, shared_from_this(), _1, _2));
 }
 
@@ -109,21 +104,20 @@ void Session::on_read_body_( const boost::system::error_code error, size_t bytes
     			do_read_header_();
     			break;
         }
+	} else if ( error.value() == boost::asio::error::eof ) {
+		room_->leave( shared_from_this() );
 	}
 }
 
 /* Instead of string, should be message class */
 void Session::do_write_header_( void ) {
     std::string to_send = write_msg.front().get_header();
-	std::cout << "Session::do_write_header_(): " << to_send << std::endl;
 	socket_.async_send( boost::asio::buffer( to_send, to_send.length()), boost::bind( &Session::on_write_header_, shared_from_this(), _1, _2 ));
 }
 
 void Session::on_write_header_( const boost::system::error_code error, size_t bytes ) {
 	if ( ! error ) {
-		std::cerr << "Session::on_write_header_(): " << bytes << " bytes" << std::endl;
 		std::string to_send = write_msg.front().get_header();
-		// std::cout << "HEADER ON SEND " << to_send << std::endl;
 		do_write_body_();
 	}
 }
@@ -131,7 +125,6 @@ void Session::on_write_header_( const boost::system::error_code error, size_t by
 void Session::do_write_body_()
 {
 	std::string to_send = write_msg.front().get_body();
-	std::cout << "Session::do_write_body_(): " << to_send << std::endl;
 	socket_.async_send( boost::asio::buffer( to_send, to_send.length()), boost::bind( &Session::on_write_body_, shared_from_this(), _1, _2 ));
 }
 
@@ -153,14 +146,12 @@ void Session::do_write_body_()
 
 void Session::on_write_body_( const boost::system::error_code error, size_t bytes ) {
 	std::string to_send = write_msg.front().get_body();
-		std::cout << "BODY ON SEND " << to_send << std::endl;
 	write_msg.pop();
 
 	if ( ! error ) 
 	{
-		if(!write_msg.empty())
+		if ( ! write_msg.empty() )
 		{
-			std::cout << "STILL MORE MESSAGES" << std::endl;
 			do_write_header_();
 		}	
 	}

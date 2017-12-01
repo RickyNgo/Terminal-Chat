@@ -8,7 +8,7 @@ LDFLAGS+=-lboost_thread
 LayoutSrc=layout.cpp
 ClientSrc=aux_functions.cpp client.cpp db_helper.cpp unified_main.cpp channel.cpp
 MessageSrc=messages.cpp
-ServerSrc=channel_utility.cpp channel.cpp connection.cpp daemon.cpp guest.cpp processor.cpp server.cpp session.cpp
+ServerSrc=participant.cpp channel.cpp connection.cpp daemon.cpp guest.cpp processor.cpp server.cpp session.cpp
 
 LayoutDir=Ncurses/
 ClientDir=Client/
