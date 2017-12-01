@@ -24,7 +24,6 @@ constructor
  ***************************************/
 Client::Client(boost::asio::io_service& io_serv, tcp::resolver::iterator endpoint_iterator, int secondPort) : 
 ios(io_serv),
-//acceptor_( ios, tcp::endpoint( boost::asio::ip::tcp::v4(), secondPort )),
 user_alias_(""),
 main_socket_(boost::make_shared<tcp::socket>(ios)),
 user_id_(-1),
@@ -32,7 +31,6 @@ current_channel_(0),
 connection_port_(secondPort)
 {
     do_connect_(endpoint_iterator);
-    //main_socket_ = boost::make_shared<tcp::socket>(ios);
     current_socket_ = main_socket_;
     current_channel_ = NULL;
     channel_id_tracker_ = 0;
@@ -695,6 +693,11 @@ void Client::parse_server_command(int command){
 void Client::exit_enki(){//***
 	//leave channels
 
+    for (std::map<int, boost::shared_ptr<Channel>> it=client_channels_.begin(); it!=client_channels.end(); i++)
+    {
+        it->second->get_channel_socket().close();
+    }
+
 	close();
 
 	std::cout << "You have exited Enki." << std::endl;
@@ -782,6 +785,11 @@ void Client::set_connection()
     //current_socket_ = connection_socket_;
 }
 
+void Client::leave_current_channel()
+{
+    current_
+}
+
 
 
 /****************************************************************/
@@ -802,7 +810,13 @@ void Client::channel_close(){
 
 }
 void Client::leave(){
+    current_channel_->get_channel_socket().close();
 
+    std::map<int, boost::shared_ptr<Channel>>::iterator it;
+    
+    client_channels_.erase(it);
+
+    current_channel_ = NULL;
 }
 
 void Client::kick(std::string user){

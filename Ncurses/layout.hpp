@@ -7,22 +7,27 @@
 
 int win_init();
 void del_wins();
+
 void resize_handler(int signum);
 void resize();
+
 void draw_channels();
 void draw_chat();
 void draw_contacts();
 void draw_input();
-std::string get_input();
+void draw_login();
 void display_chat();
-void splash_display();
+
+void get_alias();
+std::string retrieve_alias();
+std::string get_input();
+
 void show_help();
 void show_friends(std::vector<std::string> friends);
 void show_channels(std::vector<std::string> channels);
+
 int invite_notification(std::vector<std::string> inviter);
-void draw_login();
-void get_alias();
-std::string retrieve_alias();
+
 void update_buffers(std::string time, std::string alias, std::string chat);
 void update_contacts(std::string list);
 void update_current_channel(std::string channel);

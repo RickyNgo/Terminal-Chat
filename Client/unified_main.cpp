@@ -26,7 +26,13 @@ Commands get_command(std::string &input)
         if (token == "/join") {
             user_cmd = JOIN;
             input = input.substr( token.length()+1, std::string::npos );
-        } else {
+        } 
+        else if (token == "/leave")
+        {
+            user_cmd = LEAVE;
+            input = input.substr( token.length()+1, std::string::npos );
+        }
+        else {
             user_cmd = MSG;
         }
     }
@@ -80,8 +86,7 @@ int main(int argc, char* argv[])
         wrefresh(inputWin);
         //wrefresh(channelWin);
         wrefresh(contactWinBox);
-        
-        //input = get_input();
+
         input = get_input();
         
         //Parse the input to determine what the command should be
@@ -94,16 +99,22 @@ int main(int argc, char* argv[])
             Messages input_msg( alias, input, time( &current_time ), cmd );
             c->create_channel(input_msg.get_body());
             c->send(input_msg);
-            
-        } else if ( cmd == MSG ) {
-            if (c->get_current_channel() != NULL)
+        } 
+        else if (cmd == LEAVE)
+        {
+            Messages input_msg( alias, input, time( &current_time ), cmd );
+            c->get_current_channel()->send(input_msg);
+            c->leave_current_channel();
+        }
+        else if ( cmd == MSG ) {
+        if (c->get_current_channel() != NULL)
             {
                 Messages input_msg( alias, input, time( &current_time ), cmd );
                 c->get_current_channel()->send(input_msg);
             }
         }            
     }
-    c->close();
+    c->enki_close();
     del_wins();
     t.detach();
 

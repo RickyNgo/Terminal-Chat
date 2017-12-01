@@ -121,7 +121,6 @@ int win_init()
 {
     initscr();
     timeout(0);
-    //halfdelay(10);
     start_color();
     srand(NULL);
 
@@ -133,7 +132,6 @@ int win_init()
     init_pair(6, COLOR_MAGENTA, COLOR_BLACK);
     init_pair(7, COLOR_CYAN, COLOR_BLACK);
 
-    //keypad(stdscr, TRUE);
     getmaxyx(stdscr, parent_y, parent_x);
 
     draw_login();
@@ -141,8 +139,6 @@ int win_init()
     draw_chat();
     draw_contacts();
     draw_input();
-
-
 }
 
 void del_wins()
@@ -230,32 +226,6 @@ std::string get_input()
     }
     else
     {
-        // The code below pretty much echos back what you type in
-        /*
-        time(&ts);
-
-        time_info = localtime(&ts);
-        char *raw_time = new char[12];
-
-        sprintf(raw_time, "%02d:%02d:%02d", time_info->tm_hour, time_info->tm_min, time_info->tm_sec);
-
-        std::string conv(buffer);
-        chat_buffer.push_back(conv);
-
-        std::string fmtd_time(raw_time);
-        fmtd_time.append("| ");
-        time_buffer.push_back(fmtd_time);
-
-        
-        alias_buffer.push_back(alias);
-
-        // This will actually return the inputted string with the time appended to the front
-        for_client.append(raw_time);
-
-        for_client.append("|");
-        for_client.append(conv);
-        */
-
         for_client.assign(buffer);
     }
     
@@ -305,17 +275,6 @@ void display_chat()
 
     mvwprintw(chatWin, 0, 1, "CURRENT CHANNEL: %s", current_channel.c_str());
     wrefresh(chatWin);
-}
-
-
-void splash_display()
-{
-    mvwprintw(chatWin, 10, parent_x/3.4+1, " _______ .__   __.  __  ___  __ ");
-    mvwprintw(chatWin, 11, parent_x/3.4+1, "|   ____||  \\ |  | |  |/  / |  |");
-    mvwprintw(chatWin, 12, parent_x/3.4+1, "|  |__   |   \\|  | |  '  /  |  |");
-    mvwprintw(chatWin, 13, parent_x/3.4+1, "|   __|  |  . `  | |    <   |  |");
-    mvwprintw(chatWin, 14, parent_x/3.4+1, "|  |____ |  |\\   | |  .  \\  |  |");
-    mvwprintw(chatWin, 15, parent_x/3.4+1, "|_______||__| \\__| |__|\\__\\ |__|");
 }
 
 void show_help()
@@ -371,6 +330,7 @@ void show_channels(std::vector<std::string> channels)
 }
 */
 
+/* Re-implement later
 int invite_notification(std::vector<std::string> inviter)
 {
     WINDOW *popup = newwin(20, 20, parent_y - 40, 0);
@@ -388,6 +348,7 @@ int invite_notification(std::vector<std::string> inviter)
 
     delwin(popup);
 }
+*/
 
 void get_alias()
 {
@@ -445,8 +406,6 @@ void draw_login()
     mvwprintw(loginWinBox, parent_y/4+3, parent_x/2-18, "|   __|  |  . `  | |    <   |  |");
     mvwprintw(loginWinBox, parent_y/4+4, parent_x/2-18, "|  |____ |  |\\   | |  .  \\  |  |");
     mvwprintw(loginWinBox, parent_y/4+5, parent_x/2-18, "|_______||__| \\__| |__|\\__\\ |__|");
-
-
 
     mvwprintw(loginWinBox, parent_y/2, parent_x/2-18, "LOGIN" );
     mvwprintw(loginWinBox, parent_y/2+1, parent_x/2-18, "Please enter an alias 5-15 characters long");

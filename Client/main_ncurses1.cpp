@@ -15,8 +15,6 @@ int isRunning = 1;
 
 std::vector<std::string> test = {"Ricky", "OBIWAN"};
 
-
-
 int main(int argc, char* argv[])
 {
     

@@ -178,6 +178,8 @@ public:
     void set_connection();
 
     void decide_socket(Commands cmd);
+
+    void leave_current_channel();
 };
 
 #endif

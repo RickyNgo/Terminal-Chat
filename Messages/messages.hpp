@@ -26,22 +26,22 @@ class Messages
 		// Client must parse info before passing into Message constructor
 		Messages(std::string sender, std::string msg_body, time_t t, Commands command);
 
-		// Parses strings from the server
-		//Messages(const char * server_msg);
-
 		~Messages();
 		
-		// Converts the C++ string to a C string for socket transfer
-		std::string encode();
-
-
 		std::string get_sender();
+		
 		std::string& get_body();
-		time_t get_time();
-		int get_command();
-		int& get_length();
+
 		std::string& get_header();
+
+		time_t get_time();
+		
+		int get_command();
+		
+		int& get_length();
+		
 		void clear();
+		
 		void parse_header();
 
 	private:

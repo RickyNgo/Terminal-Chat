@@ -26,7 +26,7 @@ private:
     tcp::socket channel_socket_;
     ChannelRole role;
     ChannelType type;
-tcp::acceptor acceptor;
+    tcp::acceptor acceptor;
 
     uint8_t command_;
     uint8_t body_length_;
@@ -51,10 +51,8 @@ private:
     void on_write_header( boost::system::error_code, std::size_t);
     void on_write_body( boost::system::error_code, std::size_t);
 
-    
     void accept_handler(const boost::system::error_code&);
 
-    
 public:
     Channel(std::string, int, boost::asio::io_service&, int);
     ~Channel();
@@ -74,7 +72,6 @@ public:
     ChannelRole get_channel_role();
 
     void add_msg(Messages);
-    
 };
 
 #endif
