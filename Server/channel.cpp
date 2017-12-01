@@ -48,4 +48,8 @@ void Channel::deliver( Messages msg ) {
 
 }
 
+std::set<boost::shared_ptr<Session>> Channel::get_connections_()
+{
+	return connections_;
+}
 

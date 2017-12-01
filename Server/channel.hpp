@@ -26,6 +26,7 @@ public:
 	void leave( boost::shared_ptr<Session> );
 	void deliver( Messages );
 	void process_( Messages );
+	std::set<boost::shared_ptr<Session>> get_connections_();
 	
 private:
 	std::set<boost::shared_ptr<Session>>		connections_;

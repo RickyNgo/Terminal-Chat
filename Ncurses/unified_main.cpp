@@ -13,8 +13,6 @@
 WINDOW *chatWin, *chatWinBox, *channelWin, *channelWinBox, *inputWin, *inputWinBox, *contactWin, *contactWinBox, *loginWin, *loginWinBox;
 int isRunning = 1;
 
-std::vector<std::string> test = {"Ricky", "OBIWAN"};
-
 /*****************/
 Commands get_command(std::string &input)
 {

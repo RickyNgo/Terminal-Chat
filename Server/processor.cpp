@@ -199,6 +199,7 @@ error_code Processor::do_join_( Guest::pointer guest, const_buffer data ) {
 
 		if (channel_idx == -1) {	
 			auto new_channel = boost::make_shared<Channel>( channel );
+			channels_.push_back( std::make_pair( new_channel->name(), new_channel ));
 			auto new_session = boost::make_shared<Session>( guest, std::move( socket_ ), std::atoi( port ), new_channel );
 			new_session->start();
 		} else {

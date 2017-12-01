@@ -52,6 +52,7 @@ void Session::on_connect_( error_code ec ) {
 	if ( ! ec ) {
 		room_->join( shared_from_this() );
 
+		std::cerr << room_->get_connections_().size() << std::endl;
 		time_t current_time;
 		Messages test( "CHANNEL", "YOU HAVE JOINED", time(&current_time), MSG );
 		room_->deliver( test );
