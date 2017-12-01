@@ -9,7 +9,10 @@ Session::Session( Guest::pointer guest, tcp::socket socket, const short port, Ch
 } 
 
 
-Session::~Session( void ) { }
+Session::~Session( void ) {
+	socket_.shutdown( tcp::socket::shutdown_both );
+	socket_.close();
+}
 
 void Session::start() {
 	do_connect_();
