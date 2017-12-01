@@ -461,3 +461,12 @@ void update_current_channel(std::string channel)
 
     current_channel.assign(token);
 }
+
+void clear_buffers()
+{
+    time_buffer.clear();
+    alias_buffer.clear();
+    chat_buffer.clear();
+    contacts_buffer.clear();
+    display_chat();
+}

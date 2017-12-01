@@ -31,7 +31,7 @@ current_channel_(0),
 connection_port_(secondPort)
 {
     do_connect_(endpoint_iterator);
-    current_socket_ = main_socket_;
+    //current_socket_ = main_socket_;
     current_channel_ = NULL;
     channel_id_tracker_ = 0;
 }
@@ -195,7 +195,7 @@ void Client::do_write_header(Messages msg){
                                          shared_from_this(),
                                          _1, _2, msg));*/
 
-    boost::asio::async_write(*current_socket_,
+    boost::asio::async_write(*main_socket_,
                              boost::asio::buffer(msg.get_header(),
                                                  MAX_HEADER_LENGTH),
                              boost::bind( &Client::on_write_header,
@@ -218,7 +218,7 @@ void Client::do_write_body(Messages msg){
                                          shared_from_this(),
                                          _1, _2));*/
 
-    boost::asio::async_write(*current_socket_,
+    boost::asio::async_write(*main_socket_,
                              boost::asio::buffer(msg.get_body(),
                                                  msg.get_length()),
                              boost::bind( &Client::on_write_body,
@@ -693,7 +693,7 @@ void Client::parse_server_command(int command){
 void Client::exit_enki(){//***
 	//leave channels
 
-    for (std::map<int, boost::shared_ptr<Channel>> it=client_channels_.begin(); it!=client_channels.end(); i++)
+    for (std::map<int, boost::shared_ptr<Channel>>::iterator it=client_channels_.begin(); it!=client_channels_.end(); it++)
     {
         it->second->get_channel_socket().close();
     }
@@ -726,7 +726,7 @@ void Client::accept_handler(const boost::system::error_code& error)
     if (!error)
     {
         //set_connection();
-        log << "I accepted a session " << connection_socket_->is_open() << "\n";
+        //log << "I accepted a session " << connection_socket_->is_open() << "\n";
     }
     else
     {
@@ -785,12 +785,6 @@ void Client::set_connection()
     //current_socket_ = connection_socket_;
 }
 
-void Client::leave_current_channel()
-{
-    current_
-}
-
-
 
 /****************************************************************/
 void Client::whisper(std::string){
@@ -813,6 +807,8 @@ void Client::leave(){
     current_channel_->get_channel_socket().close();
 
     std::map<int, boost::shared_ptr<Channel>>::iterator it;
+
+    it = client_channels_.find(current_channel_->get_channel_id());
     
     client_channels_.erase(it);
 

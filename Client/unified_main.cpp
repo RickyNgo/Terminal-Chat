@@ -22,18 +22,26 @@ Commands get_command(std::string &input)
     std::string token;
     if (input[0] == '/')
     {
-        token = input.substr(0, input.find(" "));
-        if (token == "/join") {
-            user_cmd = JOIN;
-            input = input.substr( token.length()+1, std::string::npos );
-        } 
-        else if (token == "/leave")
+        if (input.find(" ") == std::string::npos)
         {
-            user_cmd = LEAVE;
-            input = input.substr( token.length()+1, std::string::npos );
+            if (input == "/leave")
+            {
+                user_cmd = LEAVE;
+            }
+            else {
+                user_cmd = MSG;
+            }
         }
-        else {
-            user_cmd = MSG;
+        else
+        {
+            token = input.substr(0, input.find(" "));
+            if (token == "/join") {
+                user_cmd = JOIN;
+                input = input.substr( token.length()+1, std::string::npos );
+            } 
+            else {
+                user_cmd = MSG;
+            }
         }
     }
 
@@ -64,7 +72,6 @@ int main(int argc, char* argv[])
     std::thread t([&io_service](){ io_service.run(); });
 
     win_init();
-    //splash_display();
 
     std::string alias = retrieve_alias();
     std::string input = "";
@@ -104,17 +111,18 @@ int main(int argc, char* argv[])
         {
             Messages input_msg( alias, input, time( &current_time ), cmd );
             c->get_current_channel()->send(input_msg);
-            c->leave_current_channel();
+            c->leave();
+            clear_buffers();
         }
         else if ( cmd == MSG ) {
-        if (c->get_current_channel() != NULL)
+            if (c->get_current_channel() != NULL)
             {
                 Messages input_msg( alias, input, time( &current_time ), cmd );
                 c->get_current_channel()->send(input_msg);
             }
         }            
     }
-    c->enki_close();
+    c->close();
     del_wins();
     t.detach();
 

@@ -28,8 +28,8 @@ private:
 	//tcp::socket main_socket_;
 
     boost::shared_ptr<tcp::socket> main_socket_;
-    boost::shared_ptr<tcp::socket> connection_socket_;
-    boost::shared_ptr<tcp::socket> current_socket_;
+    //boost::shared_ptr<tcp::socket> connection_socket_;
+    //boost::shared_ptr<tcp::socket> current_socket_;
 
     //tcp::acceptor   acceptor_;
 	std::string     user_alias_;
@@ -178,8 +178,6 @@ public:
     void set_connection();
 
     void decide_socket(Commands cmd);
-
-    void leave_current_channel();
 };
 
 #endif
