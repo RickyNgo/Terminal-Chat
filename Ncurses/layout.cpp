@@ -315,7 +315,9 @@ void show_help()
 
 void show_friends()
 {
-    //wclear(contactWinBox);
+    wclear(contactWinBox);
+    mvwprintw(contactWinBox, 1, 2, "CONTACTS");
+    box(contactWinBox, 124, 45);
     int y = 2;
     for (int i = 0; i < contacts_buffer.size(); i++)
     {

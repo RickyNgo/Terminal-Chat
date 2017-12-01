@@ -46,6 +46,8 @@ void Session::on_connect_( error_code ec ) {
 	std::cerr << "Connected to " << address_ << std::endl;
 	if ( ! ec ) {
 		room_->join( shared_from_this() );
+		
+		/*
 		time_t current_time;
 		
 		std::string people;
@@ -58,8 +60,9 @@ void Session::on_connect_( error_code ec ) {
 
 
 		Messages test( "CHANNEL", people, time(&current_time), ONLINE );
+		*/
 		
-		room_->deliver( test );
+		//room_->deliver( test );
 		do_read_header_();
 	} else {
 		std::cerr << "Session::on_connect_(): " << ec.message() << std::endl;

@@ -19,6 +19,19 @@ void Channel::join( Participant::pointer participant ) {
 		for ( auto msg: log_ ) {
 			participant->deliver( msg );
 		}
+
+		time_t current_time;
+		std::string people;
+
+		for (auto contacts : participants_)
+		{
+			people.append(contacts->alias());
+			people.append("|");
+		}
+
+		Messages test( "CHANNEL", people, time(&current_time), ONLINE );
+
+		deliver(test);
 	}
 }
 
@@ -38,6 +51,22 @@ void Channel::leave( Participant::pointer participant ) {
 		for ( auto participant: participants_ )
 			participant->deliver( info );
 	}
+	
+	std::string people;
+
+	for (auto contacts : participants_)
+	{
+		people.append(contacts->alias());
+		people.append("|");
+	}
+
+	std::cerr << people << std::endl;
+
+	Messages test( "CHANNEL", people, time(&current_time), ONLINE );
+
+	deliver(test);
+
+
 }
 
 void Channel::deliver( Messages & msg ) {
