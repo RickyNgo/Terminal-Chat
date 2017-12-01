@@ -32,7 +32,6 @@ public:
 
 private:
 	void 	on_login_( error_code );
-	// void 	on_create_( error_code );
 	void 	on_join_( error_code );
 	void 	on_close_( error_code );
 	void 	on_leave_( error_code );

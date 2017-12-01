@@ -48,14 +48,6 @@ void Connection::on_login_( error_code ec ) {
 	do_write_header_( data ); 
 }
 
-// void Connection::on_create_channel_( error_code ec ) {
-	
-// 	std::cerr << client_ << "::CREATE_CHANNEL => " << ec << " [" << ec.message() << "]." << std::endl;
-// 	Messages data( "Server", ec.message(), time( NULL ), JOIN );
-
-// 	do_write_header_( data );
-// }
-
 void Connection::on_join_( error_code ec ) {
 
 	std::cerr << client_ << "::JOIN_CHANNEL => " << ec << " [" << ec.message() << "]." << std::endl;
