@@ -372,21 +372,40 @@ void get_alias()
         std::string temp(alias);
 
         int count = 0;
+        int valid_alias = 0;     
+        
+
+        //////////////////////////////////////
         for (int i = 0; i < temp.length(); i++)
         {
             if (temp[i] == ' ')
             {
                 break;
             }
-        }       
-        
-        if (temp.length() > 4)
+            else if (temp[i] >= '0' && temp[i] <= '9')
+            {
+                break;
+            }
+
+            count++;
+        }  
+
+        if (count == temp.length())
         {
-            break;
+            valid_alias = 1;
         }
 
+        if (valid_alias)
+        {
+            if (temp.length() > 4)
+            {
+                break;
+            }
+        }
+        ////////////////////////////////
+
         wmove(loginWinBox, parent_y/2+3, parent_x/2-15);
-        mvwprintw(loginWinBox, parent_y/2+3, parent_x/2-17, "    ");
+        mvwprintw(loginWinBox, parent_y/2+3, parent_x/2-17, "               ");
         wrefresh(loginWinBox);
     
 
@@ -416,7 +435,7 @@ void draw_login()
     mvwprintw(loginWinBox, parent_y/4+5, parent_x/2-18, "|_______||__| \\__| |__|\\__\\ |__|");
 
     mvwprintw(loginWinBox, parent_y/2, parent_x/2-18, "LOGIN" );
-    mvwprintw(loginWinBox, parent_y/2+1, parent_x/2-18, "Please enter an alias 5-15 characters long");
+    mvwprintw(loginWinBox, parent_y/2+1, parent_x/2-18, "Please enter an alias 5-15 characters long (no numbers)");
     mvwprintw(loginWinBox, parent_y/2+3, parent_x/2-18, ": ");
 
     get_alias();
