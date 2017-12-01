@@ -283,7 +283,7 @@ void show_help()
     int x;
 
     getmaxyx(chatWinBox, y, x);
-    WINDOW *helpWin = subwin(chatWinBox, 23, 90, y/3, x/3);
+    WINDOW *helpWin = subwin(chatWinBox, 15, 60, 3, 4);
 
     keypad(helpWin, TRUE);
     
