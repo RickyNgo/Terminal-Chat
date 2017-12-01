@@ -213,7 +213,7 @@ std::string get_input()
     {
         return "";
     }
-    else if (strcmp(buffer, "/exit") == 0)
+    else if (strcmp(buffer, "/quit") == 0)
     {
         isRunning = 0;
 
@@ -290,8 +290,8 @@ void show_help()
     std::string help = "\n"
                         " Commands are:\n"
                         " /help - Displays help commands and syntax.\n"
-                        " /exit - Exits the Enki chat program.\n"
-                        " /join [room] - Joins the chosen channel if available and creates it if it isn't there.\n"
+                        " /quit - Exits the Enki chat program.\n"
+                        " /join [room] - Joins the chosen channel if available\n and creates it if it isn't there.\n"
                         " PRESS ANY KEY TO CLOSE THIS WINDOW";
 
     mvwprintw(helpWin, 0, 0, help.c_str());
@@ -311,6 +311,7 @@ void show_help()
     draw_chat();
     display_chat();
 }
+
 
 void show_friends(std::vector<std::string> friends)
 {

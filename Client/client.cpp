@@ -31,7 +31,6 @@ current_channel_(0),
 connection_port_(secondPort)
 {
     do_connect_(endpoint_iterator);
-    //current_socket_ = main_socket_;
     current_channel_ = NULL;
     channel_id_tracker_ = 0;
 }
@@ -45,26 +44,20 @@ void Client::on_read_header( boost::system::error_code ec, std::size_t bytes ) {
     if (!ec) {
         read_msg.get_header() = read_buffer_;
         read_msg.parse_header();
-        /*
-        Messages msg;
-        msg.get_header() = read_buffer_;
-        
-        msg.parse_header();
-        body_length_ = msg.get_length();
-        command_ = msg.get_command();
-        */
 
+        /*
         body_length_ = read_msg.get_length();
         command_ = read_msg.get_command();
 
         parse_server_command(command_);
-        
-        //std::cout << "header body length: " << read_msg.get_length() << "by member: " << body_length_ << std::endl;
-        //std::cout << "header command: " << read_msg.get_command() << "by member: " << command_ << std::endl;
+        */
                
         do_read_body();
     } else {
-        //std::cout << "Read error in on_read_header: " << ec << std::endl;
+        std::ofstream log;
+        log.open("log.txt");
+		log << ec.message() << std::endl;
+        log.close();
     }
 }
 
@@ -75,10 +68,8 @@ void Client::on_read_header( boost::system::error_code ec, std::size_t bytes ) {
  ***************************************/
 void Client::on_read_body( boost::system::error_code ec, std::size_t bytes ) {
     if (!ec) {
-        //std::cout << "read_buffer_: " << this->read_buffer_ << std::endl;
+
         read_msg.get_body() = read_buffer_;
-        //std::cout << "Read body: " << read_msg.get_body() << std::endl;
-        //memset(read_buffer_, '\0', sizeof(char)*512);
         
         time_t temp = read_msg.get_time();
 
@@ -95,7 +86,10 @@ void Client::on_read_body( boost::system::error_code ec, std::size_t bytes ) {
 
         display_chat();
     } else {
-        //std::cout << "Read error: " << ec << std::endl;
+        std::ofstream log;
+        log.open("log.txt");
+		log << ec.message() << std::endl;
+        log.close();
     }
 }
 
@@ -112,10 +106,7 @@ void Client::do_read_header() {
                                                    MAX_HEADER_LENGTH),
                                boost::bind(&Client::on_read_header,
                                            shared_from_this(),
-                                           _1, _2 ));
-    
-    //std::cerr << "called handler on_read_header" << std::endl;
-    
+                                           _1, _2 ));    
 }
 
 /***************************************
@@ -131,10 +122,7 @@ void Client::do_read_body() { //get_current_socket().async_receive
                                                    read_msg.get_length()),
                                boost::bind(&Client::on_read_body,
                                            shared_from_this(),
-                                           _1, _2 ));
-    
-    //std::cerr << "called handler on_read_body" << std::endl;
-    
+                                           _1, _2 ));    
 }
 
 /***************************************
@@ -153,13 +141,13 @@ void Client::send(Messages msg) {
 void Client::on_write_header( boost::system::error_code error, size_t bytes, Messages msg) {
     
     if (!error){
-        //std::cout << "header bytes written: " << bytes << std::endl;
         do_write_body(msg);
     }
     else{
-        //std::cout << "header write not a success\n";
-        //std::cout << "category: " << error.category().name() << " code: " << error.value() << " message: " << error.message() << std::endl;
-        //std::cout << "bytes written: " << bytes << std::endl;
+        std::ofstream log;
+        log.open("log.txt");
+		log << error.message() << std::endl;
+        log.close();
     }
 }
 
@@ -174,9 +162,10 @@ void Client::on_write_body( boost::system::error_code error, size_t bytes) {
         //std::cout << "body bytes written: " << bytes<< std::endl;
     }
     else{
-        //std::cout << "write not a success\n";
-        //std::cout << "category: " << error.category().name() << " code: " << error.value() << " message: " << error.message() << std::endl;
-        //std::cout << "bytes written: " << bytes << std::endl;
+        std::ofstream log;
+        log.open("log.txt");
+		log << error.message() << std::endl;
+        log.close();
     }
 }
 
@@ -185,16 +174,6 @@ void Client::on_write_body( boost::system::error_code error, size_t bytes) {
  
  ***************************************/
 void Client::do_write_header(Messages msg){
-    // send to server
-    //std::cout << "do write header" <<std::endl;
-    /*
-    boost::asio::async_write(main_socket_,
-                             boost::asio::buffer(msg.get_header(),
-                                                 MAX_HEADER_LENGTH),
-                             boost::bind( &Client::on_write_header,
-                                         shared_from_this(),
-                                         _1, _2, msg));*/
-
     boost::asio::async_write(*main_socket_,
                              boost::asio::buffer(msg.get_header(),
                                                  MAX_HEADER_LENGTH),
@@ -208,16 +187,6 @@ void Client::do_write_header(Messages msg){
  
  ***************************************/
 void Client::do_write_body(Messages msg){
-    // send to server
-    //std::cout << "do write body" << std::endl;
-    /*
-    boost::asio::async_write(main_socket_,
-                             boost::asio::buffer(msg.get_body(),
-                                                 msg.get_length()),
-                             boost::bind( &Client::on_write_body,
-                                         shared_from_this(),
-                                         _1, _2));*/
-
     boost::asio::async_write(*main_socket_,
                              boost::asio::buffer(msg.get_body(),
                                                  msg.get_length()),
@@ -229,7 +198,7 @@ void Client::do_write_body(Messages msg){
 
 /***************************************
  choose_alias
- 
+ Used during testing without UI overlay
  ***************************************/
 void Client::choose_alias(){
     std::string alias, alias_req, u_input, command;
@@ -701,7 +670,6 @@ void Client::exit_enki(){//***
 	close();
 
 	std::cout << "You have exited Enki." << std::endl;
-
 } 
 
 void Client::join(std::string){
@@ -716,25 +684,22 @@ void Client::add_mod(std::string){}
 
 void Client::accept_handler(const boost::system::error_code& error)
 {
-    std::ofstream log;
-    log.open("log.txt");
-
-    client_channels_[1]->start();
-
-    do_read_header();
-
     if (!error)
     {
-        //set_connection();
-        //log << "I accepted a session " << connection_socket_->is_open() << "\n";
+        client_channels_[1]->start();
+
+        do_read_header();
     }
     else
     {
+        std::ofstream log;
+        log.open("log.txt");
+        
         log << "DECLINED: " <<  error.message() << "\n";
         log << client_channels_[1]->get_channel_name() << "\n";
+		log << error.message() << std::endl;
+        log.close();
     }
-
-    log.close();
 }
 
 void Client::create_channel(std::string channel_name){ //***
@@ -743,6 +708,8 @@ void Client::create_channel(std::string channel_name){ //***
     {
         if (it->second->get_channel_name() == channel_name)
         {
+            current_channel_ = it->second;
+            update_current_channel(channel_name);
             return;
         }
     }
@@ -760,6 +727,7 @@ void Client::create_channel(std::string channel_name){ //***
     update_current_channel(channel_name);
 }
 
+/*
 void Client::decide_socket(Commands cmd)
 {
     std::cout << "HERE" << std::endl;
@@ -775,7 +743,9 @@ void Client::decide_socket(Commands cmd)
     }
     
 }
+*/
 
+/*
 void Client::set_connection()
 {
     //connection_socket_ = new_channel->get_channel_socket();
@@ -784,6 +754,7 @@ void Client::set_connection()
 
     //current_socket_ = connection_socket_;
 }
+*/
 
 
 /****************************************************************/
@@ -803,6 +774,8 @@ void Client::channel_update(std::string){
 void Client::channel_close(){
 
 }
+
+/*
 void Client::leave(){
     current_channel_->get_channel_socket().close();
 
@@ -814,6 +787,7 @@ void Client::leave(){
 
     current_channel_ = NULL;
 }
+*/
 
 void Client::kick(std::string user){
 
