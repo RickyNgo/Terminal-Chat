@@ -1,4 +1,6 @@
 
 *.json
 enki_server
-enki_server
+enki_client
+.vscode
+*.sh
