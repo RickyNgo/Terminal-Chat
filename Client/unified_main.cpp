@@ -25,6 +25,7 @@ Commands get_command(std::string &input)
             if (input == "/leave")
             {
                 user_cmd = LEAVE;
+                update_contacts(" |");
             }
             else {
                 user_cmd = MSG;

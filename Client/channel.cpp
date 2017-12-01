@@ -169,12 +169,6 @@ void Channel::on_write_header( boost::system::error_code ec, std::size_t bytes )
 
 void Channel::on_write_body( boost::system::error_code ec, std::size_t bytes ) {
     if (!ec) {
-        
-        if (write_queue.front().get_command() == LEAVE)
-        {
-            update_contacts("");
-        }
-        
         write_queue.pop();
     } else {
         std::ofstream log;
