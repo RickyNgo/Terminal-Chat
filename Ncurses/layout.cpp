@@ -315,12 +315,15 @@ void show_help()
 
 void show_friends()
 {
-    int y = 1;
+    //wclear(contactWinBox);
+    int y = 2;
     for (int i = 0; i < contacts_buffer.size(); i++)
     {
         mvwprintw(contactWinBox, y, 2, contacts_buffer[i].c_str());
         y++;
     }
+
+    wrefresh(contactWinBox);
 }
 
 /*
@@ -435,6 +438,7 @@ void update_buffers(std::string time, std::string alias, std::string chat)
 
 void update_contacts(std::string list)
 {
+    contacts_buffer.clear();
     std::string delimiter = "|";
     std::string token;
 
@@ -448,7 +452,9 @@ void update_contacts(std::string list)
         
     }
 
-    contacts_buffer.push_back(token);
+    //contacts_buffer.push_back(token);
+
+    show_friends();
 }
 
 void update_current_channel(std::string channel)

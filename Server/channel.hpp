@@ -27,7 +27,7 @@ public:
 	void leave( Participant::pointer );
 	void deliver( Messages & );
 	void process_( Messages );
-	// std::set<boost::shared_ptr<Session>> get_connections_();
+	std::set<Participant::pointer> get_participants_();
 	
 private:
 	// Processor &									processor_;					

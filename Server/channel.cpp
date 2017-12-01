@@ -63,3 +63,7 @@ void Channel::deliver( Messages & msg ) {
 // 	return participants_;
 // }
 
+std::set<Participant::pointer> Channel::get_participants_()
+{
+ 	return participants_;
+}

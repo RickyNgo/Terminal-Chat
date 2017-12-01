@@ -47,7 +47,18 @@ void Session::on_connect_( error_code ec ) {
 	if ( ! ec ) {
 		room_->join( shared_from_this() );
 		time_t current_time;
-		Messages test( "CHANNEL", "YOU HAVE JOINED", time(&current_time), MSG );
+		
+		std::string people;
+
+		for (auto contacts : room_->get_participants_())
+		{
+			people.append(contacts->alias());
+			people.append("|");
+		}
+
+
+		Messages test( "CHANNEL", people, time(&current_time), ONLINE );
+		
 		room_->deliver( test );
 		do_read_header_();
 	} else {
