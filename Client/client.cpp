@@ -775,7 +775,7 @@ void Client::channel_close(){
 
 }
 
-/*
+
 void Client::leave(){
     current_channel_->get_channel_socket().close();
 
@@ -787,7 +787,7 @@ void Client::leave(){
 
     current_channel_ = NULL;
 }
-*/
+
 
 void Client::kick(std::string user){
 

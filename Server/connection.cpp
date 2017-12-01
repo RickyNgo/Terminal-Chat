@@ -51,7 +51,15 @@ void Connection::on_login_( error_code ec ) {
 void Connection::on_join_( error_code ec ) {
 
 	std::cerr << client_ << "::JOIN_CHANNEL => " << ec << " [" << ec.message() << "]." << std::endl;
-	Messages data( "Server", ec.message(), time( NULL ), JOIN );
+	
+	std::string delimiter = " ";
+    std::string token = "[";
+    token.append(msg_.get_body().substr(0, msg_.get_body().find(delimiter)));
+	token.append("]");
+
+	std::string greeting = "You have successfully joined " + token;
+	//Messages data( "Server", ec.message(), time( NULL ), JOIN );
+	Messages data( "Server", greeting, time( NULL ), JOIN );
 	
 	do_write_header_( data );
 }

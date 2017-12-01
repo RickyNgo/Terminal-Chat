@@ -313,11 +313,13 @@ void show_help()
 }
 
 
-void show_friends(std::vector<std::string> friends)
+void show_friends()
 {
-    for (int i = 0; i < friends.size(); i++)
+    int y = 1;
+    for (int i = 0; i < contacts_buffer.size(); i++)
     {
-        mvwprintw(contactWinBox, 1, 2, friends[i].c_str());
+        mvwprintw(contactWinBox, y, 2, contacts_buffer[i].c_str());
+        y++;
     }
 }
 
@@ -443,6 +445,7 @@ void update_contacts(std::string list)
         token = list.substr(0, pos);
         contacts_buffer.push_back(token);
         list.erase(0, pos + delimiter.length());
+        
     }
 
     contacts_buffer.push_back(token);
@@ -458,6 +461,7 @@ void update_current_channel(std::string channel)
     if (token == " ")
     {
         token = channel.substr(0, channel.find(delimiter));
+        
     }
 
     current_channel.assign(token);

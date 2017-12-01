@@ -23,7 +23,7 @@ std::string retrieve_alias();
 std::string get_input();
 
 void show_help();
-void show_friends(std::vector<std::string> friends);
+void show_friends();
 void show_channels(std::vector<std::string> channels);
 
 int invite_notification(std::vector<std::string> inviter);

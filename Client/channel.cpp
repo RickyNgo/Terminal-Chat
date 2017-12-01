@@ -102,7 +102,16 @@ void Channel::on_read_body( boost::system::error_code ec, std::size_t bytes ) {
         sprintf(raw_time, "%02d:%02d:%02d|", time_info->tm_hour, time_info->tm_min, time_info->tm_sec);
 
         std::string fmtd_time(raw_time);
-        update_buffers(fmtd_time, read_msg.get_sender(), read_msg.get_body());
+
+        if (read_msg.get_command() == ONLINE)
+        {
+            update_contacts(read_msg.get_body());
+        }
+        else
+        {
+            update_buffers(fmtd_time, read_msg.get_sender(), read_msg.get_body());
+        }
+        
         do_read_header();
         display_chat();
 
