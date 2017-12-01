@@ -26,6 +26,7 @@ Commands get_command(std::string &input)
             {
                 user_cmd = LEAVE;
                 update_contacts(" |");
+                update_current_channel("");
             }
             else {
                 user_cmd = MSG;
