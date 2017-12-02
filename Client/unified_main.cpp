@@ -89,6 +89,14 @@ int main(int argc, char* argv[])
 
     while(isRunning)
     {
+        if (get_resize_flag() == 1)
+        {
+            resize();
+
+            reset_resize_flag();
+
+            continue;
+        }
         wrefresh(chatWin);
         wrefresh(inputWin);
         //wrefresh(channelWin);

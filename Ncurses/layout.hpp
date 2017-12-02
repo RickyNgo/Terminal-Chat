@@ -10,6 +10,8 @@ void del_wins();
 
 void resize_handler(int signum);
 void resize();
+void reset_resize_flag();
+int get_resize_flag();
 
 void draw_channels();
 void draw_chat();

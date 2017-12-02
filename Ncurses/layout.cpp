@@ -16,6 +16,7 @@ extern int isRunning;
 // Global window parameters
 int parent_x;
 int parent_y;
+int resize_flag = 0;
 int new_x;
 int new_y;
 int chatWinY = 3;
@@ -156,7 +157,23 @@ void del_wins()
 }
 
 void resize_handler(int sig)
+{   
+    resize_flag = 1;
+}
+
+void reset_resize_flag()
 {
+    resize_flag = 0;
+}
+
+void resize()
+{
+    delwin(chatWinBox);
+    delwin(chatWin);
+    delwin(contactWinBox);
+    delwin(contactWin);
+    delwin(inputWinBox);
+    delwin(inputWin);
     endwin();
     refresh();
     clear();
@@ -186,8 +203,16 @@ void resize_handler(int sig)
     wcursyncup(inputWinBox);
     //wrefresh(channelWinBox);
     wrefresh(chatWinBox);
+    wrefresh(chatWin);
     wrefresh(contactWinBox);
+    wrefresh(contactWin);
     wrefresh(inputWinBox);
+    wrefresh(inputWin);
+}
+
+int get_resize_flag()
+{
+    return resize_flag;
 }
 
 std::string get_input()
@@ -259,11 +284,37 @@ void display_chat()
 
         mvwprintw(chatWin, window_limit, 1, time_buffer[chat_buffer_pos].c_str());
 
-        wattron(chatWin, COLOR_PAIR(color));
-        mvwprintw(chatWin, window_limit, 10, "<%s>", alias_buffer[chat_buffer_pos].c_str());
-        wattroff(chatWin, COLOR_PAIR(color));
+        if (strcmp(alias_buffer[chat_buffer_pos].c_str(), alias) == 0)
+        {
+            wattron(chatWin, COLOR_PAIR(color));
+            mvwprintw(chatWin, window_limit, 10, "<%s>", alias_buffer[chat_buffer_pos].c_str());
+            wattroff(chatWin, COLOR_PAIR(color));
+
+            mvwprintw(chatWin, window_limit, 26, "|%s", chat_buffer[chat_buffer_pos].c_str());
+        }
+        else if (strcmp(alias_buffer[chat_buffer_pos].c_str(), "System") == 0)
+        {
+            wattron(chatWin, COLOR_PAIR(6));
+            mvwprintw(chatWin, window_limit, 10, "<%s>", alias_buffer[chat_buffer_pos].c_str());
+            mvwprintw(chatWin, window_limit, 26, "|%s", chat_buffer[chat_buffer_pos].c_str());
+            wattroff(chatWin, COLOR_PAIR(6));
+        }
+        else if (strcmp(alias_buffer[chat_buffer_pos].c_str(), "Server") == 0)
+        {
+            wattron(chatWin, COLOR_PAIR(2));
+            mvwprintw(chatWin, window_limit, 10, "<%s>", alias_buffer[chat_buffer_pos].c_str());
+            mvwprintw(chatWin, window_limit, 26, "|%s", chat_buffer[chat_buffer_pos].c_str());
+            wattroff(chatWin, COLOR_PAIR(2));
+        }
+        else
+        {
+            mvwprintw(chatWin, window_limit, 10, "<%s>", alias_buffer[chat_buffer_pos].c_str());
+
+            mvwprintw(chatWin, window_limit, 26, "|%s", chat_buffer[chat_buffer_pos].c_str());
+        }
         
-        mvwprintw(chatWin, window_limit, 26, "|%s", chat_buffer[chat_buffer_pos].c_str());
+        
+        
 
         window_limit--;
         chat_buffer_pos--;
@@ -278,38 +329,27 @@ void display_chat()
 }
 
 void show_help()
-{
-    int y;
-    int x;
+{    
+    time_t temp;
 
-    getmaxyx(chatWinBox, y, x);
-    WINDOW *helpWin = subwin(chatWinBox, 15, 60, 3, 4);
+    time(&temp);
 
-    keypad(helpWin, TRUE);
+    struct tm *time_info = localtime(&temp);
+    char *raw_time = new char[12];
+
+    sprintf(raw_time, "%02d:%02d:%02d|", time_info->tm_hour, time_info->tm_min, time_info->tm_sec);
+
+    std::string fmtd_time(raw_time);
+ 
+    update_buffers(fmtd_time, "System", "Commands are:" );
+    update_buffers(fmtd_time, "System", "/help - Displays help commands and syntax." );
+    update_buffers(fmtd_time, "System", "/quit - Exits the Enki chat program." );
+    update_buffers(fmtd_time, "System", "/join [room] - Joins the chosen channel if available and creates it if it isn't there." );
     
-    std::string help = "\n"
-                        " Commands are:\n"
-                        " /help - Displays help commands and syntax.\n"
-                        " /quit - Exits the Enki chat program.\n"
-                        " /join [room] - Joins the chosen channel if available\n and creates it if it isn't there.\n"
-                        " PRESS ANY KEY TO CLOSE THIS WINDOW";
-
-    mvwprintw(helpWin, 0, 0, help.c_str());
-    box(helpWin, 124, 45);
-
-    wrefresh(helpWin);
-    
-    while(!wgetch(helpWin))
-    {
-        break;
-    }
-
-    delwin(helpWin);
+    display_chat();
     delwin(inputWin);
     delwin(inputWinBox);
     draw_input();
-    draw_chat();
-    display_chat();
 }
 
 
