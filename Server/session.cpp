@@ -4,7 +4,6 @@
 Session::Session( Guest::pointer guest, tcp::socket socket, const short port, Channel::pointer channel )
     : Participant( guest->get_alias()), socket_( std::move( socket )), room_( channel ), port_( port ), guest_( guest ), address_( guest->get_address().address(), port_ )
 {
-	std::cerr << "Session: In Constructor: PORT: " << port_ << std::endl;
 	this->read_msg.clear();
 } 
 
@@ -111,6 +110,7 @@ void Session::on_read_body_( const boost::system::error_code error, size_t bytes
         read_msg.get_body() = std::move( temp );
         switch( read_msg.get_command() ) {
     		case LEAVE:
+    			std::cerr << address_ << " >> LEAVE." << std::endl;
     			room_->leave( shared_from_this() );
     			break;
     		default:
@@ -119,6 +119,7 @@ void Session::on_read_body_( const boost::system::error_code error, size_t bytes
     			break;
         }
 	} else if ( error.value() == boost::asio::error::eof ) {
+	    std::cerr << address_ << " >> EOF." << std::endl;
 		room_->leave( shared_from_this() );
 	}
 }

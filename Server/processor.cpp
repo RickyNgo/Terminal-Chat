@@ -249,9 +249,9 @@ error_code Processor::do_leave_( Guest::pointer guest ) {
 	{
 		scoped_lock lk( guests_m_ );
 
-		for ( auto guest: guests_ ) {
-			std::cerr << guest.first << std::endl;
-		}
+		// for ( auto guest: guests_ ) {
+		// 	std::cerr << guest.first << std::endl;
+		// }
 		auto it = guests_.begin();
 		while ( it != guests_.end() ) {
 			if ( std::strcmp( it->first, guest->get_alias() ) == 0 ) {

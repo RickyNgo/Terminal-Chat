@@ -60,8 +60,6 @@ void Channel::leave( Participant::pointer participant ) {
 		people.append("|");
 	}
 
-	std::cerr << people << std::endl;
-
 	Messages test( "CHANNEL", people, time(&current_time), ONLINE );
 
 	deliver(test);
