@@ -5,7 +5,7 @@ This the backend main function
 #include "server.hpp"
 
 int main( int argc, char ** argv ) {
-	if ( argc != 3 ) {
+	if ( argc != 2 ) {
 		std::cout << "Usage: " << argv[ 0 ] << " <listen-port>" << std::endl;
 		return 0;
 	}
