@@ -3,7 +3,7 @@
 /* Server Constructor */
 
 
-Server::Server( const char * host, const short & command, const short & session ) :
+Server::Server( const char * host, const short & command ) :
 /* Create the io_service */
 ios_(),
 
@@ -20,7 +20,7 @@ socket_( ios_ ),
 signals_( ios_, SIGINT ),
 
 /* Handles Connections */
-handler_( ios_, session )
+handler_( ios_ )
 {
 	try {
 		acceptor_.set_option( tcp::acceptor::reuse_address( true ));

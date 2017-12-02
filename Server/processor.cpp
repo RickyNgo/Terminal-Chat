@@ -1,9 +1,8 @@
 #include "processor.hpp"
 
-Processor::Processor( boost::asio::io_service & ios, const short port ) :
+Processor::Processor( boost::asio::io_service & ios ) :
 ios_( ios ),
 socket_( ios_ ),
-port_( port ),
 num_t_( 2 ) {
 	for ( int i = 0; i < num_t_; i++ ) {
 		threads_.add_thread( new boost::thread( boost::bind( &Processor::run_, this )));

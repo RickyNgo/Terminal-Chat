@@ -38,7 +38,7 @@ public:
 	typedef boost::function<error_code( void )> 		do_async_op;
 	typedef boost::function<void( error_code )> 		on_async_op;
 
-	Processor( io_service & ios, const short port );
+	Processor( io_service & ios );
 	~Processor( void );
 
 	/* Commands */
@@ -120,7 +120,6 @@ public:
 	condition_variable 										cond_;
 	boost::thread_group										threads_;
 	const std::uint8_t  									num_t_;
-	const short   											port_;					
 
 	void			add_( do_async_op, on_async_op );
 	void 			run_( void );

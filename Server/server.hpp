@@ -17,7 +17,7 @@ using boost::asio::ip::tcp;
 
 class Server {
 public:
-	Server( const char * host, const short & command, const short & session );
+	Server( const char * host, const short & command );
 	~Server( void );
 
 	void start( void );
